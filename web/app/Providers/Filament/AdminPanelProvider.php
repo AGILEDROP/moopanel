@@ -28,7 +28,6 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->renderHook('panels::auth.login.form.after', fn(): string => Blade::render('components/azure-login-button'), )
             ->colors([
                 'primary' => Color::rgb('rgb(225, 42, 38)'),
             ])

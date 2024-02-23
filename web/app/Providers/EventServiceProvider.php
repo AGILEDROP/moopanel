@@ -20,9 +20,6 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
-        SocialiteWasCalled::class => [
-            AzureExtendSocialite::class.'@handle',
-        ],
     ];
 
     /**
