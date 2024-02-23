@@ -18,20 +18,11 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
-        'username',
-        'azure_id',
-        'azure_token',
-        'azure_access_token',
-        'azure_refresh_token',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
-        'azure_id',
-        'azure_token',
-        'azure_access_token',
-        'azure_refresh_token',
     ];
 
     /**
