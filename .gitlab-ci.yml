@@ -2,7 +2,7 @@ deploy:
   stage: deploy
   script:
     # Git
-    - rsync -av . /var/www/ --exclude=.git --no-perms -O;
+    - rsync -av . /var/www/ --exclude=.git --no-perms -O --rsync-path=/usr/bin/rsync;
     - cd /var/www;
     # Docker
     - docker image prune -f
