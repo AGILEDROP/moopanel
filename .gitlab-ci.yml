@@ -1,0 +1,26 @@
+deploy:
+  stage: deploy
+  script:
+    # Git
+    - rsync -av . /var/www/ --exclude=.git --no-perms -O --rsync-path=/usr/bin/rsync;
+    - cd /var/www;
+    # Docker
+    - docker image prune -f
+    - docker-compose -f production.yml pull && docker-compose -f production.yml up -d --build --no-deps
+    - docker-compose -f production.yml exec -T map-php composer install --optimize-autoloader --no-dev
+    # Laravel
+    - docker-compose -f production.yml exec -T map-php php artisan down
+    - docker-compose -f production.yml exec -T map-php php artisan migrate --force
+    - docker-compose -f production.yml exec -T map-php php artisan storage:link
+    - docker-compose -f production.yml exec -T map-php php artisan cache:clear
+    - docker-compose -f production.yml exec -T map-php php artisan config:cache
+    - docker-compose -f production.yml exec -T map-php php artisan event:cache
+    - docker-compose -f production.yml exec -T map-php php artisan route:cache
+    - docker-compose -f production.yml exec -T map-php php artisan view:cache
+    - docker-compose -f production.yml exec -T map-php php artisan queue:restart
+    # Filament
+    - docker-compose -f production.yml exec -T map-php php artisan icons:cache
+    - docker-compose -f production.yml exec -T map-php php artisan filament:cache-components
+    # Up
+    - docker-compose -f production.yml exec -T map-php php artisan up
+    - rm /var/www/web/storage/logs/laravel.log
