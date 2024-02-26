@@ -1,0 +1,78 @@
+# docker-compose.dev.yml
+version: "3"
+
+services:
+  web:
+    image: registry.agiledrop.com/agiledrop/${PROJECT_NAME}-app:${ENVIRONMENT}
+    container_name: "${PROJECT_NAME}_app.${ENVIRONMENT}"
+    depends_on:
+      - database
+      - redis
+    environment:
+      APACHE_LOG_LEVEL: warn
+      APACHE_BACKEND_HOST: php
+      APACHE_VHOST_PRESET: php
+      APACHE_DOCUMENT_ROOT: /var/www/html
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
+      AZURE_REDIRECT_URI: ${AZURE_REDIRECT_URI}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
+      AZURE_APP_RESOURCE_ID: ${AZURE_APP_RESOURCE_ID}
+      SCIM_SECRET_TOKEN: ${SCIM_SECRET_TOKEN}
+    volumes:
+      - ../private/dev/.env:/opt/app/.env
+      - ../private/files/dev/assets:/opt/app/storage/app
+      - ./backups:/backups
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${PROJECT_NAME}-${ENVIRONMENT}_http.entrypoints=web"
+      - "traefik.http.routers.${PROJECT_NAME}-${ENVIRONMENT}_http.rule=Host(`${PROJECT_URL}`)"
+      - "traefik.http.routers.${PROJECT_NAME}-${ENVIRONMENT}.entrypoints=websecure"
+      - "traefik.http.routers.${PROJECT_NAME}-${ENVIRONMENT}.rule=Host(`${PROJECT_URL}`)"
+      - "traefik.http.routers.${PROJECT_NAME}-${ENVIRONMENT}.tls=true"
+      - "traefik.http.routers.${PROJECT_NAME}-${ENVIRONMENT}.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.${PROJECT_NAME}-${ENVIRONMENT}_http.middlewares=http_to_https"
+      - "traefik.http.services.${PROJECT_NAME}-${ENVIRONMENT}.loadbalancer.server.port=80"
+      - "traefik.docker.network=agiledrop-traefik"
+    networks:
+      - default
+      - agiledrop-traefik
+    restart: unless-stopped
+
+  database:
+    image: registry.agiledrop.com/agiledrop/${PROJECT_NAME}-postgres:${ENVIRONMENT}
+    container_name: "${PROJECT_NAME}_db.${ENVIRONMENT}"
+    labels:
+      com.docker.compose.project: "${PROJECT_NAME}_db.${ENVIRONMENT}"
+    stop_grace_period: 30s
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./backups:/backups
+    networks:
+      - default
+    restart: unless-stopped
+
+  redis:
+    image: registry.agiledrop.com/agiledrop/${PROJECT_NAME}-redis:${ENVIRONMENT}
+    container_name: "${PROJECT_NAME}_redis.${ENVIRONMENT}"
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    labels:
+      com.docker.compose.project: "${PROJECT_NAME}_redis.${ENVIRONMENT}"
+    volumes:
+      - redis:/data
+    networks:
+      - default
+    restart: unless-stopped
+
+volumes:
+  db:
+  redis:
+
+networks:
+  default:
+  agiledrop-traefik:
+    external: true
