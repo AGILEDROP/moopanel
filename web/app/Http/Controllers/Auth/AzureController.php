@@ -18,7 +18,6 @@ class AzureController extends Controller
 
     public function callback()
     {
-        //@todo: should be optimized -> check if displays error on the login page!
         $response = Socialite::driver('azure')->user();
         if (empty($response->id)) {
             Notification::make()

@@ -16,6 +16,7 @@ class LocalSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@example.com',
             'username' => 'admin',
+            'azure_id' => env('MY_LOCAL_ADMIN_AZURE_ID', fake()->uuid()),
         ]);
     }
 }
