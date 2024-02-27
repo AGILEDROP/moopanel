@@ -2,8 +2,9 @@ deploy:
   stage: deploy
   script:
     # Git
+    - mv .git /var/www;
     - cd /var/www;
-    - git pull origin master;
+    - git pull;
     # Docker
     - docker image prune -f
     - docker-compose -f production.yml pull && docker-compose -f production.yml up -d --build --no-deps
