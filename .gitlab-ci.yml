@@ -2,7 +2,7 @@ deploy:
   stage: deploy
   script:
     # Git
-    - cp .git /var/www;
+    - cp -r .git /var/www;
     - cd /var/www;
     - git pull origin master;
     # Docker
