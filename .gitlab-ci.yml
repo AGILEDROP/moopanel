@@ -4,7 +4,7 @@ deploy:
     # Git
     - mv .git /var/www;
     - cd /var/www;
-    - git pull;
+    - git pull origin master;
     # Docker
     - docker image prune -f
     - docker-compose -f production.yml pull && docker-compose -f production.yml up -d --build --no-deps
