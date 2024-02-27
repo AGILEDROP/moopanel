@@ -2,7 +2,7 @@ deploy:
   stage: deploy
   script:
     # Git
-    - rsync -av . /var/www/ --exclude=.git --no-perms -O --rsync-path=/usr/bin/rsync;
+    - rsync -av . /var/www/ --exclude=.git --no-perms -O;
     - cd /var/www;
     # Docker
     - docker image prune -f
@@ -13,6 +13,7 @@ deploy:
     - docker-compose -f production.yml exec -T map-php php artisan migrate --force
     - docker-compose -f production.yml exec -T map-php php artisan storage:link
     - docker-compose -f production.yml exec -T map-php php artisan cache:clear
+    - docker-compose -f production.yml exec -T map-php php artisan config:clear
     - docker-compose -f production.yml exec -T map-php php artisan config:cache
     - docker-compose -f production.yml exec -T map-php php artisan event:cache
     - docker-compose -f production.yml exec -T map-php php artisan route:cache
@@ -24,3 +25,5 @@ deploy:
     # Up
     - docker-compose -f production.yml exec -T map-php php artisan up
     - rm /var/www/web/storage/logs/laravel.log
+  only:
+    - master
