@@ -8,8 +8,6 @@ services:
         container_name: map-php
         restart: unless-stopped
         working_dir: /var/www
-        ports:
-            - "9000:9000"
         volumes:
             - ./web:/var/www
             - ./mnt/php/local.ini:/usr/local/etc/php/conf.d/local.ini
@@ -26,8 +24,6 @@ services:
             - ./mnt/nginx/prod:/etc/nginx/conf.d/
             - /etc/ssl/certs/ssl-cert-snakeoil.pem:/etc/nginx/ssl/ssl-cert-snakeoil.pem
             - /etc/ssl/private/ssl-cert-snakeoil.key:/etc/nginx/ssl/ssl-cert-snakeoil.key
-        depends_on:
-            - map-php
 
     map-db:
         image: postgres:15-alpine
