@@ -25,6 +25,6 @@ deploy:
     - docker-compose -f production.yml exec -T map-php php artisan filament:cache-components
     # Up
     - docker-compose -f production.yml exec -T map-php php artisan up
-    - rm /var/www/web/storage/logs/laravel.log
+    #- rm /var/www/web/storage/logs/laravel.log
   only:
     - master
