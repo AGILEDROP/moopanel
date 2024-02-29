@@ -2,10 +2,8 @@ deploy:
   stage: deploy
   script:
     # Git
-    #- sudo cp -r . /var/www;
-    - pwd
-    - ls -la
-    #- cd /var/www;
+    - rsync -av . /var/www/ --exclude=.git --no-perms -O;
+    - cd /var/www;
     #- git checkout master;
     #- git pull origin master;
     # Docker
