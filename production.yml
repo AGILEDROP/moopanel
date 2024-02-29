@@ -19,11 +19,16 @@ services:
         ports:
             - "80:80"
             - "443:443"
+        expose:
+            - "80"
+            - "443"
         volumes:
             - ./web/:/var/www
             - ./mnt/nginx/prod:/etc/nginx/conf.d/
             - /etc/ssl/certs/ssl-cert-snakeoil.pem:/etc/nginx/ssl/ssl-cert-snakeoil.pem
             - /etc/ssl/private/ssl-cert-snakeoil.key:/etc/nginx/ssl/ssl-cert-snakeoil.key
+        depends_on:
+            - map-php
 
     map-db:
         image: postgres:15-alpine
