@@ -3,8 +3,9 @@ deploy:
   script:
     # Git
     #- sudo cp -r . /var/www;
+    - pwd
     - ls -la
-    - cd /var/www;
+    #- cd /var/www;
     #- git checkout master;
     #- git pull origin master;
     # Docker
