@@ -22,6 +22,8 @@ services:
         volumes:
             - ./web/:/var/www
             - ./mnt/nginx/local:/etc/nginx/conf.d/
+        depends_on:
+            - map-php
 
     map-db:
         image: postgres:15-alpine
