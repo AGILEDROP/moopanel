@@ -4,6 +4,7 @@ deploy:
     # Git
     - sudo cp -r .git /var/www;
     - cd /var/www;
+    - git checkout master;
     - git pull origin master;
     # Docker
     - docker image prune -f
