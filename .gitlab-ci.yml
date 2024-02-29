@@ -2,10 +2,11 @@ deploy:
   stage: deploy
   script:
     # Git
-    #- sudo cp -r .git /var/www;
+    #- sudo cp -r . /var/www;
+    - ls -la
     - cd /var/www;
-    - git checkout master;
-    - git pull origin master;
+    #- git checkout master;
+    #- git pull origin master;
     # Docker
     - docker image prune -f
     - docker-compose -f production.yml pull && docker-compose -f production.yml up -d --build --no-deps
