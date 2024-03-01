@@ -4,11 +4,11 @@ deploy:
     # Git
     #- rsync -av . /var/www/ --exclude=.git --no-perms -O;
     - ls -la
-    - cd /var/www;
     - pwd
     - which ssh-agent
     - eval $(ssh-agent -s)
-    - ssh add -l
+    - ssh-add -l
+    - cd /var/www;
     - git checkout master;
     - git pull origin master;
     # Docker
