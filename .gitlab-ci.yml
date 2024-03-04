@@ -2,7 +2,7 @@ deploy:
   stage: deploy
   script:
     # Git
-    #- rsync -av . /var/www/ --exclude=.git --no-perms -O;
+    - rsync -av . /var/www/ --exclude=.git --no-perms -O;
 #    - ls -la
 #    - pwd
 #    - which ssh-agent
@@ -14,8 +14,8 @@ deploy:
 #    - chmod 700 ~/.ssh
 #    - ssh-add -l
     - cd /var/www;
-    - git checkout master;
-    - git pull origin master;
+#    - git checkout master;
+#    - git pull origin master;
     # Docker
     - docker image prune -f
     - docker-compose -f production.yml pull && docker-compose -f production.yml up -d --build --no-deps
