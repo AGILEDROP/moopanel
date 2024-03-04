@@ -2,7 +2,7 @@ deploy:
   stage: deploy
   script:
     # Git
-    - rsync -av . /var/www/ --exclude=.git --no-perms -O;
+    - rsync -avz --exclude=.git --no-perms --no-owner --no-group  -O . /var/www/ ;
 #    - ls -la
 #    - pwd
 #    - which ssh-agent
