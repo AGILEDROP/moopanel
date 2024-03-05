@@ -60,12 +60,9 @@ class User extends Authenticatable implements FilamentUser
     {
         return Attribute::make(
             get: function ($value) {
-                //@todo :collection is not needed for now!
                 return collect($value);
             },
             set: function ($value) {
-                //@todo: remove log when roles are working.
-                Log::debug('Setting the appRoleId: '.is_array($value) ? print_r($value, true) : $value);
                 $higestRole = null;
                 $value->each(function ($role) use (&$higestRole) {
                     if (! empty($role['value'])) {
