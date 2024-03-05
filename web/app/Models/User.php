@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements FilamentUser
@@ -25,8 +26,8 @@ class User extends Authenticatable implements FilamentUser
         'azure_token',
         'azure_access_token',
         'azure_refresh_token',
-        'employee_id',
         'app_role_id',
+        'employee_id',
     ];
 
     protected $hidden = [
@@ -55,10 +56,16 @@ class User extends Authenticatable implements FilamentUser
         return true;
     }
 
-    protected function appRoleId(): Attribute
+    public function appRoleId(): Attribute
     {
         return Attribute::make(
+            get: function ($value) {
+                //@todo :collection is not needed for now!
+                return collect($value);
+            },
             set: function ($value) {
+                //@todo: remove log when roles are working.
+                Log::debug('Setting the appRoleId: '.is_array($value) ? print_r($value, true) : $value);
                 $higestRole = null;
                 $value->each(function ($role) use (&$higestRole) {
                     if (! empty($role['value'])) {
@@ -72,10 +79,12 @@ class User extends Authenticatable implements FilamentUser
                 });
 
                 return $higestRole ?? null;
-            },
-            get: function ($value) {
-                return collect($value);
             }
         );
+    }
+
+    public function role(): ?Role
+    {
+        return Role::tryFrom($this->app_role_id->first());
     }
 }
