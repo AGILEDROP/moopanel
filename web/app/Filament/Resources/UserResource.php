@@ -22,11 +22,10 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 999;
 
-    // @todo: use when roles will transfer successfully!
-    //    public static function can(string $action, ?Model $record = null): bool
-    //    {
-    //        return auth()->user()->role() === Role::MasterAdmin;
-    //    }
+    public static function can(string $action, ?Model $record = null): bool
+    {
+        return auth()->user()->role() === Role::MasterAdmin;
+    }
 
     public static function table(Table $table): Table
     {
