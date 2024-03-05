@@ -79,6 +79,7 @@ return [
             'displayname' => 'name',
             'password' => 'password',
             'emails.work.value' => 'email',
+            //'roles.WindowsAzureActiveDirectoryRole.value' => 'app_role_id',
             'roles' => 'app_role_id',
             'title' => 'employee_id',
             // 'active' => 'active',
