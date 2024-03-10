@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\ScimSecretTokenMiddleware;
+use App\Http\Middleware\SCIM\UsersSecretTokenMiddleware;
 use RobTrehy\LaravelAzureProvisioning\Utils\SCIMConstantsV2;
 
 return [
@@ -8,9 +8,9 @@ return [
     /**
      * Set the prefix for the SCIM service routes
      */
-    'routePrefix' => 'scim/v2.0',
+    'routePrefix' => '/scim/v2.0',
     'routeMiddleware' => [
-        ScimSecretTokenMiddleware::class,
+        UsersSecretTokenMiddleware::class,
     ],
 
     /**
@@ -79,7 +79,6 @@ return [
             'displayname' => 'name',
             'password' => 'password',
             'emails.work.value' => 'email',
-            //'roles.WindowsAzureActiveDirectoryRole.value' => 'app_role_id',
             'roles' => 'app_role_id',
             'title' => 'employee_id',
             // 'active' => 'active',
