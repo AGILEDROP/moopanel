@@ -35,11 +35,11 @@ return [
          * be included in the validation or it will be ignored.
          */
         'validations' => [
-            'externalid' => 'required',
-            'username' => 'required',
+            'externalid' => 'required|unique:users,azure_id',
+            'username' => 'required|unique:users,username',
             'displayname' => 'required',
             'password' => 'nullable',
-            'emails' => 'required|array',
+            'emails' => 'nullable|array',
             'roles' => 'required|array',
             'title' => 'nullable',
             // 'active' => 'boolean',

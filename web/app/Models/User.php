@@ -22,9 +22,6 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'username',
         'azure_id',
-        'azure_token',
-        'azure_access_token',
-        'azure_refresh_token',
         'app_role_id',
         'employee_id',
     ];
@@ -33,9 +30,6 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'remember_token',
         'azure_id',
-        'azure_token',
-        'azure_access_token',
-        'azure_refresh_token',
         'app_role_id',
         'employee_id',
     ];

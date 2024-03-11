@@ -36,10 +36,10 @@ return [
          * be included in the validation or it will be ignored.
          */
         'validations' => [
-            'externalid' => 'required',
-            'username' => 'required',
+            'externalid' => 'required|unique:accounts,azure_id',
+            'username' => 'required|unique:accounts,username',
             'displayname' => 'required',
-            'emails' => 'required|array',
+            'emails' => 'nullable|array',
         ],
 
         /**
@@ -69,7 +69,6 @@ return [
             'externalid' => 'azure_id',
             'username' => 'username',
             'displayname' => 'name',
-            'password' => 'password',
             'emails.work.value' => 'email',
         ],
     ],
