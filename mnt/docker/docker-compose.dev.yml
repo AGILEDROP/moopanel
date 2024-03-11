@@ -18,7 +18,8 @@ services:
       AZURE_REDIRECT_URI: ${AZURE_REDIRECT_URI}
       AZURE_TENANT_ID: ${AZURE_TENANT_ID}
       AZURE_APP_RESOURCE_ID: ${AZURE_APP_RESOURCE_ID}
-      SCIM_SECRET_TOKEN: ${SCIM_SECRET_TOKEN}
+      SCIM_SECRET_TOKEN_USERS: ${SCIM_SECRET_TOKEN_USERS}
+      SCIM_SECRET_TOKEN_ACCOUNTS: ${SCIM_SECRET_TOKEN_ACCOUNTS}
     volumes:
       - ../private/dev/.env:/opt/app/.env
       - ../private/files/dev/assets:/opt/app/storage/app
