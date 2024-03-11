@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace App\Http\Middleware\SCIM;
 
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class ScimSecretTokenMiddleware
+class UsersSecretTokenMiddleware
 {
     /**
      * Handle an incoming request.
@@ -15,8 +15,8 @@ class ScimSecretTokenMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->bearerToken() !== config('custom.scim_secret_token')) {
-            return abort(403, __('You are not authorized'));
+        if ($request->bearerToken() !== config('custom.scim_secret_token_users')) {
+            abort(403, __('You are not authorized'));
         }
 
         return $next($request);

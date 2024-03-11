@@ -6,5 +6,6 @@ return [
     'azure_redirect_uri' => env('AZURE_REDIRECT_URI'),
     'azure_tenant_id' => env('AZURE_TENANT_ID'),
     'azure_app_resource_id' => env('AZURE_APP_RESOURCE_ID'),
-    'scim_secret_token' => env('SCIM_SECRET_TOKEN'),
+    'scim_secret_token_users' => env('SCIM_SECRET_TOKEN_USERS'),
+    'scim_secret_token_accounts' => env('SCIM_SECRET_TOKEN_ACCOUNTS'),
 ];
