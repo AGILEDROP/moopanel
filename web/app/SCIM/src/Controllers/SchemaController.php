@@ -16,7 +16,7 @@ class SchemaController extends Controller
             dd('Schema ['.SCIMConstantsV2::SCHEMA_USER.'] not found');
         }
         $schema->setDescription('User Account');
-        $schema->getMeta()->setLocation(route('AccountsAzureProvisioning.Schemas', ['id' => '23']));
+        $schema->getMeta()->setLocation(route('AdminAzureProvisioning.Schemas', ['id' => '23']));
         $schemas[] = $schema->serializeObject();
 
         return collect($schemas);

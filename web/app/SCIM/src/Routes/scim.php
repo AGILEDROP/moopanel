@@ -8,38 +8,38 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
-    'prefix' => config('azureprovisioning-accounts.routePrefix'),
-    'middleware' => array_merge([SubstituteBindings::class], config('azureprovisioning-accounts.routeMiddleware')),
+    'prefix' => config('azureprovisioning-admin.routePrefix'),
+    'middleware' => array_merge([SubstituteBindings::class], config('azureprovisioning-admin.routeMiddleware')),
 ], function () {
     Route::get('/ServiceProviderConfig', [ServiceProviderController::class, 'index']);
     Route::get('/Schemas', [SchemaController::class, 'index']);
     Route::get('/ResourceTypes', [ResourceTypeController::class, 'index']);
 
     Route::get('/{overwrittenResourceType}', [ResourceController::class, 'index'])
-        ->name('AccountsAzureProvisioning.Resources');
+        ->name('AdminAzureProvisioning.Resources');
 
     Route::post('/{overwrittenResourceType}', [ResourceController::class, 'create'])
         ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
     Route::get('/{overwrittenResourceType}/{overwrittenResourceObject}', [ResourceController::class, 'show'])
-        ->name('AccountsAzureProvisioning.Resource');
+        ->name('AdminAzureProvisioning.Resource');
 
     Route::patch('/{overwrittenResourceType}/{overwrittenResourceObject}', [ResourceController::class, 'update'])
-        ->name('AccountsAzureProvisioning.Resource.Update')
+        ->name('AdminAzureProvisioning.Resource.Update')
         ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
     Route::put('/{overwrittenResourceType}/{overwrittenResourceObject}', [ResourceController::class, 'replace'])
-        ->name('AccountsAzureProvisioning.Resource.Replace')
+        ->name('AdminAzureProvisioning.Resource.Replace')
         ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
     Route::delete('/{overwrittenResourceType}/{overwrittenResourceObject}', [ResourceController::class, 'delete'])
-        ->name('AccountsAzureProvisioning.Resource.Delete')
+        ->name('AdminAzureProvisioning.Resource.Delete')
         ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
     Route::get('/Schemas/{id}', function ($id) {
         return $id;
-    })->name('AccountsAzureProvisioning.Schemas');
+    })->name('AdminAzureProvisioning.Schemas');
     Route::get('/ResourceTypes/{id}', function ($id) {
         return $id;
-    })->name('AccountsAzureProvisioning.ResourceType');
+    })->name('AdminAzureProvisioning.ResourceType');
 });

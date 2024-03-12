@@ -8,11 +8,11 @@ class ResourceType extends OriginalResourceType
 {
     public function user()
     {
-        return new UsersResourceType('Users', config('azureprovisioning-accounts.Users'));
+        return new UsersResourceType('Users', config('azureprovisioning-admin.Users'));
     }
 
     public function group()
     {
-        return new GroupsResourceType('Groups', config('azureprovisioning-accounts.Groups'));
+        return new GroupsResourceType('Groups', config('azureprovisioning-admin.Groups'));
     }
 }
