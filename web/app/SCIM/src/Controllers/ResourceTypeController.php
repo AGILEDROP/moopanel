@@ -13,7 +13,7 @@ class ResourceTypeController extends Controller
     {
         $resourceTypes = [];
 
-        foreach (config('azureprovisioning-accounts') as $type => $settings) {
+        foreach (config('azureprovisioning-admin') as $type => $settings) {
             if (isset($settings['schema'])) {
                 $resourceTypes[] = new ResourceType(
                     $settings['singular'],

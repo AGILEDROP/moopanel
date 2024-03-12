@@ -8,7 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use RobTrehy\LaravelAzureProvisioning;
 use RobTrehy\LaravelAzureProvisioning\Exceptions\AzureProvisioningException;
 
-class AccountsAzureProvisioningProvider extends ServiceProvider
+class AdminAzureProvisioningProvider extends ServiceProvider
 {
     /**
      * Register services.
@@ -18,8 +18,8 @@ class AccountsAzureProvisioningProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__.'/Config/azureprovisioning-accounts.php',
-            'azureprovisioning-accounts'
+            __DIR__.'/Config/azureprovisioning-admin.php',
+            'azureprovisioning-admin'
         );
 
         //  $this->app->singleton(LaravelAzureProvisioning\Utils\AzureHelper::class, AzureHelper::class);
@@ -35,14 +35,14 @@ class AccountsAzureProvisioningProvider extends ServiceProvider
     public function boot(Router $router)
     {
         $this->publishes(
-            [__DIR__.'/Config/azureprovisioning-accounts.php' => config_path('azureprovisioning-accounts.php')],
-            'azureprovisioning-accounts'
+            [__DIR__.'/Config/azureprovisioning-admin.php' => config_path('azureprovisioning-admin.php')],
+            'azureprovisioning-admin'
         );
 
         $router->bind(
             'overwrittenResourceType',
             function ($name) {
-                $config = config('azureprovisioning-accounts.'.$name);
+                $config = config('azureprovisioning-admin.'.$name);
 
                 if ($config === null) {
                     throw (new AzureProvisioningException(sprintf('No resource %s found.', $name)))->setCode(404);

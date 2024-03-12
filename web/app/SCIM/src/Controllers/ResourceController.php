@@ -48,7 +48,7 @@ class ResourceController
         );
 
         $resourceObjects = $resourceObjectBase->skip($startIndex - 1)->take($count);
-        $resourceObjects = $resourceObjects->with(config('azureprovisioning-accounts.'.$resourceType->getName().'.relations'));
+        $resourceObjects = $resourceObjects->with(config('azureprovisioning-admin.'.$resourceType->getName().'.relations'));
 
         if ($sortBy != null) {
             $direction = $request->input('sortorder') == 'descending' ? 'desc' : 'asc';
