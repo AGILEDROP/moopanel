@@ -14,12 +14,12 @@ class ResourceType extends OriginalResourceType implements Jsonable
             'schemas' => [SCIMConstantsV2::SCHEMA_RESOURCE_TYPE],
             'id' => $this->id,
             'name' => $this->name,
-            'endpoint' => route('AccountsAzureProvisioning.Resources', ['overwrittenResourceType' => $this->type]),
+            'endpoint' => route('AdminAzureProvisioning.Resources', ['overwrittenResourceType' => $this->type]),
             'description' => $this->description,
             'schema' => $this->schema,
             'schemaExtensions' => $this->schemaExtensions,
             'meta' => [
-                'location' => route('AccountsAzureProvisioning.ResourceType', ['id' => $this->id]),
+                'location' => route('AdminAzureProvisioning.ResourceType', ['id' => $this->id]),
                 'resourceType' => 'ResourceType',
             ],
         ];

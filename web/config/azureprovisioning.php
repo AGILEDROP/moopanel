@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Middleware\SCIM\UsersSecretTokenMiddleware;
+use App\Http\Middleware\SCIM\AccountsSecretTokenMiddleware;
+use App\Models\Account;
 use RobTrehy\LaravelAzureProvisioning\Utils\SCIMConstantsV2;
 
 return [
@@ -8,9 +9,9 @@ return [
     /**
      * Set the prefix for the SCIM service routes
      */
-    'routePrefix' => '/scim/v2.0',
+    'routePrefix' => '/scim/v2',
     'routeMiddleware' => [
-        UsersSecretTokenMiddleware::class,
+        AccountsSecretTokenMiddleware::class,
     ],
 
     /**
@@ -27,7 +28,7 @@ return [
          * Default: config('auth.providers.users.model')
          * Default: App\Models\User::class
          */
-        'model' => config('auth.providers.users.model'),
+        'model' => Account::class,
 
         /**
          * Request validation rules.
@@ -35,14 +36,10 @@ return [
          * be included in the validation or it will be ignored.
          */
         'validations' => [
-            'externalid' => 'required|unique:users,azure_id',
-            'username' => 'required|unique:users,username',
+            'externalid' => 'required|unique:accounts,azure_id',
+            'username' => 'required|unique:accounts,username',
             'displayname' => 'required',
-            'password' => 'nullable',
             'emails' => 'nullable|array',
-            'roles' => 'required|array',
-            'title' => 'nullable',
-            // 'active' => 'boolean',
         ],
 
         /**
@@ -55,17 +52,12 @@ return [
          *
          * Default: ['password']
          */
-        'exclude' => [
-            'password',
-        ],
+        'exclude' => [],
 
         /**
          * Specify default values for attributes that are not nullable.
          */
-        'defaults' => [
-            'password' => time().random_bytes(5),
-            // 'active' => false,
-        ],
+        'defaults' => [],
 
         /**
          * Declare the SCIM attributes to map to your Model attributes.
@@ -77,11 +69,7 @@ return [
             'externalid' => 'azure_id',
             'username' => 'username',
             'displayname' => 'name',
-            'password' => 'password',
             'emails.work.value' => 'email',
-            'roles' => 'app_role_id',
-            'title' => 'employee_id',
-            // 'active' => 'active',
         ],
     ],
 

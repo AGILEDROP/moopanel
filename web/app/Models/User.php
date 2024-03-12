@@ -56,19 +56,24 @@ class User extends Authenticatable implements FilamentUser
                 return collect($value);
             },
             set: function ($value) {
-                $higestRole = null;
-                $value->each(function ($role) use (&$higestRole) {
+                $highestRole = null;
+                $value->each(function ($role) use (&$highestRole) {
                     if (! empty($role['value'])) {
-                        if (str_contains($role['value'], Role::MasterAdmin->value)) {
-                            $higestRole = Role::MasterAdmin->value;
-                        }
-                        if ($higestRole !== Role::MasterAdmin->value && str_contains($role['value'], Role::User->value)) {
-                            $higestRole = Role::User->value;
+                        // Value should be json. Decode it into object/array.
+                        $decoded = json_decode($role['value']);
+                        // If decoded value exists set the highest role.
+                        if (isset($decoded->value)) {
+                            if ($decoded->value === Role::MasterAdmin->value) {
+                                $highestRole = Role::MasterAdmin->value;
+                            }
+                            if ($highestRole !== Role::MasterAdmin->value && $decoded->value === Role::User->value) {
+                                $highestRole = Role::User->value;
+                            }
                         }
                     }
                 });
 
-                return $higestRole ?? null;
+                return $highestRole ?? null;
             }
         );
     }

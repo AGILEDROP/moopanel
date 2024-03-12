@@ -103,8 +103,8 @@ class AzureHelper
     {
         //dump('test');
         return substr(config('app.url'), -1) != '/' ?
-            config('app.url').'/'.config('azureprovisioning-accounts.routePrefix').'/'.$resourceType->getName().'/'.$object->id :
-            config('app.url').config('azureprovisioning-accounts.routePrefix').'/'.$resourceType->getName().'/'.$object->id;
+            config('app.url').'/'.config('azureprovisioning-admin.routePrefix').'/'.$resourceType->getName().'/'.$object->id :
+            config('app.url').config('azureprovisioning-admin.routePrefix').'/'.$resourceType->getName().'/'.$object->id;
     }
 
     public static function filterToQuery(ResourceType $resourceType, &$query, $node)
@@ -324,7 +324,7 @@ class AzureHelper
                 foreach ($object->users() as $member) {
                     $result[$key][] = self::objectToSCIMArray(
                         $member,
-                        new UsersResourceType('Users', config('azureprovisioning-accounts.Users'))
+                        new UsersResourceType('Users', config('azureprovisioning-admin.Users'))
                     );
                 }
             } else {

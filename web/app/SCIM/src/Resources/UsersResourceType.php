@@ -15,7 +15,17 @@ class UsersResourceType extends ResourceType
         $data = [];
 
         foreach ($validatedData as $scimAttribute => $scimValue) {
-            if (is_array($scimValue)) {
+            // Modify for roles attribute! -> similar format must be returned
+            // as in patch request to successfully set user roles (collection).
+            if ($scimAttribute == 'roles') {
+                $scimValue = collect($scimValue)->map(function ($role) {
+                    return [
+                        'value' => json_encode($role),
+                    ];
+                });
+            }
+
+            if (is_array($scimValue) && $scimAttribute != 'roles') {
                 $array = $this->getMappingForArrayAttribute($scimAttribute, $scimValue);
                 $map = $array[0];
                 $value = $array[1];

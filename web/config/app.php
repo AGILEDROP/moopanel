@@ -169,7 +169,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\Filament\AdminPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
-        App\SCIM\src\AccountsAzureProvisioningProvider::class,
+        App\SCIM\src\AdminAzureProvisioningProvider::class,
     ])->toArray(),
 
     /*
