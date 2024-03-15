@@ -144,23 +144,25 @@ class UniversityMemberSeeder extends Seeder
                 'acronym' => 'AG',
                 'name' => 'Akademija za glasbo',
             ],
-            //  @todo: which institution is this one?
             //   [
             //      'code' => '3000074',
             //      'acronym' => 'UL',
             //      'name' => '',
-            //      // 'years_of_enrollment' => 3,
             //   ],
         ];
 
         foreach ($universityMembers as $universityMember) {
-            $member = UniversityMember::factory()->create([
+            // For now all accounts (with students) should be fetched from current year.
+            // In the future this number will tell SisApiService how many years back
+            // it should look to update user accounts type & member.
+            UniversityMember::factory()->create([
                 'code' => $universityMember['code'],
                 'acronym' => $universityMember['acronym'],
                 'name' => $universityMember['name'],
+                'sis_base_url' => 'https://visapi.uni-lj.si/UL_MOODLE2/RESTAdapter/v1',
+                'sis_current_year' => '2023-2024',
+                'sis_student_years' => 1,
             ]);
-
-            //$member->users()->syncWithoutDetaching(User::pluck('id')->toArray());
         }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -21,7 +22,9 @@ class UniversityMemberFactory extends Factory
             'code' => fake()->numberBetween(3000000, 3000999),
             'acronym' => toUpper(Str::random(rand(2, 5))),
             'name' => fake()->company(),
-            'years_of_enrollment' => 3,
+            'sis_base_url' => fake()->url(),
+            'sis_current_year' => Carbon::create('Y')->toString().'-'.Carbon::create('Y')->addYear()->toString(),
+            'sis_student_years' => rand(1, 5),
         ];
     }
 }

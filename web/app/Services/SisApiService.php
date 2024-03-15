@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Enums\AccountTypes;
 use App\Models\Account;
 use App\Models\UniversityMember;
+use GuzzleHttp\Promise\PromiseInterface;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
@@ -17,12 +19,11 @@ class SisApiService
 
     const ACCOUNT_UPN_FIELD = 'username';
 
-    public function getAllEmployees(string $code, string $universityMemberName = 'University member'): Collection
+    public function getAllEmployees(UniversityMember $universityMember): Collection
     {
-        $response = Http::withHeader(config('custom.sis_api_key_name'), config('custom.sis_api_key_value'))
-            ->get("https://visapi.uni-lj.si/UL_MOODLE2/RESTAdapter/v1/zaposleni/{$this->getSchoolYear()}/{$code}");
+        $response = $this->getEndpointResponse($universityMember->sis_base_url, 'zaposleni', $universityMember->sis_current_year, $universityMember->code);
         if (! $response->ok()) {
-            Log::error("{$universityMemberName} ({$code}) endpoint does not return employees data.");
+            Log::error("{$universityMember->name} (code: {$universityMember->code}) SIS endpoint does not return employees data.");
 
             return collect();
         }
@@ -30,16 +31,15 @@ class SisApiService
         return $response->collect();
     }
 
-    public function getAllStudents(string $numYears, string $code, string $universityMemberName = 'University member'): Collection
+    public function getAllStudents(UniversityMember $universityMember): Collection
     {
         $data = collect();
-        $years = $this->getSchoolYears($numYears);
+        $years = $this->getStudentSchoolYears($universityMember->sis_current_year, $universityMember->sis_student_years);
 
         foreach ($years as $year) {
-            $response = Http::withHeader(config('custom.sis_api_key_name'), config('custom.sis_api_key_value'))
-                ->get("https://visapi.uni-lj.si/UL_MOODLE2/RESTAdapter/v1/student/{$year}/{$code}");
+            $response = $this->getEndpointResponse($universityMember->sis_base_url, 'student', $year, $universityMember->code);
             if (! $response->ok()) {
-                Log::error("{$universityMemberName} (code: {$code}, year: {$year}) endpoint does not return employees data.");
+                Log::error("{$universityMember->name} (code: {$universityMember->code}, year: {$year}) SIS endpoint does not return students data.");
 
                 return $data;
             }
@@ -87,24 +87,43 @@ class SisApiService
         }
     }
 
-    public function getSchoolYears(int $numYears = 1): array
+    private function getEndpointResponse(string $baseSisApiUrl, string $endpoint, string $schoolYear, string $universityMemberCode): PromiseInterface|Response
+    {
+        Log::warning("{$baseSisApiUrl}/{$endpoint}}/{$schoolYear}/{$universityMemberCode}");
+
+        return Http::withHeader(config('custom.sis_api_key_name'), config('custom.sis_api_key_value'))
+            ->get("{$baseSisApiUrl}/{$endpoint}/{$schoolYear}/{$universityMemberCode}");
+
+    }
+
+    private function getStudentSchoolYears(?string $currentYear = null, int $numYears = 1): array
     {
         $years = [];
         for ($numYear = 0; $numYear < $numYears; $numYear++) {
-            $years[] = $this->getSchoolYear($numYear);
+            if (! isset($year)) {
+                $year = $this->getSchoolCurrentSchoolYear($currentYear);
+            } else {
+                $explodedYear = explode('-', $year);
+                $year = Carbon::create($explodedYear[0])->subYear()->format('Y').'-'.Carbon::create($explodedYear[1])->subYear()->format('Y');
+            }
+
+            $years[] = $year;
         }
 
         return $years;
     }
 
-    private function getSchoolYear(int $numYear = 0): string
+    private function getSchoolCurrentSchoolYear(?string $currentYear = null): string
     {
-        $baseYear = Carbon::create('Y', 'm')->subYears($numYear);
-
-        if ($baseYear->format('Y-10') > $baseYear->format('Y-m')) {
-            $year = Carbon::create($baseYear->format('Y'))->subYear()->format('Y').'-'.$baseYear->format('Y');
+        if ($currentYear) {
+            $year = $currentYear;
         } else {
-            $year = $baseYear->format('Y').'-'.Carbon::create($baseYear->format('Y'))->addYear()->format('Y');
+            $baseYear = Carbon::create('Y', 'm');
+            if ($baseYear->format('Y-10') > $baseYear->format('Y-m')) {
+                $year = Carbon::create($baseYear->format('Y'))->subYear()->format('Y').'-'.$baseYear->format('Y');
+            } else {
+                $year = $baseYear->format('Y').'-'.Carbon::create($baseYear->format('Y'))->addYear()->format('Y');
+            }
         }
 
         return $year;

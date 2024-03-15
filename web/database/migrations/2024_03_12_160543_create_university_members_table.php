@@ -16,7 +16,9 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->string('acronym');
             $table->string('name');
-            $table->integer('years_of_enrollment')->default(3);
+            $table->string('sis_base_url');
+            $table->string('sis_current_year');
+            $table->integer('sis_student_years')->default(1);
             $table->timestamps();
         });
     }

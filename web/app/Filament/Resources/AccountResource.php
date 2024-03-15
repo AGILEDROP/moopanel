@@ -65,6 +65,8 @@ class AccountResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('universityMembers')
+                    ->label('University member')
+                    ->translateLabel()
                     ->multiple()
                     ->relationship('universityMembers', 'name')
                     ->searchable(),

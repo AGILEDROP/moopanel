@@ -34,7 +34,7 @@ class RefreshStudentsAccounts implements ShouldQueue
      */
     public function handle(): void
     {
-        $sisStudents = $this->sisApiService->getAllStudents($this->universityMember->years_of_enrollment, $this->universityMember->code, $this->universityMember->name);
+        $sisStudents = $this->sisApiService->getAllStudents($this->universityMember);
         $this->sisApiService->updateAccountMembershipAndType($sisStudents, $this->universityMember, AccountTypes::Student->value);
     }
 }
