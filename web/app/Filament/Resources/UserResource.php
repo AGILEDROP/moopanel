@@ -31,16 +31,36 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->numeric()->label('ID'),
-                Tables\Columns\TextColumn::make('azure_id')->numeric()->label('Azure ID'),
-                Tables\Columns\TextColumn::make('name')->searchable()->translateLabel(),
-                Tables\Columns\TextColumn::make('username')->label('UPN')->searchable(),
-                Tables\Columns\TextColumn::make('email')->searchable(),
-                Tables\Columns\TextColumn::make('employee_id')->label('Employee ID')->translateLabel(),
-                Tables\Columns\TextColumn::make('app_role_id')->state(fn (User $record): string => $record->role() ? $record->role()->name : __('No Role'))->sortable()->label('Role')->translateLabel(),
-                // Tables\Columns\TextColumn::make('universityMember.company_name')->sortable()->label('University Member')->translateLabel(),
-                Tables\Columns\TextColumn::make('updated_at')->dateTime()->sortable()->label('Updated At')->translateLabel(),
+                Tables\Columns\TextColumn::make('id')
+                    ->numeric()
+                    ->label('ID'),
+                Tables\Columns\TextColumn::make('azure_id')
+                    ->numeric()
+                    ->label('Azure ID'),
+                Tables\Columns\TextColumn::make('name')
+                    ->sortable()
+                    ->searchable()
+                    ->translateLabel(),
+                Tables\Columns\TextColumn::make('username')
+                    ->label('UPN')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('employee_id')
+                    ->label('Employee ID')
+                    ->translateLabel(),
+                Tables\Columns\TextColumn::make('app_role_id')
+                    ->state(fn (User $record): string => $record->role() ? $record->role()->name : __('No Role'))
+                    ->sortable()
+                    ->label('Role')
+                    ->translateLabel(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->label('Updated At')
+                    ->translateLabel(),
             ])
+            ->defaultSort('updated_at', 'desc')
             ->filters([
             ])
             ->actions([
