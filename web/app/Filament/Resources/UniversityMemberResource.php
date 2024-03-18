@@ -14,7 +14,9 @@ class UniversityMemberResource extends Resource
 {
     protected static ?string $model = UniversityMember::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
