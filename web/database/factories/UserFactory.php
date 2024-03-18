@@ -31,9 +31,8 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'azure_id' => fake()->uuid(),
             'username' => fake()->userName(),
-            'azure_token' => Str::random(10),
-            'azure_access_token' => Str::random(10),
-            'azure_refresh_token' => null,
+            'employee_id' => null,
+            'app_role_id' => null,
         ];
     }
 

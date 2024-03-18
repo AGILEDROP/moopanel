@@ -21,9 +21,7 @@ class UniversityMember extends Model
     ];
 
     protected $hidden = [
-        'sis_base_url',
-        'sis_current_year',
-        'sis_student_years',
+        //
     ];
 
     public function accounts(): MorphToMany
