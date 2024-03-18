@@ -1,7 +1,7 @@
-# Moodle Admin Panel
+# MDCenter
 
 ## Overview
-The Moodle Admin Panel serves as the administrative portal for your Moodle instances.
+The MDCenter serves as the administrative portal for your Moodle instances.
 
 It is built on Laravel 10 and Filament v3.
 
