@@ -8,4 +8,6 @@ return [
     'azure_app_resource_id' => env('AZURE_APP_RESOURCE_ID'),
     'scim_secret_token_users' => env('SCIM_SECRET_TOKEN_USERS'),
     'scim_secret_token_accounts' => env('SCIM_SECRET_TOKEN_ACCOUNTS'),
+    'sis_api_key_name' => env('SIS_API_KEY_NAME'),
+    'sis_api_key_value' => env('SIS_API_KEY_VALUE'),
 ];

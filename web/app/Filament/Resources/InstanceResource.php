@@ -17,6 +17,8 @@ class InstanceResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?int $navigationSort = 0;
+
     public static function form(Form $form): Form
     {
         return $form
@@ -25,6 +27,10 @@ class InstanceResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('url')
                     ->url()
+                    ->required(),
+                Forms\Components\Select::make('university_member_id')
+                    ->relationship(name: 'universityMember', titleAttribute: 'name')
+                    ->searchable()
                     ->required(),
                 Forms\Components\Select::make('enterpriseApplications')
                     ->multiple()
@@ -79,6 +85,12 @@ class InstanceResource extends Resource
                 '2xl' => 3,
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('university_member_id')
+                    ->label('University member')
+                    ->translateLabel()
+                    ->multiple()
+                    ->relationship('universityMember', 'name')
+                    ->searchable(),
                 Tables\Filters\SelectFilter::make('enterpriseApplications')
                     ->multiple()
                     ->relationship('enterpriseApplications', 'name')

@@ -8,6 +8,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -44,11 +45,6 @@ class User extends Authenticatable implements FilamentUser
         'password' => 'hashed',
     ];
 
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return true;
-    }
-
     public function appRoleId(): Attribute
     {
         return Attribute::make(
@@ -81,5 +77,16 @@ class User extends Authenticatable implements FilamentUser
     public function role(): ?Role
     {
         return Role::tryFrom($this->app_role_id->first());
+    }
+
+    // @todo: create observers to assign all universityMembers to user (userObserver, universityMemberObserver -> on create)!
+    public function universityMembers(): MorphToMany
+    {
+        return $this->morphToMany(UniversityMember::class, 'memberable', 'university_memberables');
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
     }
 }
