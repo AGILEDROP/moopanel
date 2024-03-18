@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Account extends Model
 {
@@ -14,9 +15,15 @@ class Account extends Model
         'name',
         'username',
         'email',
+        'type',
     ];
 
     protected $hidden = [
         'azure_id',
     ];
+
+    public function universityMembers(): MorphToMany
+    {
+        return $this->morphToMany(UniversityMember::class, 'memberable', 'university_memberables');
+    }
 }
