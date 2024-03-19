@@ -79,7 +79,6 @@ class User extends Authenticatable implements FilamentUser
         return Role::tryFrom($this->app_role_id->first());
     }
 
-    // @todo: create observers to assign all universityMembers to user (userObserver, universityMemberObserver -> on create)!
     public function universityMembers(): MorphToMany
     {
         return $this->morphToMany(UniversityMember::class, 'memberable', 'university_memberables');

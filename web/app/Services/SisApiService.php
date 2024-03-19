@@ -74,7 +74,7 @@ class SisApiService
 
             // Assign university member to existing account & update type value!
             $sisUsersWithAccount = $sisUsers->whereIn(self::SIS_UPN_FIELD, $accountsUpns);
-            $accounts = Account::where(self::ACCOUNT_UPN_FIELD, $sisUsersWithAccount->pluck(self::SIS_UPN_FIELD)->toArray())
+            $accounts = Account::whereIn(self::ACCOUNT_UPN_FIELD, $sisUsersWithAccount->pluck(self::SIS_UPN_FIELD)->toArray())
                 ->pluck('id')
                 ->toArray();
             $universityMember->accounts()->syncWithoutDetaching($accounts);
