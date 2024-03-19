@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Bus;
 
 class RefreshAccountsData extends Command
 {
+    public const SUCCESS = 0;
+
+    public const FAILURE = 1;
+
+    public const INVALID = 2;
+
     /**
      * The name and signature of the console command.
      *
@@ -27,7 +33,7 @@ class RefreshAccountsData extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $jobs = [];
         $universityMembers = UniversityMember::all();
@@ -39,5 +45,7 @@ class RefreshAccountsData extends Command
         Bus::batch($jobs)->dispatch();
 
         $this->info('Jobs dispatched.');
+
+        return self::SUCCESS;
     }
 }
