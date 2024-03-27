@@ -27,15 +27,6 @@ RUN set -eux; \
 # Install composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# COPY ./supervisor/supervisord.conf /etc/supervisor/conf.d
-# RUN touch /var/log/supervisor/supervisord.log; \
-#     chown www-data:www-data /var/log/supervisor/supervisord.log
-
-# COPY ./cron/laravel-scheduler.sh /etc/cron.d/
-# RUN chmod 0644 /etc/cron.d/laravel-scheduler.sh; \
-#     crontab /etc/cron.d/laravel-scheduler.sh; \
-#     touch /var/log/cron.log
-
 # Change current user to www-data (should be in php-fpm docker image).
 USER www-data
 
