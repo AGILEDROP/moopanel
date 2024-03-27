@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Role;
 use App\Filament\Resources\UniversityMemberResource\Pages;
 use App\Models\UniversityMember;
 use Filament\Forms;
@@ -9,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class UniversityMemberResource extends Resource
 {
@@ -16,50 +18,62 @@ class UniversityMemberResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationGroup = 'Settings';
+
+    protected static ?int $navigationSort = 999;
+
+    public static function can(string $action, ?Model $record = null): bool
+    {
+        return auth()->user()->role() === Role::MasterAdmin;
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Grid::make([
-                    'default' => 1,
-                    'sm' => 2,
-                ])->schema([
-                    Forms\Components\TextInput::make('name')
-                        ->columnSpanFull()
-                        ->required(),
-                    Forms\Components\TextInput::make('code')
-                        ->numeric()
-                        ->required(),
-                    Forms\Components\TextInput::make('acronym')
-                        ->required(),
-                ]),
+                Forms\Components\Grid::make()
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label(__('Name'))
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('code')
+                            ->label(__('Code'))
+                            ->numeric()
+                            ->required(),
+                        Forms\Components\TextInput::make('acronym')
+                            ->label(__('Acronym'))
+                            ->required(),
+                    ]),
 
-                Forms\Components\Fieldset::make('SIS Settings')
+                Forms\Components\Section::make('sis_settings')
+                    ->heading(__('SIS Settings'))
+                    ->description('Set SIS connection responsible for updating account type and university members relations.')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->iconSize('sm')
+                    ->collapsible()
+                    ->collapsed(fn (string $operation): bool => $operation !== 'create')
                     ->schema([
                         Forms\Components\TextInput::make('sis_base_url')
-                            ->label('Base url')
+                            ->label(__('Base url'))
                             ->helperText('Base url for SIS endpoints.')
                             ->url()
                             ->required()
-                            ->translateLabel(),
+                            ->columnSpanFull(),
                         Forms\Components\TextInput::make('sis_current_year')
-                            ->label('Current school year')
+                            ->label(__('Current school year'))
                             ->helperText('Set current school year that will be used in the API calls (example: 2023-2024).')
-                            ->required()
-                            ->translateLabel(),
+                            ->required(),
                         Forms\Components\TextInput::make('sis_student_years')
-                            ->label('Max student years')
+                            ->label(__('Max student years'))
                             ->helperText('It tells us how many recent school years we must consider when retrieving student data.
                             By default, it is set to 1, which means that only data from the current school year is used.')
                             ->integer()
                             ->minValue(1)
                             ->maxValue(8)
                             ->default(1)
-                            ->required()
-                            ->translateLabel(),
-                    ])->translateLabel(),
+                            ->required(),
+                    ])->columns(),
             ]);
     }
 
@@ -68,29 +82,29 @@ class UniversityMemberResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('code')
+                    ->label(__('Code'))
                     ->sortable()
-                    ->searchable()
-                    ->translateLabel(),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('acronym')
+                    ->label(__('Acronym'))
                     ->sortable()
-                    ->searchable()
-                    ->translateLabel(),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('name')
+                    ->label(__('Name'))
                     ->sortable()
-                    ->searchable()
-                    ->translateLabel(),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('users_count')
-                    ->label('Users count')
+                    ->label(__('Users'))
                     ->counts('users')
                     ->sortable()
-                    ->translateLabel(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('accounts_count')
-                    ->label('Accounts count')
+                    ->label(__('Accounts'))
                     ->counts('accounts')
                     ->sortable()
-                    ->translateLabel(),
+                    ->toggleable(),
             ])
-            ->defaultSort('acronym', 'asc')
+            ->defaultSort('name')
             ->filters([
                 //
             ])
@@ -114,9 +128,7 @@ class UniversityMemberResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUniversityMembers::route('/'),
-            'create' => Pages\CreateUniversityMember::route('/create'),
-            'edit' => Pages\EditUniversityMember::route('/{record}/edit'),
+            'index' => Pages\ManageUniversityMembers::route('/'),
         ];
     }
 }

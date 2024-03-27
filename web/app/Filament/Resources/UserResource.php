@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Enums\Role;
+use App\Filament\Custom\Columns as CustomFields;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Resources\Resource;
@@ -20,7 +21,7 @@ class UserResource extends Resource
 
     protected static ?string $navigationGroup = 'User management';
 
-    protected static ?int $navigationSort = 998;
+    protected static ?int $navigationSort = 2;
 
     public static function can(string $action, ?Model $record = null): bool
     {
@@ -31,39 +32,19 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->numeric()
-                    ->label('ID'),
-                Tables\Columns\TextColumn::make('azure_id')
-                    ->numeric()
-                    ->label('Azure ID')
-                    ->copyable(),
-                Tables\Columns\TextColumn::make('name')
-                    ->sortable()
-                    ->copyable()
-                    ->searchable()
-                    ->translateLabel(),
-                Tables\Columns\TextColumn::make('username')
-                    ->label('UPN')
-                    ->searchable()
-                    ->copyable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable()
-                    ->copyable(),
+                CustomFields\IdColumn::make('id', __('ID')),
+                CustomFields\AzureIdColumn::make('azure_id', __('Azure ID')),
+                CustomFields\NameColumn::make('name', __('Name')),
+                CustomFields\UpnColumn::make('username', __('UPN')),
+                CustomFields\EmailColumn::make('email', __('Email')),
                 Tables\Columns\TextColumn::make('employee_id')
-                    ->label('Employee ID')
-                    ->copyable()
-                    ->translateLabel(),
+                    ->label(__('Employee ID'))
+                    ->copyable(),
                 Tables\Columns\TextColumn::make('app_role_id')
+                    ->label(__('Role'))
                     ->state(fn (User $record): string => $record->role() ? $record->role()->name : __('No Role'))
-                    ->sortable()
-                    ->label('Role')
-                    ->translateLabel(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->label('Updated At')
-                    ->translateLabel(),
+                    ->sortable(),
+                CustomFields\SortableDateTimeColumn::make('updated_at', __('Updated At')),
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([
