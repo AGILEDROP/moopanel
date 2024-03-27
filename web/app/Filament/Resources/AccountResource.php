@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Enums\AccountTypes;
+use App\Filament\Custom\Columns as CustomFields;
 use App\Filament\Resources\AccountResource\Pages;
 use App\Models\Account;
 use Filament\Resources\Resource;
@@ -20,57 +21,36 @@ class AccountResource extends Resource
 
     protected static ?string $navigationGroup = 'User management';
 
-    protected static ?int $navigationSort = 999;
+    protected static ?int $navigationSort = 3;
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->numeric()
-                    ->label('ID'),
-                Tables\Columns\TextColumn::make('azure_id')
-                    ->numeric()
-                    ->label('Azure ID')
-                    ->copyable(),
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable()
-                    ->copyable()
-                    ->sortable()
-                    ->translateLabel(),
-                Tables\Columns\TextColumn::make('username')
-                    ->label('UPN')
-                    ->searchable()
-                    ->copyable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable()
-                    ->copyable(),
+                CustomFields\IdColumn::make('id', __('ID')),
+                CustomFields\AzureIdColumn::make('azure_id', __('Azure ID')),
+                CustomFields\NameColumn::make('name', __('Name')),
+                CustomFields\UpnColumn::make('username', __('UPN')),
+                CustomFields\EmailColumn::make('email', __('Email')),
                 Tables\Columns\TextColumn::make('type')
-                    ->label('Type')
+                    ->label(__('Type'))
                     ->formatStateUsing(fn (string $state): string => AccountTypes::tryFrom($state)->toReadableString())
-                    ->sortable()
-                    ->translateLabel(),
+                    ->sortable(),
                 TextColumn::make('universityMembers.name')
+                    ->label(__('University Member'))
                     ->searchable()
-                    ->sortable()
                     ->badge()
-                    ->separator(',')
-                    ->label('University Member')
-                    ->translateLabel(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->label('Updated At')
-                    ->translateLabel(),
+                    ->separator(','),
+                CustomFields\SortableDateTimeColumn::make('updated_at', __('Updated At')),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('universityMembers')
-                    ->label('University member')
-                    ->translateLabel()
+                    ->label(__('University member'))
                     ->multiple()
                     ->relationship('universityMembers', 'name')
                     ->searchable(),
                 Tables\Filters\SelectFilter::make('type')
+                    ->label(__('Type'))
                     ->options(collect(AccountTypes::cases())->mapWithKeys(function ($case) {
                         return [$case->value => $case->toReadableString()];
                     })->toArray()),

@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Status;
 use App\Filament\Resources\InstanceResource\Pages;
 use App\Models\Instance;
-use Filament\Forms;
-use Filament\Forms\Form;
+use App\Tables\Columns\LogoImageColumn;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
@@ -15,45 +15,11 @@ class InstanceResource extends Resource
 {
     protected static ?string $model = Instance::class;
 
+    protected static ?string $label = 'Moodle Instance';
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?int $navigationSort = 0;
-
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required(),
-                Forms\Components\TextInput::make('url')
-                    ->url()
-                    ->required(),
-                Forms\Components\Select::make('university_member_id')
-                    ->relationship(name: 'universityMember', titleAttribute: 'name')
-                    ->searchable()
-                    ->required(),
-                Forms\Components\Select::make('enterpriseApplications')
-                    ->multiple()
-                    ->relationship(name: 'enterpriseApplications', titleAttribute: 'name')
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('name')
-                            ->required(),
-                    ])
-                    ->nullable(),
-                Forms\Components\Grid::make()->schema([
-                    Forms\Components\FileUpload::make('img_path')
-                        ->label('Logo')
-                        ->image()
-                        ->imageEditor()
-                        ->imageEditorAspectRatios([
-                            '1:1',
-                        ])
-                        ->disk('public')
-                        ->directory('logo-images')
-                        ->columnSpan(1),
-                ])->columns(),
-            ])->columns();
-    }
 
     public static function table(Table $table): Table
     {
@@ -63,21 +29,25 @@ class InstanceResource extends Resource
             )
             ->columns([
                 Tables\Columns\Layout\Stack::make([
-                    Tables\Columns\ImageColumn::make('img_path')
-                        ->height(75),
-                    Tables\Columns\TextColumn::make('name')
+                    LogoImageColumn::make('logo'),
+                    Tables\Columns\TextColumn::make('site_name')
+                        ->label(__('Site name'))
                         ->weight(FontWeight::Bold)
                         ->sortable()
                         ->searchable()
-                        ->extraAttributes(['class' => 'pt-2']),
-                    Tables\Columns\TextColumn::make('url')
-                        ->url(fn (Instance $record): string => $record->url)
-                        ->openUrlInNewTab()
-                        ->extraAttributes(['class' => 'pt-1 ps-2 pe-4 block w-full']),
-                    Tables\Columns\TextColumn::make('enterpriseApplications.name')
-                        ->extraAttributes(['class' => 'pt-2 ps-2 pe-4 block w-full'])
+                        ->extraAttributes(['class' => 'pt-3']),
+                    Tables\Columns\TextColumn::make('theme')
+                        ->label(__('Theme'))
+                        ->extraAttributes(['class' => 'pt-1.5 block w-full']),
+                    Tables\Columns\TextColumn::make('version')
+                        ->label(__('Version'))
+                        ->extraAttributes(['class' => 'pt-1.5 block w-full']),
+                    Tables\Columns\TextColumn::make('status')
+                        ->label(__('Status'))
                         ->badge()
-                        ->separator(','),
+                        ->formatStateUsing(fn (string $state): string => Status::tryFrom($state)->toReadableString())
+                        ->color(fn (string $state): string => Status::tryFrom($state)->toDisplayColor())
+                        ->extraAttributes(['class' => 'mb-3 pt-1.5 block w-full']),
                 ]),
             ])
             ->contentGrid([
@@ -86,25 +56,30 @@ class InstanceResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('university_member_id')
-                    ->label('University member')
-                    ->translateLabel()
+                    ->label(__('University member'))
                     ->multiple()
                     ->relationship('universityMember', 'name')
                     ->searchable(),
                 Tables\Filters\SelectFilter::make('enterpriseApplications')
+                    ->label(__('Enterprise Applications'))
                     ->multiple()
                     ->relationship('enterpriseApplications', 'name')
                     ->searchable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                // @todo: prepared for triggering commands through modal window.
-                //  Tables\Actions\ActionGroup::make([
-                //
-                //  ])->icon('heroicon-o-command-line')
-                //      ->link()
-                //      ->label('Run Command'),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\Action::make('visit_site')
+                        ->label(__('Visit site'))
+                        ->color('gray')
+                        ->icon('heroicon-o-link')
+                        ->url(fn (Instance $record): string => stripUrlPath($record->url))
+                        ->openUrlInNewTab(),
+                ])
+                    ->link()
+                    ->label('Actions'),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

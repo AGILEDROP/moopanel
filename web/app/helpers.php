@@ -1,5 +1,7 @@
 <?php
 
+use Carbon\Carbon;
+
 if (! function_exists('toLower')) {
     function toLower($string, $encoding = 'UTF-8'): string
     {
@@ -21,5 +23,34 @@ if (! function_exists('firstToUpper')) {
         $then = mb_substr($string, 1, null, $encoding);
 
         return mb_strtoupper($firstChar, $encoding).mb_strtolower($then, $encoding);
+    }
+}
+
+if (! function_exists('dateToUnixOrNull')) {
+    function dateToUnixOrNull(?string $time, string $format = 'Y-m-d'): ?int
+    {
+        if (isset($time)) {
+            $unix = Carbon::createFromFormat($format, $time, config('app.timezone'))->unix();
+        }
+
+        return $unix ?? null;
+    }
+}
+
+if (! function_exists('stripUrlPath')) {
+    function stripUrlPath(string $url): string
+    {
+        $urlParts = parse_url(trim($url));
+
+        return $urlParts['scheme'].'://'.$urlParts['host'].'/';
+    }
+}
+
+if (! function_exists('wrapToDataArray')) {
+    function wrapData(array $data): array
+    {
+        return [
+            'data' => $data,
+        ];
     }
 }

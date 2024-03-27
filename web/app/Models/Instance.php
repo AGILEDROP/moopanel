@@ -13,9 +13,18 @@ class Instance extends Model
 
     protected $fillable = [
         'university_member_id',
-        'name',
+        'site_name',
         'url',
-        'img_path',
+        'logo',
+        'theme',
+        'version',
+        'api_key',
+        'key_expiration_date',
+        'status',
+    ];
+
+    protected $hidden = [
+        'api_key',
     ];
 
     public function universityMember(): BelongsTo
