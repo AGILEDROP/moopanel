@@ -12,6 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        $schedule->command('custom:test-queue')->everyMinute();
         $schedule->command('sis:refresh-accounts-data')->dailyAt('03:00');
     }
 
