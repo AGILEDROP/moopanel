@@ -12,7 +12,7 @@ deploy:
     - docker-compose -f production.yml exec -T map-php composer install --optimize-autoloader --no-dev
     # Laravel
     - docker-compose -f production.yml exec -T map-php php artisan down
-    #- docker-compose -f production.yml exec -T map-php php artisan migrate --force
+    - docker-compose -f production.yml exec -T map-php php artisan migrate --force
     - docker-compose -f production.yml exec -T map-php php artisan storage:link
     - docker-compose -f production.yml exec -T map-php php artisan cache:clear
     - docker-compose -f production.yml exec -T map-php php artisan config:clear
