@@ -82,7 +82,7 @@ RUN set -eux; \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone; \
     apt-get clean; \
     apt-get update -qq; \
-    apt-get install -y ntpdate nano bash-completion curl default-mysql-client cron supervisor; \
+    apt-get install -y ntpdate nano bash-completion curl default-mysql-client; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*
 
@@ -109,15 +109,6 @@ COPY ./web /opt/app
 WORKDIR /opt/app
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN composer install --optimize-autoloader --no-dev
-
-# Copy supervisor config
-COPY /mnt/supervisor/supervisord.conf /etc/supervisor/conf.d
-
-# Copy queue cronjob config
-COPY ./mnt/cron/laravel-scheduler.sh /etc/cron.d/
-RUN chmod 0644 /etc/cron.d/laravel-scheduler.sh; \
-    crontab /etc/cron.d/laravel-scheduler.sh; \
-    touch /var/log/cron.log
 
 # Set the project root
 RUN set -eux; \
