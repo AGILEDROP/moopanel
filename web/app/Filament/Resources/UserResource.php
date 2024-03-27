@@ -42,7 +42,9 @@ class UserResource extends Resource
                     ->copyable(),
                 Tables\Columns\TextColumn::make('app_role_id')
                     ->label(__('Role'))
-                    ->state(fn (User $record): string => $record->role() ? $record->role()->name : __('No Role'))
+                    ->state(fn (User $record): string => $record->role() ? $record->role()->toReadableString() : __('No Role'))
+                    ->badge()
+                    ->color(fn (User $record): string => $record->role() ? $record->role()->toDisplayColor() : 'gray')
                     ->sortable(),
                 CustomFields\SortableDateTimeColumn::make('updated_at', __('Updated At')),
             ])
