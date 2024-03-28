@@ -25,7 +25,7 @@ class InstanceResource extends Resource
     {
         return $table
             ->query(fn () => Instance::query()
-                ->with('enterpriseApplications')
+                ->with('tags')
             )
             ->columns([
                 Tables\Columns\Layout\Stack::make([
@@ -60,10 +60,11 @@ class InstanceResource extends Resource
                     ->multiple()
                     ->relationship('universityMember', 'name')
                     ->searchable(),
-                Tables\Filters\SelectFilter::make('enterpriseApplications')
-                    ->label(__('Enterprise Applications'))
+                // @todo: update to use and & or operations.
+                Tables\Filters\SelectFilter::make('tags')
+                    ->label(__('Tags'))
                     ->multiple()
-                    ->relationship('enterpriseApplications', 'name')
+                    ->relationship('tags', 'name')
                     ->searchable(),
             ])
             ->actions([
