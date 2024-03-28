@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasTags;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Instance extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTags;
 
     protected $fillable = [
         'university_member_id',
@@ -27,13 +27,10 @@ class Instance extends Model
         'api_key',
     ];
 
+    protected $with = ['tags'];
+
     public function universityMember(): BelongsTo
     {
         return $this->belongsTo(UniversityMember::class, 'university_member_id');
-    }
-
-    public function enterpriseApplications(): BelongsToMany
-    {
-        return $this->belongsToMany(EnterpriseApplication::class, 'enterprise_application_instance');
     }
 }

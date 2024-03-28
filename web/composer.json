@@ -18,7 +18,6 @@
         "laravel/tinker": "^2.8",
         "owenvoke/blade-fontawesome": "^2.5",
         "socialiteproviders/microsoft-azure": "^5.1",
-        "spatie/crypto": "^2.0",
         "symfony/filesystem": "^7.0"
     },
     "require-dev": {
