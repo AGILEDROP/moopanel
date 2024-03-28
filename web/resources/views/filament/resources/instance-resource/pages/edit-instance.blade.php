@@ -23,11 +23,11 @@
     </x-filament::section>
 
 
-    <x-filament-panels::form wire:submit="updateSettings">
-        {{ $this->settingsForm }}
+    <x-filament-panels::form wire:submit="updateInstanceData">
+        {{ $this->instanceForm }}
 
         <x-filament-panels::form.actions
-            :actions="$this->getSettingsFormActions()"
+            :actions="$this->getInstanceFormActions()"
         />
     </x-filament-panels::form>
 

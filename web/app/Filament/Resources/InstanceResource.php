@@ -3,11 +3,13 @@
 namespace App\Filament\Resources;
 
 use App\Enums\Status;
+use App\Filament\Custom;
 use App\Filament\Resources\InstanceResource\Pages;
 use App\Models\Instance;
 use App\Tables\Columns\LogoImageColumn;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -25,7 +27,7 @@ class InstanceResource extends Resource
     {
         return $table
             ->query(fn () => Instance::query()
-                ->with('enterpriseApplications')
+                ->with('tags')
             )
             ->columns([
                 Tables\Columns\Layout\Stack::make([
@@ -55,17 +57,10 @@ class InstanceResource extends Resource
                 '2xl' => 3,
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('university_member_id')
-                    ->label(__('University member'))
-                    ->multiple()
-                    ->relationship('universityMember', 'name')
-                    ->searchable(),
-                Tables\Filters\SelectFilter::make('enterpriseApplications')
-                    ->label(__('Enterprise Applications'))
-                    ->multiple()
-                    ->relationship('enterpriseApplications', 'name')
-                    ->searchable(),
+                Custom\Filters\UniversityMembersFilter::make('university_member_id', 'universityMember'),
+                Custom\Filters\TagsFilter::make(),
             ])
+            ->filtersFormWidth(MaxWidth::Large)
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),

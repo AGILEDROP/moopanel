@@ -52,17 +52,17 @@ class EditInstance extends EditRecord
     protected function fillForms(): void
     {
         $data = $this->getRecord()->attributesToArray();
-        $data['use_existing_api_key'] = true;
 
-        $this->settingsForm->fill($data);
+        $data['use_existing_api_key'] = true;
         $this->connectionSettingsForm->fill($data);
+        $this->instanceForm->fill($data);
     }
 
     protected function getForms(): array
     {
         return [
             'connectionSettingsForm',
-            'settingsForm',
+            'instanceForm',
         ];
     }
 
@@ -170,7 +170,7 @@ class EditInstance extends EditRecord
             $settingsData['logo'] = $moodleData['logo'];
             $settingsData['theme'] = $moodleData['theme'];
             $settingsData['version'] = $moodleData['moodle_version'];
-            $this->settingsForm->fill($settingsData);
+            $this->instanceForm->fill($settingsData);
 
             // Update connection
             $instance = Instance::findOrFail($this->record->id);
@@ -210,14 +210,14 @@ class EditInstance extends EditRecord
         $this->dispatch('close-modal', id: $id);
     }
 
-    public function SettingsForm(Form $form): Form
+    public function InstanceForm(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Tabs::make('settings')
-                    ->label(__('Settings'))
+                Forms\Components\Tabs::make('instance_data')
                     ->tabs([
                         Forms\Components\Tabs\Tab::make('General settings')
+                            ->label(__('Site settings'))
                             ->schema([
                                 Forms\Components\TextInput::make('site_name')
                                     ->label(__('Site name'))
@@ -229,25 +229,57 @@ class EditInstance extends EditRecord
                                     ->label(__('Theme')),
                                 Forms\Components\TextInput::make('version')
                                     ->label(__('Version')),
+                            ])
+                            ->disabled()
+                            ->columns(),
+                        Forms\Components\Tabs\Tab::make('Tags')
+                            ->label(__('Tags'))
+                            ->schema([
+                                Forms\Components\Select::make('tags')
+                                    ->relationship('tags', 'name')
+                                    ->multiple()
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('name')
+                                            ->required(),
+                                    ]),
                             ])->columns(),
                     ]),
             ])
-            ->model($this->getModel())
-            ->statePath('instanceData')
-            ->disabled();
+            ->model($this->getRecord())
+            ->statePath('instanceData');
     }
 
-    protected function getSettingsFormActions(): array
+    protected function getInstanceFormActions(): array
     {
         return [
-            // Action::make('updateSettings')
-            //     ->label(__('filament-panels::pages/auth/edit-profile.form.actions.save.label'))
-            //     ->submit('settingsForm'),
+            Action::make('updateInstanceForm')
+                ->label(__('filament-panels::pages/auth/edit-profile.form.actions.save.label'))
+                ->submit('updateInstanceData'),
         ];
     }
 
-    public function updateSettings(): void
+    public function updateInstanceData(): void
     {
-        //
+        $this->validate($this->instanceForm->getValidationRules());
+
+        DB::beginTransaction();
+        try {
+            $instance = Instance::find($this->record->id);
+            $instance->update($this->instanceData);
+            $instance->tags()->sync($this->instanceData['tags']);
+
+            DB::commit();
+
+            $this->rememberData();
+            $this->getSavedNotification()?->send();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+
+            Notification::make()
+                ->title(__('Update failed! Please try later.'))
+                ->danger()
+                ->send();
+        }
     }
 }

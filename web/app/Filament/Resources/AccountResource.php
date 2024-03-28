@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Enums\AccountTypes;
+use App\Filament\Custom;
 use App\Filament\Custom\Columns as CustomFields;
 use App\Filament\Resources\AccountResource\Pages;
 use App\Models\Account;
@@ -44,11 +45,7 @@ class AccountResource extends Resource
                 CustomFields\SortableDateTimeColumn::make('updated_at', __('Updated At')),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('universityMembers')
-                    ->label(__('University member'))
-                    ->multiple()
-                    ->relationship('universityMembers', 'name')
-                    ->searchable(),
+                Custom\Filters\UniversityMembersFilter::make('universityMembers'),
                 Tables\Filters\SelectFilter::make('type')
                     ->label(__('Type'))
                     ->options(collect(AccountTypes::cases())->mapWithKeys(function ($case) {

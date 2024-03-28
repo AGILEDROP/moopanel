@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if(DB::table('instances')->count() > 0) {
+        if (DB::table('instances')->count() > 0) {
             DB::table('instances')->truncate();
         }
 

@@ -84,39 +84,52 @@ class CreateInstance extends CreateRecord
                         ])->columns(),
                     ]),
 
-                Forms\Components\Section::make('site_data')
+                Forms\Components\Tabs::make('instance_data')
                     ->live()
                     ->hidden(fn () => ! $this->connected)
-                    ->heading(__('Site data'))
-                    ->icon('fas-database')
-                    ->iconSize('sm')
-                    ->schema([
-                        Forms\Components\TextInput::make('site_name')
-                            ->label(__('Site name'))
-                            ->live()
-                            ->required(fn () => $this->connected)
-                            ->readOnly()
-                            ->afterStateUpdated(fn () => $this->resetConnection()),
-                        Forms\Components\TextInput::make('logo')
-                            ->label(__('Logo'))
-                            ->live()
-                            ->url()
-                            ->required(fn () => $this->connected)
-                            ->readOnly()
-                            ->afterStateUpdated(fn () => $this->resetConnection()),
-                        Forms\Components\TextInput::make('theme')
-                            ->label(__('Theme'))
-                            ->live()
-                            ->required(fn () => $this->connected)
-                            ->readOnly()
-                            ->afterStateUpdated(fn () => $this->resetConnection()),
-                        Forms\Components\TextInput::make('version')
-                            ->label(__('Version'))
-                            ->live()
-                            ->required(fn () => $this->connected)
-                            ->readOnly()
-                            ->afterStateUpdated(fn () => $this->resetConnection()),
-                    ])->columns(),
+                    ->tabs([
+                        Forms\Components\Tabs\Tab::make('site_settings')
+                            ->label(__('Site settings'))
+                            ->schema([
+                                Forms\Components\TextInput::make('site_name')
+                                    ->label(__('Site name'))
+                                    ->live()
+                                    ->required(fn () => $this->connected)
+                                    ->readOnly()
+                                    ->afterStateUpdated(fn () => $this->resetConnection()),
+                                Forms\Components\TextInput::make('logo')
+                                    ->label(__('Logo'))
+                                    ->live()
+                                    ->url()
+                                    ->required(fn () => $this->connected)
+                                    ->readOnly()
+                                    ->afterStateUpdated(fn () => $this->resetConnection()),
+                                Forms\Components\TextInput::make('theme')
+                                    ->label(__('Theme'))
+                                    ->live()
+                                    ->required(fn () => $this->connected)
+                                    ->readOnly()
+                                    ->afterStateUpdated(fn () => $this->resetConnection()),
+                                Forms\Components\TextInput::make('version')
+                                    ->label(__('Version'))
+                                    ->live()
+                                    ->required(fn () => $this->connected)
+                                    ->readOnly()
+                                    ->afterStateUpdated(fn () => $this->resetConnection()),
+                            ])
+                            ->columns(),
+                        Forms\Components\Tabs\Tab::make('Tags')
+                            ->label(__('Tags'))
+                            ->schema([
+                                Forms\Components\Select::make('tags')
+                                    ->relationship('tags', 'name')
+                                    ->multiple()
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('name')
+                                            ->required(),
+                                    ]),
+                            ])->columns(),
+                    ])->columnSpanFull(),
             ])->columns();
     }
 
