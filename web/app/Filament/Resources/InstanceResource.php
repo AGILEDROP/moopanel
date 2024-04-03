@@ -18,11 +18,11 @@ class InstanceResource extends Resource
 {
     protected static ?string $model = Instance::class;
 
-    protected static ?string $label = 'Moodle Instance';
-
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?int $navigationSort = 0;
+
+    protected static ?string $activeNavigationIcon = 'heroicon-o-home';
 
     public static function table(Table $table): Table
     {
@@ -30,32 +30,14 @@ class InstanceResource extends Resource
             ->query(fn () => Instance::query()
                 ->with('tags')
             )
-            ->columns([
-                Tables\Columns\Layout\Stack::make([
-                    LogoImageColumn::make('logo'),
-                    Tables\Columns\TextColumn::make('site_name')
-                        ->label(__('Site name'))
-                        ->weight(FontWeight::Bold)
-                        ->sortable()
-                        ->searchable()
-                        ->extraAttributes(['class' => 'pt-3']),
-                    Tables\Columns\TextColumn::make('theme')
-                        ->label(__('Theme'))
-                        ->extraAttributes(['class' => 'pt-1.5 block w-full']),
-                    Tables\Columns\TextColumn::make('version')
-                        ->label(__('Version'))
-                        ->extraAttributes(['class' => 'pt-1.5 block w-full']),
-                    Tables\Columns\TextColumn::make('status')
-                        ->label(__('Status'))
-                        ->badge()
-                        ->formatStateUsing(fn (string $state): string => Status::tryFrom($state)->toReadableString())
-                        ->color(fn (string $state): string => Status::tryFrom($state)->toDisplayColor())
-                        ->extraAttributes(['class' => 'mb-3 pt-1.5 block w-full']),
-                ]),
-            ])
+            ->columns(
+                $table->getLivewire()->isGridLayout()
+                    ? static::getGridTableColumns()
+                    : static::getTableColumns(),
+            )
             ->contentGrid([
                 'md' => 2,
-                '2xl' => 3,
+                '2xl' => 4,
             ])
             ->filters([
                 Custom\Filters\UniversityMembersFilter::make('university_member_id', 'universityMember'),
@@ -82,6 +64,52 @@ class InstanceResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getGridTableColumns(): array
+    {
+        return [
+            Tables\Columns\Layout\Stack::make([
+                LogoImageColumn::make('logo'),
+                Tables\Columns\TextColumn::make('site_name')
+                    ->label(__('Site name'))
+                    ->weight(FontWeight::Bold)
+                    ->sortable()
+                    ->searchable()
+                    ->extraAttributes(['class' => 'pt-3']),
+                Tables\Columns\TextColumn::make('theme')
+                    ->label(__('Theme'))
+                    ->extraAttributes(['class' => 'pt-1.5 block w-full']),
+                Tables\Columns\TextColumn::make('version')
+                    ->label(__('Version'))
+                    ->extraAttributes(['class' => 'pt-1.5 block w-full']),
+                Tables\Columns\TextColumn::make('status')
+                    ->label(__('Status'))
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => Status::tryFrom($state)->toReadableString())
+                    ->color(fn (string $state): string => Status::tryFrom($state)->toDisplayColor())
+                    ->extraAttributes(['class' => 'mb-3 pt-1.5 block w-full']),
+            ]),
+        ];
+    }
+
+    public static function getTableColumns(): array
+    {
+        return [
+            Tables\Columns\TextColumn::make('site_name')
+                ->label(__('Site name'))
+                ->sortable()
+                ->searchable(),
+            Tables\Columns\TextColumn::make('theme')
+                ->label(__('Theme')),
+            Tables\Columns\TextColumn::make('version')
+                ->label(__('Version')),
+            Tables\Columns\TextColumn::make('status')
+                ->label(__('Status'))
+                ->badge()
+                ->formatStateUsing(fn (string $state): string => Status::tryFrom($state)->toReadableString())
+                ->color(fn (string $state): string => Status::tryFrom($state)->toDisplayColor()),
+        ];
     }
 
     public static function getRelations(): array

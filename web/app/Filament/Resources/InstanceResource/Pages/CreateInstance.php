@@ -21,6 +21,10 @@ class CreateInstance extends CreateRecord
 {
     protected static string $resource = InstanceResource::class;
 
+    // protected static ?string $navigationIcon = 'heroicon-o-plus-circle';
+
+    // protected static ?int $navigationSort = 1;
+
     public bool $connected = false;
 
     public function form(Form $form): Form
