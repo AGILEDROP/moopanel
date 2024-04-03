@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Clusters\Settings\Resources;
 
-use App\Filament\Resources\TagResource\Pages;
+use App\Filament\Clusters\Settings;
 use App\Models\Tag;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -14,11 +14,11 @@ class TagResource extends Resource
 {
     protected static ?string $model = Tag::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static ?string $cluster = Settings::class;
 
-    protected static ?string $navigationGroup = 'Settings';
+    protected static ?string $navigationIcon = 'fas-tags';
 
-    protected static ?int $navigationSort = 998;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -54,7 +54,7 @@ class TagResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageTags::route('/'),
+            'index' => Settings\Resources\TagResource\Pages\ManageTags::route('/'),
         ];
     }
 }

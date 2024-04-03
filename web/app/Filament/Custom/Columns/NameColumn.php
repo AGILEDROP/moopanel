@@ -11,7 +11,6 @@ class NameColumn
         return TextColumn::make($name)
             ->label($label ?? $name)
             ->sortable()
-            ->copyable()
             ->searchable();
     }
 }
