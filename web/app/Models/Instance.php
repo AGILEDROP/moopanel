@@ -6,6 +6,7 @@ use App\Traits\HasTags;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Instance extends Model
 {
@@ -32,5 +33,15 @@ class Instance extends Model
     public function universityMember(): BelongsTo
     {
         return $this->belongsTo(UniversityMember::class, 'university_member_id');
+    }
+
+    public function plugins(): HasMany
+    {
+        return $this->hasMany(Plugin::class);
+    }
+
+    public function syncs(): HasMany
+    {
+        return $this->hasMany(Sync::class);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Custom\Columns;
 
+use Filament\Support\Enums\IconPosition;
 use Filament\Tables\Columns\TextColumn;
 
 class AzureIdColumn
@@ -11,6 +12,9 @@ class AzureIdColumn
         return TextColumn::make($name)
             ->label($label ?? $name)
             ->numeric()
-            ->copyable();
+            ->copyable()
+            ->icon('heroicon-m-document-duplicate')
+            ->iconPosition(IconPosition::After)
+            ->toggleable();
     }
 }
