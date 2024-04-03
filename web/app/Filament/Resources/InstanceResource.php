@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\Status;
 use App\Filament\Custom;
 use App\Filament\Resources\InstanceResource\Pages;
+use App\Filament\Resources\InstanceResource\RelationManagers\PluginsRelationManager;
 use App\Models\Instance;
 use App\Tables\Columns\LogoImageColumn;
 use Filament\Resources\Resource;
@@ -86,7 +87,7 @@ class InstanceResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            PluginsRelationManager::class,
         ];
     }
 

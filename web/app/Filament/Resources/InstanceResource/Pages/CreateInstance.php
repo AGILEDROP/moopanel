@@ -5,6 +5,7 @@ namespace App\Filament\Resources\InstanceResource\Pages;
 use App\Enums\Status;
 use App\Filament\Custom\Actions\CopyFieldStateAction;
 use App\Filament\Resources\InstanceResource;
+use App\Services\ModuleApiService;
 use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -38,6 +39,7 @@ class CreateInstance extends CreateRecord
                                 ->unique()
                                 ->url()
                                 ->live()
+                                ->suffix(ModuleApiService::PLUGIN_PATH)
                                 ->afterStateUpdated(fn () => $this->resetConnection()),
                         ])->columns(),
                         Forms\Components\Grid::make()->schema([

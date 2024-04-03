@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Clusters\Settings\Resources;
 
 use App\Enums\Role;
-use App\Filament\Resources\UniversityMemberResource\Pages;
+use App\Filament\Clusters\Settings;
 use App\Models\UniversityMember;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -16,11 +16,11 @@ class UniversityMemberResource extends Resource
 {
     protected static ?string $model = UniversityMember::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static ?string $navigationIcon = 'fas-building-columns';
 
-    protected static ?string $navigationGroup = 'Settings';
+    protected static ?string $cluster = Settings::class;
 
-    protected static ?int $navigationSort = 999;
+    protected static ?int $navigationSort = 1;
 
     public static function can(string $action, ?Model $record = null): bool
     {
@@ -128,7 +128,7 @@ class UniversityMemberResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageUniversityMembers::route('/'),
+            'index' => Settings\Resources\UniversityMemberResource\Pages\ManageUniversityMembers::route('/'),
         ];
     }
 }

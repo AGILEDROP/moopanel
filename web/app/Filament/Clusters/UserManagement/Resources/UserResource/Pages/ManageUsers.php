@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\UserResource\Pages;
+namespace App\Filament\Clusters\UserManagement\Resources\UserResource\Pages;
 
-use App\Filament\Resources\UserResource;
+use App\Filament\Clusters\UserManagement\Resources\UserResource;
 use Filament\Resources\Pages\ManageRecords;
 
 class ManageUsers extends ManageRecords

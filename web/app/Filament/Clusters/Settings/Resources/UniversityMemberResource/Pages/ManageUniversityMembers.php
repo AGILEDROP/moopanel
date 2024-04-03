@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\UniversityMemberResource\Pages;
+namespace App\Filament\Clusters\Settings\Resources\UniversityMemberResource\Pages;
 
-use App\Filament\Resources\UniversityMemberResource;
+use App\Filament\Clusters\Settings\Resources\UniversityMemberResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
 

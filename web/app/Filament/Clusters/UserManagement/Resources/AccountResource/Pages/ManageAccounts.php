@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\AccountResource\Pages;
+namespace App\Filament\Clusters\UserManagement\Resources\AccountResource\Pages;
 
-use App\Filament\Resources\AccountResource;
+use App\Filament\Clusters\UserManagement\Resources\AccountResource;
 use Filament\Resources\Pages\ManageRecords;
 
 class ManageAccounts extends ManageRecords

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Custom\Columns;
 
+use Filament\Support\Enums\IconPosition;
 use Filament\Tables\Columns\TextColumn;
 
 class UpnColumn
@@ -11,6 +12,8 @@ class UpnColumn
         return TextColumn::make($name)
             ->label($label ?? $name)
             ->searchable()
-            ->copyable();
+            ->copyable()
+            ->icon('heroicon-m-document-duplicate')
+            ->iconPosition(IconPosition::After);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\InstanceResource\Pages;
 use App\Filament\Custom\Actions\CopyFieldStateAction;
 use App\Filament\Resources\InstanceResource;
 use App\Models\Instance;
+use App\Services\ModuleApiService;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Forms;
@@ -76,6 +77,7 @@ class EditInstance extends EditRecord
                             Forms\Components\TextInput::make('url')
                                 ->label(__('Base URL'))
                                 ->required()
+                                ->suffix(ModuleApiService::PLUGIN_PATH)
                                 ->unique(ignorable: $this->record)
                                 ->url(),
                         ])->columns(),
