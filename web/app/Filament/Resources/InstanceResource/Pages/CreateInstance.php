@@ -179,7 +179,7 @@ class CreateInstance extends CreateRecord
             // Get data from moodle site.
             $response = (new \App\Services\ModuleApiService)->getInstanceData($data['url'], $data['api_key']);
             if (! $response->ok()) {
-                throw new \Exception('Connection to external moodle plugin failed!');
+                throw new \Exception('Connection to external moodle plugin failed! Status code: '.$response->status());
             }
 
             // Set fetched data.
@@ -198,7 +198,7 @@ class CreateInstance extends CreateRecord
                 ->success()
                 ->send();
         } catch (\Exception $exception) {
-            Log::error($exception);
+            Log::error($exception->getMessage());
 
             Notification::make()
                 ->title(__('Connection failed!'))
