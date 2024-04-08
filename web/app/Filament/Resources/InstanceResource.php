@@ -12,17 +12,16 @@ use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use Filament\Tables\Table;
 
 class InstanceResource extends Resource
 {
     protected static ?string $model = Instance::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-home';
 
     protected static ?int $navigationSort = 0;
-
-    protected static ?string $activeNavigationIcon = 'heroicon-o-home';
 
     public static function table(Table $table): Table
     {
@@ -37,7 +36,7 @@ class InstanceResource extends Resource
             )
             ->contentGrid([
                 'md' => 2,
-                '2xl' => 4,
+                '2xl' => 3,
             ])
             ->filters([
                 Custom\Filters\UniversityMembersFilter::make('university_member_id', 'universityMember'),
@@ -55,6 +54,7 @@ class InstanceResource extends Resource
                         ->url(fn (Instance $record): string => stripUrlPath($record->url))
                         ->openUrlInNewTab(),
                 ])
+                    ->extraAttributes(['class' => '-ms-2'])
                     ->link()
                     ->label('Actions'),
 
@@ -73,22 +73,13 @@ class InstanceResource extends Resource
                 LogoImageColumn::make('logo'),
                 Tables\Columns\TextColumn::make('site_name')
                     ->label(__('Site name'))
-                    ->weight(FontWeight::Bold)
+                    ->weight(FontWeight::SemiBold)
+                    ->size(TextColumnSize::Medium)
                     ->sortable()
-                    ->searchable()
-                    ->extraAttributes(['class' => 'pt-3']),
-                Tables\Columns\TextColumn::make('theme')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('url')
                     ->label(__('Theme'))
-                    ->extraAttributes(['class' => 'pt-1.5 block w-full']),
-                Tables\Columns\TextColumn::make('version')
-                    ->label(__('Version'))
-                    ->extraAttributes(['class' => 'pt-1.5 block w-full']),
-                Tables\Columns\TextColumn::make('status')
-                    ->label(__('Status'))
-                    ->badge()
-                    ->formatStateUsing(fn (string $state): string => Status::tryFrom($state)->toReadableString())
-                    ->color(fn (string $state): string => Status::tryFrom($state)->toDisplayColor())
-                    ->extraAttributes(['class' => 'mb-3 pt-1.5 block w-full']),
+                    ->extraAttributes(['class' => 'pt-1.5 mb-3 block w-full']),
             ]),
         ];
     }
@@ -100,6 +91,10 @@ class InstanceResource extends Resource
                 ->label(__('Site name'))
                 ->sortable()
                 ->searchable(),
+            Tables\Columns\TextColumn::make('plugins_count')
+                ->label(__('No. of plugins'))
+                ->counts('plugins')
+                ->sortable(),
             Tables\Columns\TextColumn::make('theme')
                 ->label(__('Theme')),
             Tables\Columns\TextColumn::make('version')
