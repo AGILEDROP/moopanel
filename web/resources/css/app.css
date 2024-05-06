@@ -3,3 +3,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+#custom-table-square .fi-ta-ctn {
+    border-radius: 0;
+    /*box-shadow: none;*/
+}

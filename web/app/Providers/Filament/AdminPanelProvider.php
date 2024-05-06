@@ -2,8 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Auth\Login;
-use App\Filament\Resources\InstanceResource\Pages\CreateInstance;
+use App\Filament\Admin\Auth\Login;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -36,14 +35,13 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::rgb('rgb(225, 42, 38)'),
             ])
             ->maxContentWidth(true)
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
+            ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
+            ->discoverClusters(in: app_path('Filament/Admin/Clusters'), for: 'App\\Filament\\Admin\\Clusters')
+            ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->viteTheme('resources/css/app.css')
             ->pages([
-                //                CreateInstance::class,
-                //                Pages\Dashboard::class,
+                //
             ])
             ->widgets([
                 Widgets\AccountWidget::class,
