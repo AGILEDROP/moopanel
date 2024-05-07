@@ -2,19 +2,21 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasInstance;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Sync extends Model
 {
-    use HasFactory;
+    use HasFactory, HasInstance;
 
     public $timestamps = false;
 
     protected $fillable = [
         'instance_id',
-        'syncable_type',
+        'type',
+        'subtype',
         'synced_at',
     ];
 

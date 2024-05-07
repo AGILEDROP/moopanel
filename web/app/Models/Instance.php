@@ -2,21 +2,28 @@
 
 namespace App\Models;
 
-use App\Traits\HasTags;
+use App\Models\Concerns\HasImage;
+use App\Models\Scopes\InstanceScope;
+use Filament\Models\Contracts\HasAvatar;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Instance extends Model
+#[ScopedBy([InstanceScope::class])]
+class Instance extends Model implements HasAvatar
 {
-    use HasFactory, HasTags;
+    use HasFactory, HasImage;
 
     protected $fillable = [
         'university_member_id',
-        'site_name',
+        'cluster_id',
+        'name',
+        'short_name',
         'url',
-        'logo',
+        'img_path',
         'theme',
         'version',
         'api_key',
@@ -28,20 +35,82 @@ class Instance extends Model
         'api_key',
     ];
 
-    protected $with = ['tags'];
+    protected static function booted(): void
+    {
+        // Could also create the observer class for this!
+        // In first phase all users should have access to all instances (later we will add instances based on user role)!
+        static::created(function (Instance $instance) {
+            $instance->users()->attach(User::pluck('id')->toArray());
+        });
+    }
 
     public function universityMember(): BelongsTo
     {
         return $this->belongsTo(UniversityMember::class, 'university_member_id');
     }
 
-    public function plugins(): HasMany
+    public function cluster(): BelongsTo
     {
-        return $this->hasMany(Plugin::class);
+        return $this->belongsTo(Cluster::class);
+    }
+
+    public function plugins(): BelongsToMany
+    {
+        return $this->belongsToMany(Plugin::class)->withPivot(['enabled', 'version']);
+    }
+
+    public function availableUpdates(): HasMany
+    {
+        return $this->hasMany(Update::class);
+    }
+
+    public function availableCoreUpdate(): HasMany
+    {
+        return $this->updates()->whereNull('plugin_id')->latest();
+    }
+
+    public function availableCoreUpdates(): HasMany
+    {
+        return $this->hasMany(Update::class)->whereNull('plugin_id');
+    }
+
+    public function availablePluginUpdates(): HasMany
+    {
+        return $this->hasMany(Update::class)->whereNotNull('plugin_id');
+    }
+
+    public function updateLog(): HasMany
+    {
+        return $this->hasMany(UpdateLog::class);
+    }
+
+    public function coreUpdateLog(): HasMany
+    {
+        return $this->updateLog()->whereNull('plugin_id');
+    }
+
+    public function pluginUpdateLog(): HasMany
+    {
+        return $this->hasMany(UpdateLog::class)->whereNotNull('plugin_id');
     }
 
     public function syncs(): HasMany
     {
         return $this->hasMany(Sync::class);
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class);
+    }
+
+    public function getDefaultImageNameAttribute(): string
+    {
+        return 'short_name';
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->image;
     }
 }
