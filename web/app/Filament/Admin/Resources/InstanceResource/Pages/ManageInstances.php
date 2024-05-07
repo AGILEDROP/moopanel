@@ -15,6 +15,8 @@ class ManageInstances extends ManageRecords
 
     protected static string $resource = InstanceResource::class;
 
+    protected ?string $heading = 'Home';
+
     public function getDefaultLayoutView(): string
     {
         // 'grid' || 'list'

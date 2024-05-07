@@ -21,9 +21,7 @@ class UserResource extends Resource
 
     protected static ?string $cluster = UserManagement::class;
 
-    protected static ?string $recordTitleAttribute = 'name';
-
-    protected static ?string $navigationIcon = 'fas-user-shield';
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?int $navigationSort = 2;
 
@@ -57,6 +55,12 @@ class UserResource extends Resource
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([
+                Tables\Filters\SelectFilter::make('app_role_id')
+                    ->label(__('Role'))
+                    ->options(collect(Role::cases())->mapWithKeys(function ($case) {
+                        return [$case->value => $case->toReadableString()];
+                    })->toArray())
+                    ->multiple(),
             ])
             ->actions([
                 EditAction::make()

@@ -26,6 +26,8 @@ class InstanceResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
+    protected static ?string $navigationLabel = 'Home';
+
     protected static ?int $navigationSort = 0;
 
     public static function form(Form $form): Form
