@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum UpgradeType: int
+enum UpdateLogType: int
 {
     case Success = 0;
     case Notice = 1;

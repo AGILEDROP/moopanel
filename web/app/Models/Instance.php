@@ -3,13 +3,16 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasImage;
+use App\Models\Scopes\InstanceScope;
 use Filament\Models\Contracts\HasAvatar;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[ScopedBy([InstanceScope::class])]
 class Instance extends Model implements HasAvatar
 {
     use HasFactory, HasImage;
@@ -35,7 +38,7 @@ class Instance extends Model implements HasAvatar
     protected static function booted(): void
     {
         // Could also create the observer class for this!
-        //@todo: ask who should have access to all instances instances (probably best to add access to roles)!
+        // In first phase all users should have access to all instances (later we will add instances based on user role)!
         static::created(function (Instance $instance) {
             $instance->users()->attach(User::pluck('id')->toArray());
         });

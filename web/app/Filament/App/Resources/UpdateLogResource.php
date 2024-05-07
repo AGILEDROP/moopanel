@@ -2,7 +2,7 @@
 
 namespace App\Filament\App\Resources;
 
-use App\Enums\UpgradeType;
+use App\Enums\UpdateLogType;
 use App\Filament\App\Resources\UpdateLogResource\Pages;
 use App\Models\Instance;
 use App\Models\Plugin;
@@ -90,9 +90,9 @@ class UpdateLogResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('type')
                     ->label(__('Operation result'))
-                    ->formatStateUsing(fn (UpgradeType $state): string => $state->toReadableString())
-                    ->color(fn (UpgradeType $state): string => $state->toDisplayColor())
-                    ->icon(fn (UpgradeType $state): string => $state->toDisplayIcon())
+                    ->formatStateUsing(fn (UpdateLogType $state): string => $state->toReadableString())
+                    ->color(fn (UpdateLogType $state): string => $state->toDisplayColor())
+                    ->icon(fn (UpdateLogType $state): string => $state->toDisplayIcon())
                     ->badge()
                     ->sortable(),
             ])

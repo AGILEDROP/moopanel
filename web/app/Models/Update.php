@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\UpgradeLevel;
+use App\Enums\UpdateMaturity;
 use App\Models\Concerns\HasInstance;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,7 +27,7 @@ class Update extends Model
 
     protected $casts = [
         'instance_id' => 'int',
-        'maturity' => UpgradeLevel::class,
+        'maturity' => UpdateMaturity::class,
     ];
 
     public function instance(): BelongsTo

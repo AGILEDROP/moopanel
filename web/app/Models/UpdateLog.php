@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\UpgradeType;
+use App\Enums\UpdateLogType;
 use App\Models\Concerns\HasInstance;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,7 +29,7 @@ class UpdateLog extends Model
     protected $casts = [
         'operation_id' => 'int',
         'instance_id' => 'int',
-        'type' => UpgradeType::class,
+        'type' => UpdateLogType::class,
         'timemodified' => 'datetime',
     ];
 

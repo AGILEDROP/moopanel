@@ -2,9 +2,11 @@
 
 namespace App\Filament\Admin\Clusters\UserManagement\Resources\UserResource\RelationManagers;
 
+use App\Models\Scopes\InstanceScope;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class InstancesRelationManager extends RelationManager
 {
@@ -13,6 +15,9 @@ class InstancesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->withoutGlobalScopes([
+                InstanceScope::class,
+            ]))
             ->recordTitleAttribute('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
@@ -25,7 +30,12 @@ class InstancesRelationManager extends RelationManager
                     ->sortable(),
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make(),
+                Tables\Actions\AttachAction::make()
+                    ->recordSelectOptionsQuery(fn (Builder $query) => $query->withoutGlobalScope(InstanceScope::class))
+                    ->action(function (array $data, Tables\Actions\AttachAction $action): void {
+                        $this->ownerRecord->instances()->attach($data['recordId']);
+                        $action->sendSuccessNotification();
+                    }),
             ])
             ->actions([
                 Tables\Actions\DetachAction::make(),

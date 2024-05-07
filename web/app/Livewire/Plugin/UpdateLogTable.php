@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Plugin;
 
-use App\Enums\UpgradeType;
+use App\Enums\UpdateLogType;
 use App\Models\Plugin;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -51,9 +51,9 @@ class UpdateLogTable extends Component implements HasForms, HasTable
                     ->sortable(),
                 Tables\Columns\TextColumn::make('type')
                     ->label(__('Operation result'))
-                    ->formatStateUsing(fn (UpgradeType $state): string => $state->toReadableString())
-                    ->color(fn (UpgradeType $state): string => $state->toDisplayColor())
-                    ->icon(fn (UpgradeType $state): string => $state->toDisplayIcon())
+                    ->formatStateUsing(fn (UpdateLogType $state): string => $state->toReadableString())
+                    ->color(fn (UpdateLogType $state): string => $state->toDisplayColor())
+                    ->icon(fn (UpdateLogType $state): string => $state->toDisplayIcon())
                     ->badge()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('version')

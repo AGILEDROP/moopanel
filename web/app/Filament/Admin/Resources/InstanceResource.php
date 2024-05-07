@@ -120,7 +120,6 @@ class InstanceResource extends Resource
 
     public static function table(Table $table): Table
     {
-        //@todo: implement tenant scope for users! Check if user is assigned to separate instance!
         return $table
             ->query(fn () => Instance::query()->with('cluster'))
             ->columns(
