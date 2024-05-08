@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Status;
 use App\Models\Concerns\HasImage;
 use App\Models\Scopes\InstanceScope;
 use Filament\Models\Contracts\HasAvatar;
@@ -33,6 +34,10 @@ class Instance extends Model implements HasAvatar
 
     protected $hidden = [
         'api_key',
+    ];
+
+    protected $casts = [
+        'status' => Status::class,
     ];
 
     protected static function booted(): void

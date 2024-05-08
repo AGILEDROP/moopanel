@@ -13,9 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('sis:refresh-accounts-data')->dailyAt('03:00');
-        $schedule->command('module-api-service:sync-plugins')->everyTwoHours();
-        $schedule->command('module-api-service:sync-core-updates')->everyTwoHours();
-        // @todo: create command & job for plugins updates log!
+        $schedule->command('module-api-service:sync-data')->everyTwoHours();
     }
 
     /**

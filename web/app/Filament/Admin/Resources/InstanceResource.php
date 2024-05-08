@@ -122,17 +122,19 @@ class InstanceResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $gridLayout = $table->getLivewire()->isGridLayout();
+
         return $table
             ->query(fn () => Instance::query()->with('cluster'))
-            ->columns(
-                $table->getLivewire()->isGridLayout()
+            ->columns($gridLayout
                     ? static::getGridTableColumns()
                     : static::getTableColumns(),
             )
-            ->contentGrid([
+            ->contentGrid(fn (): ?array => $gridLayout ? [
                 'md' => 2,
                 '2xl' => 3,
-            ])
+            ] : null
+            )
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->label(__('Status'))
@@ -196,8 +198,8 @@ class InstanceResource extends Resource
             Tables\Columns\TextColumn::make('status')
                 ->label(__('Status'))
                 ->badge()
-                ->formatStateUsing(fn (string $state): string => Status::tryFrom($state)->toReadableString())
-                ->color(fn (string $state): string => Status::tryFrom($state)->toDisplayColor()),
+                ->formatStateUsing(fn (Status $state): string => $state->toReadableString())
+                ->color(fn (Status $state): string => $state->toDisplayColor()),
         ];
     }
 

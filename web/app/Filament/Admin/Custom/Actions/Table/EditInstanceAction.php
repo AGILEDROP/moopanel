@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Custom\Actions\Table;
 
+use App\Enums\Status;
 use App\Services\ModuleApiService;
 use Exception;
 use Filament\Notifications\Notification;
@@ -35,6 +36,7 @@ class EditInstanceAction
                     if (isset($data['api_key'])) {
                         $data['api_key'] = Crypt::encrypt($data['api_key']);
                     }
+                    $data['status'] = Status::Connected->value;
                     $record->update($data);
                 } catch (Exception $exception) {
                     Log::error($exception->getMessage());
