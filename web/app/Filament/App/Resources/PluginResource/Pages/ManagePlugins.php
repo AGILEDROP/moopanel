@@ -11,6 +11,8 @@ class ManagePlugins extends ManageRecords
 
     protected $listeners = ['managePluginsPage' => '$refresh'];
 
+    protected ?string $heading = 'Plugins';
+
     protected function getHeaderActions(): array
     {
         return [

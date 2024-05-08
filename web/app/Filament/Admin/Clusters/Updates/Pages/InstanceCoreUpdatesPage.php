@@ -21,15 +21,15 @@ class InstanceCoreUpdatesPage extends BaseUpdateWizardPage
         $records = Update::select('id', 'maturity', 'version', 'release', 'url')
             ->whereIn('instance_id', $this->instanceIds)
             ->whereNull('plugin_id')
-            ->distinct('version')
-            ->orderBy('version', 'desc')
+            ->distinct('release')
+            ->orderBy('release', 'desc')
             ->get();
 
         $records->map(function ($update) {
             $updateInstances = Instance::whereIn('id',
                 Update::whereIn('instance_id', $this->instanceIds)
                     ->whereNull('plugin_id')
-                    ->where('version', $update->version)
+                    ->where('release', $update->release)
                     ->pluck('instance_id')
                     ->toArray()
             )->get();

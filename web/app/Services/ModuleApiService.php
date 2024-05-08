@@ -187,9 +187,9 @@ class ModuleApiService
                 'instance_id' => $instanceId,
                 'plugin_id' => $pluginId,
                 'version' => $item['version'],
-            ], [
                 'release' => $item['release'],
                 'maturity' => $item['maturity'],
+            ], [
                 'url' => $item['url'],
                 'download' => $item['download'],
                 'downloadmd5' => $item['downloadmd5'],
@@ -209,9 +209,9 @@ class ModuleApiService
         foreach ($results as $item) {
             $update = UpdateLog::updateOrCreate([
                 'operation_id' => $item['id'],
-            ], [
                 'instance_id' => $instanceId,
                 'plugin_id' => $pluginId,
+            ], [
                 'username' => $item['username'],
                 'type' => $item['type'],
                 'version' => $item['version'],

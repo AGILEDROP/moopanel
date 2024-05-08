@@ -80,7 +80,7 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage
             UpdateType::PLUGIN => Plugin::whereHas('updates', function ($q) {
                 $q->whereIn('updates.instance_id', $this->instanceIds);
             })->count(),
-            UpdateType::MINOR_CORE, UpdateType::MAJOR_CORE => Update::whereIn('instance_id', $this->instanceIds)->whereNull('plugin_id')->distinct('version')->count(),
+            UpdateType::MINOR_CORE, UpdateType::MAJOR_CORE => Update::whereIn('instance_id', $this->instanceIds)->whereNull('plugin_id')->distinct('release')->count(),
         };
     }
 
