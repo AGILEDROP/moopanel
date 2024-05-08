@@ -4,6 +4,7 @@ namespace App\Console\Commands\ModuleApi;
 
 use App\Jobs\ModuleApi\SyncInstanceCoreUpdates;
 use App\Models\Instance;
+use App\Models\Scopes\InstanceScope;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Bus;
 
@@ -22,7 +23,7 @@ class SyncCoreUpdates extends Command
     public function handle(): int
     {
         $jobs = [];
-        $instances = Instance::all();
+        $instances = Instance::withoutGlobalScope(InstanceScope::class)->get();
         foreach ($instances as $instance) {
             $jobs[] = new SyncInstanceCoreUpdates($instance);
         }

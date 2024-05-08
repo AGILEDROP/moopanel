@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Status;
 use App\Models\Instance;
 use App\Models\Plugin;
 use App\Models\Sync;
@@ -36,6 +37,12 @@ class ModuleApiService
             ->get($baseUrl.self::PLUGIN_PATH);
     }
 
+    public function getCoreUpdates(Model|Instance $instance): PromiseInterface|Response
+    {
+        return Http::withHeader('X-API-KEY', Crypt::decrypt($instance->api_key))
+            ->get($instance->url.self::PLUGIN_PATH.'/moodle_core');
+    }
+
     public function getPlugins(string $baseUrl, string $apiKey): PromiseInterface|Response
     {
         // create function for both (with updates and without)
@@ -43,53 +50,10 @@ class ModuleApiService
             ->get($baseUrl.self::PLUGIN_PATH.'/plugins/updates');
     }
 
-    private function instancePluginsCrudAction(mixed $results, Model|Instance $instance): void
+    public function getOnlineUsers(Model|Instance $instance): PromiseInterface|Response
     {
-        $pluginPivotData = [];
-        foreach ($results as $item) {
-            $plugin = Plugin::updateOrCreate(
-                ['name' => $item['plugin']],
-                [
-                    'display_name' => $item['display_name'],
-                    'type' => $item['plugintype'],
-                    'component' => $item['component'],
-                    'is_standard' => $item['is_standard'],
-                    'settings_section' => $item['settings_section'],
-                    'directory' => $item['directory'],
-                ]
-            );
-
-            if (isset($item['update_available'])) {
-                $this->updatesCrudAction($item['update_available'], $instance->id, $plugin->id);
-            }
-
-            if (isset($item['update_log'])) {
-                $this->updateLogCrudAction($item['update_log'], $instance->id, $plugin->id);
-            }
-
-            $pluginPivotData[$plugin->id] = [
-                'version' => $item['version'],
-                'enabled' => $item['enabled'],
-            ];
-        }
-
-        $instance->plugins()->sync($pluginPivotData);
-
-        // @todo: find more elegant solution!
-        Sync::updateOrCreate([
-            'instance_id' => $instance->id,
-            'type' => Plugin::class,
-        ], ['synced_at' => now()]);
-        Sync::updateOrCreate([
-            'instance_id' => $instance->id,
-            'type' => UpdateLog::class,
-            'subtype' => Plugin::class,
-        ], ['synced_at' => now()]);
-        Sync::updateOrCreate([
-            'instance_id' => $instance->id,
-            'type' => Update::class,
-            'subtype' => Plugin::class,
-        ], ['synced_at' => now()]);
+        return Http::withHeader('X-API-KEY', Crypt::decrypt($instance->api_key))
+            ->get($instance->url.self::PLUGIN_PATH.'/users/online');
     }
 
     public function syncInstancePlugins(Model|Instance $instance, bool $silent = false): void
@@ -115,6 +79,8 @@ class ModuleApiService
             DB::rollBack();
             Log::error($exception->getMessage());
 
+            $this->setInstanceStatusToDisconnected($instance);
+
             if (! $silent) {
                 Notification::make()
                     ->title(__('Plugin sync failed'))
@@ -122,12 +88,6 @@ class ModuleApiService
                     ->send();
             }
         }
-    }
-
-    public function getCoreUpdates(Model|Instance $instance): PromiseInterface|Response
-    {
-        return Http::withHeader('X-API-KEY', Crypt::decrypt($instance->api_key))
-            ->get($instance->url.self::PLUGIN_PATH.'/moodle_core');
     }
 
     public function syncInstanceCoreUpdates(Model|Instance $instance, bool $silent = false): void
@@ -147,7 +107,6 @@ class ModuleApiService
                 $this->updateLogCrudAction($request->json('update_log'), $instance->id);
             }
 
-            //@todo: find more elegant solution!
             Sync::updateOrCreate([
                 'instance_id' => $instance->id,
                 'type' => Update::class,
@@ -170,6 +129,8 @@ class ModuleApiService
             DB::rollBack();
             Log::error($exception->getMessage());
 
+            $this->setInstanceStatusToDisconnected($instance);
+
             if (! $silent) {
                 Notification::make()
                     ->title(__('Core sync failed'))
@@ -177,6 +138,59 @@ class ModuleApiService
                     ->send();
             }
         }
+    }
+
+    public function syncInstanceInfo(Instance $instance, bool $silent): void
+    {
+        DB::beginTransaction();
+        try {
+            $request = $this->getInstanceData($instance->url, Crypt::decrypt($instance->api_key));
+            if (! $request->ok()) {
+                Log::error("Instance information sync failed (instance id: {$instance->id})!");
+            }
+
+            $results = $request->collect();
+
+            $instance->update([
+                'version' => $results['moodle_version'] ?? null,
+                'theme' => $results['theme'] ?? null,
+                'status' => Status::Connected,
+            ]);
+            Sync::updateOrCreate([
+                'instance_id' => $instance->id,
+                'type' => Instance::class,
+            ], ['synced_at' => now()]);
+
+            DB::commit();
+            if (! $silent) {
+                Notification::make()
+                    ->title(__('Instance information synced.'))
+                    ->success()
+                    ->send();
+            }
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            Log::error($exception->getMessage());
+
+            $this->setInstanceStatusToDisconnected($instance);
+
+            if (! $silent) {
+                Notification::make()
+                    ->title(__('Instance information sync failed'))
+                    ->danger()
+                    ->send();
+            }
+        }
+    }
+
+    public function getOnlineUsersCount(Model|Instance $instance): ?int
+    {
+        $request = $this->getOnlineUsers($instance);
+        if (! $request->ok()) {
+            Log::error("Unsuccessful active users fetch (instance id: {$instance->id})!");
+        }
+
+        return $request->json('number_of_users');
     }
 
     private function updatesCrudAction(mixed $results, int $instanceId, ?int $pluginId = null): void
@@ -231,19 +245,58 @@ class ModuleApiService
         ])->whereNotIn('id', $updatesIds)->delete();
     }
 
-    public function getOnlineUsers(Model|Instance $instance): PromiseInterface|Response
+    private function instancePluginsCrudAction(mixed $results, Model|Instance $instance): void
     {
-        return Http::withHeader('X-API-KEY', Crypt::decrypt($instance->api_key))
-            ->get($instance->url.self::PLUGIN_PATH.'/users/online');
-    }
+        $pluginPivotData = [];
+        foreach ($results as $item) {
+            $plugin = Plugin::updateOrCreate(
+                ['name' => $item['plugin']],
+                [
+                    'display_name' => $item['display_name'],
+                    'type' => $item['plugintype'],
+                    'component' => $item['component'],
+                    'is_standard' => $item['is_standard'],
+                    'settings_section' => $item['settings_section'],
+                    'directory' => $item['directory'],
+                ]
+            );
 
-    public function getOnlineUsersCount(Model|Instance $instance): ?int
-    {
-        $request = $this->getOnlineUsers($instance);
-        if (! $request->ok()) {
-            Log::error("Unsuccessful active users fetch (instance id: {$instance->id})!");
+            if (isset($item['update_available'])) {
+                $this->updatesCrudAction($item['update_available'], $instance->id, $plugin->id);
+            }
+
+            if (isset($item['update_log'])) {
+                $this->updateLogCrudAction($item['update_log'], $instance->id, $plugin->id);
+            }
+
+            $pluginPivotData[$plugin->id] = [
+                'version' => $item['version'],
+                'enabled' => $item['enabled'],
+            ];
         }
 
-        return $request->json('number_of_users');
+        $instance->plugins()->sync($pluginPivotData);
+
+        Sync::updateOrCreate([
+            'instance_id' => $instance->id,
+            'type' => Plugin::class,
+        ], ['synced_at' => now()]);
+        Sync::updateOrCreate([
+            'instance_id' => $instance->id,
+            'type' => UpdateLog::class,
+            'subtype' => Plugin::class,
+        ], ['synced_at' => now()]);
+        Sync::updateOrCreate([
+            'instance_id' => $instance->id,
+            'type' => Update::class,
+            'subtype' => Plugin::class,
+        ], ['synced_at' => now()]);
+    }
+
+    private function setInstanceStatusToDisconnected(Instance $instance): void
+    {
+        if ($instance->status !== Status::Disconnected) {
+            $instance->update(['status' => Status::Disconnected]);
+        }
     }
 }
