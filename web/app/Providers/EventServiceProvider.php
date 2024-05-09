@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\InstanceCreated;
+use App\Listeners\SyncNewInstanceData;
 use App\Models\Account;
 use App\Models\UniversityMember;
 use App\Models\User;
@@ -28,6 +30,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         SocialiteWasCalled::class => [
             AzureExtendSocialite::class.'@handle',
+        ],
+        InstanceCreated::class => [
+            SyncNewInstanceData::class,
         ],
     ];
 

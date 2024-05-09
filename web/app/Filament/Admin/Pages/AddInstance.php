@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Pages;
 
 use App\Enums\Status;
+use App\Events\InstanceCreated;
 use App\Filament\Admin\Custom\Actions\Forms\CopyFieldStateAction;
 use App\Filament\Admin\Resources\InstanceResource;
 use App\Models\Cluster;
@@ -219,11 +220,15 @@ class AddInstance extends Page implements HasForms
             $record = Instance::create($data);
             DB::commit();
 
+            // Instance should be already created to commit create its plugins and update logs.
+            // Best way to handle this data is to update via event!
+            event(new InstanceCreated($record));
+            $redirectUrl = $this->getRedirectUrl();
             Notification::make()
                 ->success()
-                ->title(__('Created'));
-
-            $redirectUrl = $this->getRedirectUrl();
+                ->title(__('Instance created'))
+                ->body(__('Full sync still in progress (plugins, log, etc.).'))
+                ->send();
 
             $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
         } catch (\Exception $error) {
