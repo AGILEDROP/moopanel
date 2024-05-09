@@ -10,13 +10,7 @@ use Illuminate\Support\Facades\Bus;
 
 class SyncPlugins extends Command
 {
-    public const SUCCESS = 0;
-
-    public const FAILURE = 1;
-
-    public const INVALID = 2;
-
-    protected $signature = 'module-api-service:sync-plugins';
+    protected $signature = 'module-api:sync-plugins';
 
     protected $description = 'Sync plugins for existing instances.';
 

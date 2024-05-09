@@ -12,13 +12,7 @@ use Illuminate\Support\Facades\Bus;
 
 class SyncData extends Command
 {
-    public const SUCCESS = 0;
-
-    public const FAILURE = 1;
-
-    public const INVALID = 2;
-
-    protected $signature = 'module-api-service:sync-data';
+    protected $signature = 'module-api:sync-data';
 
     protected $description = 'Sync all existing instance data (including updates, plugins, log, info, etc.)';
 
