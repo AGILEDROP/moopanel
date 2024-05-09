@@ -7,9 +7,6 @@ use App\Models\User;
 
 class UniversityMemberObserver
 {
-    /**
-     * Handle the User "created" event.
-     */
     public function created(UniversityMember $universityMember): void
     {
         $users = (User::count() > 0) ? User::pluck('id')->toArray() : [];

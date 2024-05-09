@@ -5,9 +5,11 @@ namespace App\Providers;
 use App\Events\InstanceCreated;
 use App\Listeners\SyncNewInstanceData;
 use App\Models\Account;
+use App\Models\Instance;
 use App\Models\UniversityMember;
 use App\Models\User;
 use App\Observers\AccountObserver;
+use App\Observers\InstanceObserver;
 use App\Observers\UniversityMemberObserver;
 use App\Observers\UserObserver;
 use Illuminate\Auth\Events\Registered;
@@ -43,6 +45,7 @@ class EventServiceProvider extends ServiceProvider
     {
         User::observe(UserObserver::class);
         Account::observe(AccountObserver::class);
+        Instance::observe(InstanceObserver::class);
         UniversityMember::observe(UniversityMemberObserver::class);
     }
 
