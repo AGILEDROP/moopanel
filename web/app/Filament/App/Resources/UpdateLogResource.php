@@ -25,23 +25,26 @@ class UpdateLogResource extends Resource
 
     public static function getTableDescription(): string|Htmlable|null
     {
-        // @todo: there is better to set subtype to null and then check when was last synced!!!
-        $time = __('never');
+        $lastSyncTime = __('never');
         if (isset(filament()->getTenant()->id)) {
-            $lastSync = Sync::where([
+            $lastCoreLogSync = Sync::where([
                 ['instance_id', '=', filament()->getTenant()->id],
-                ['type', UpdateLog::class],
+                ['type', '=', UpdateLog::class],
+                ['subtype', '=', Instance::class],
             ]);
-            if ($lastSync->exists()) {
-                $time = $lastSync
-                    ->latest('synced_at')
-                    ->first()
-                    ->synced_at
-                    ->diffForHumans();
+            $lastPluginsLogSync = Sync::where([
+                ['instance_id', '=', filament()->getTenant()->id],
+                ['type', '=', UpdateLog::class],
+                ['subtype', '=', Plugin::class],
+            ]);
+            if ($lastCoreLogSync->exists() && $lastPluginsLogSync->exists()) {
+                $lastCoreLogSyncTime = $lastCoreLogSync->latest('synced_at')->first()->synced_at;
+                $lastPluginsLogSyncTime = $lastPluginsLogSync->latest('synced_at')->first()->synced_at;
+                $lastSyncTime = ($lastCoreLogSyncTime < $lastPluginsLogSyncTime) ? $lastCoreLogSyncTime->diffForHumans() : $lastPluginsLogSyncTime->diffForHumans();
             }
         }
 
-        return __('Last sync: ').$time;
+        return __('Last sync: ').$lastSyncTime;
     }
 
     public static function getTableHeaderActions(): array
@@ -54,8 +57,8 @@ class UpdateLogResource extends Resource
                     $moduleApiService = new ModuleApiService();
                     // todo: api provider, should create one route where both plugin and core updates are visible.
                     // todo: Calling two routes for this should be avoided, to improve performance (Ask for new endpoint with complete log).
-                    $moduleApiService->syncInstanceCoreUpdates(Instance::find(filament()->getTenant()->id), true);
-                    $moduleApiService->syncInstancePlugins(Instance::find(filament()->getTenant()->id), true);
+                    $coreSyncSuccessful = $moduleApiService->syncInstanceCoreUpdates(Instance::find(filament()->getTenant()->id), true);
+                    $pluginsSyncSuccessful = $moduleApiService->syncInstancePlugins(Instance::find(filament()->getTenant()->id), true);
                 })
                 ->after(fn ($livewire) => $livewire->dispatch('manageUpdateLogPage')),
         ];

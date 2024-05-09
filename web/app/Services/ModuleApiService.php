@@ -56,8 +56,9 @@ class ModuleApiService
             ->get($instance->url.self::PLUGIN_PATH.'/users/online');
     }
 
-    public function syncInstancePlugins(Model|Instance $instance, bool $silent = false): void
+    public function syncInstancePlugins(Model|Instance $instance, bool $silent = false): bool
     {
+        $success = false;
         DB::beginTransaction();
         try {
             $request = $this->getPlugins($instance->url, Crypt::decrypt($instance->api_key));
@@ -69,6 +70,7 @@ class ModuleApiService
             $this->instancePluginsCrudAction($request->json('plugins'), $instance);
 
             DB::commit();
+            $success = true;
             if (! $silent) {
                 Notification::make()
                     ->title(__('Plugins data is synced.'))
@@ -88,10 +90,13 @@ class ModuleApiService
                     ->send();
             }
         }
+
+        return $success;
     }
 
-    public function syncInstanceCoreUpdates(Model|Instance $instance, bool $silent = false): void
+    public function syncInstanceCoreUpdates(Model|Instance $instance, bool $silent = false): bool
     {
+        $success = false;
         DB::beginTransaction();
         try {
             $request = $this->getCoreUpdates($instance);
@@ -119,6 +124,7 @@ class ModuleApiService
             ], ['synced_at' => now()]);
 
             DB::commit();
+            $success = true;
             if (! $silent) {
                 Notification::make()
                     ->title(__('Core data is synced.'))
@@ -138,10 +144,13 @@ class ModuleApiService
                     ->send();
             }
         }
+
+        return $success;
     }
 
-    public function syncInstanceInfo(Instance $instance, bool $silent): void
+    public function syncInstanceInfo(Instance $instance, bool $silent): bool
     {
+        $success = false;
         DB::beginTransaction();
         try {
             $request = $this->getInstanceData($instance->url, Crypt::decrypt($instance->api_key));
@@ -162,6 +171,7 @@ class ModuleApiService
             ], ['synced_at' => now()]);
 
             DB::commit();
+            $success = true;
             if (! $silent) {
                 Notification::make()
                     ->title(__('Instance information synced.'))
@@ -181,6 +191,8 @@ class ModuleApiService
                     ->send();
             }
         }
+
+        return $success;
     }
 
     public function getOnlineUsersCount(Model|Instance $instance): ?int

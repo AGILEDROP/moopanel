@@ -6,6 +6,9 @@ class SyncInstancePlugins extends BaseModuleApiJob
 {
     public function handle(): void
     {
-        $this->moduleApiService->syncInstancePlugins($this->instance, true);
+        $success = $this->moduleApiService->syncInstancePlugins($this->instance, true);
+        if (! $success) {
+            $this->fail('Plugin sync failed!');
+        }
     }
 }

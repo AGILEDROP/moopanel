@@ -6,6 +6,9 @@ class SyncInstanceInfo extends BaseModuleApiJob
 {
     public function handle(): void
     {
-        $this->moduleApiService->syncInstanceInfo($this->instance, true);
+        $success = $this->moduleApiService->syncInstanceInfo($this->instance, true);
+        if (! $success) {
+            $this->fail('Instance information sync failed.');
+        }
     }
 }

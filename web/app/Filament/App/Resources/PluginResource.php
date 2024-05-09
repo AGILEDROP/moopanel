@@ -55,7 +55,7 @@ class PluginResource extends Resource
                 ->label('Sync')
                 ->icon('heroicon-o-arrow-path')
                 ->action(fn () => (new ModuleApiService)->syncInstancePlugins(Instance::find(filament()->getTenant()->id)))
-                ->after(fn ($livewire) => $livewire->dispatch('manageUpdateLogPage')),
+                ->after(fn ($livewire) => $livewire->dispatch('managePluginsPage')),
         ];
     }
 
