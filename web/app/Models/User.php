@@ -5,15 +5,19 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Role;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasTenants
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -45,6 +49,16 @@ class User extends Authenticatable implements FilamentUser
         'password' => 'hashed',
     ];
 
+    protected static function booted(): void
+    {
+        // Could also create the observer class for this!
+        // In first phase all users should have access to all instances (later we will add instances based on user role)!
+        static::created(function (User $user) {
+            $user->instances()->attach(Instance::pluck('id')->toArray());
+        });
+    }
+
+    //@todo: use spatie roles & permissions or custom roles table!
     public function appRoleId(): Attribute
     {
         return Attribute::make(
@@ -87,5 +101,20 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
+    }
+
+    public function instances(): BelongsToMany
+    {
+        return $this->belongsToMany(Instance::class);
+    }
+
+    public function getTenants(Panel $panel): Collection
+    {
+        return $this->instances;
+    }
+
+    public function canAccessTenant(Model $tenant): bool
+    {
+        return $this->instances->contains($tenant);
     }
 }
