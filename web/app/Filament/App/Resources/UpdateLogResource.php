@@ -25,7 +25,7 @@ class UpdateLogResource extends Resource
 
     public static function getTableDescription(): string|Htmlable|null
     {
-        //@todo: there is better to set subtype to null and then check when was last synced!!!
+        // @todo: there is better to set subtype to null and then check when was last synced!!!
         $time = __('never');
         if (isset(filament()->getTenant()->id)) {
             $lastSync = Sync::where([
@@ -53,7 +53,7 @@ class UpdateLogResource extends Resource
                 ->action(function () {
                     $moduleApiService = new ModuleApiService();
                     // todo: api provider, should create one route where both plugin and core updates are visible.
-                    // Calling two routes for this should be avoided, to improve performance.
+                    // todo: Calling two routes for this should be avoided, to improve performance (Ask for new endpoint with complete log).
                     $moduleApiService->syncInstanceCoreUpdates(Instance::find(filament()->getTenant()->id), true);
                     $moduleApiService->syncInstancePlugins(Instance::find(filament()->getTenant()->id), true);
                 })

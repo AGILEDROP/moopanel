@@ -26,7 +26,7 @@ class PluginResource extends Resource
 
     protected static ?string $tenantOwnershipRelationshipName = 'instance';
 
-    protected static ?string $navigationLabel = 'Plugins';
+    protected static ?string $label = 'Plugins';
 
     public static function getTableDescription(): string|Htmlable|null
     {
