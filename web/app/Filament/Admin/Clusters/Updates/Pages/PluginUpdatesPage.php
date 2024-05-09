@@ -28,6 +28,7 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
         })->withExists('updates');
     }
 
+    // todo: implement update action logic when update trigger endpoint will be provided (not yet)!
     public function table(Table $table): Table
     {
         return $table

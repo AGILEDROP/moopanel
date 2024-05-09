@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Clusters\Settings\Resources;
 
+use App\Enums\Role;
 use App\Filament\Admin\Clusters\Settings;
 use App\Filament\Admin\Clusters\Settings\Resources\ClusterResource\Pages;
 use App\Models\Cluster;
@@ -22,6 +23,11 @@ class ClusterResource extends Resource
     protected static ?int $navigationSort = 2;
 
     protected static ?string $cluster = Settings::class;
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->role() === Role::MasterAdmin;
+    }
 
     public static function form(Form $form): Form
     {
