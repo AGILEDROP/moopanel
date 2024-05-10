@@ -13,6 +13,8 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage
 
     protected static ?string $title = 'Choose update type';
 
+    protected static ?string $slug = 'choose-update-type';
+
     public int $currentStep = 3;
 
     public function getUpdateTypes(): array

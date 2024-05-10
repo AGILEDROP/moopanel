@@ -35,6 +35,7 @@ class PluginResource extends Resource
             $lastSync = Sync::where([
                 ['instance_id', '=', filament()->getTenant()->id],
                 ['type', Plugin::class],
+                ['subtype', null],
             ]);
             if ($lastSync->exists()) {
                 $time = $lastSync

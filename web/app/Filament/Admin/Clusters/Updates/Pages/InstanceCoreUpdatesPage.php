@@ -12,6 +12,8 @@ class InstanceCoreUpdatesPage extends BaseUpdateWizardPage
 
     protected static ?string $title = 'Core update';
 
+    protected static ?string $slug = 'core';
+
     public int $currentStep = 4;
 
     public bool $hasUpdateAllAction = true;

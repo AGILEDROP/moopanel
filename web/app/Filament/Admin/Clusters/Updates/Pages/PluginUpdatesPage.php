@@ -19,6 +19,8 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
 
     protected static ?string $title = 'Update plugins';
 
+    protected static ?string $slug = 'plugins';
+
     public int $currentStep = 4;
 
     protected function getTableQuery()

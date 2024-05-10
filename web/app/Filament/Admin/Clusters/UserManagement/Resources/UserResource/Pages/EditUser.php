@@ -26,7 +26,7 @@ class EditUser extends EditRecord
             </svg>'),
             UserManagement::getUrl() => UserManagement::getClusterBreadcrumb(),
             ManageUsers::getUrl() => __('Users'),
-            self::getUrl(['record' => $this->getRecord()]) => $this->getRecord()->name,
+            //  self::getUrl(['record' => $this->getRecord()]) => $this->getRecord()->name,
         ];
     }
 
