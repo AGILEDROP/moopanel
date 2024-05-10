@@ -147,7 +147,7 @@ class InstanceResource extends Resource
                 Custom\Filters\UniversityMembersFilter::make('university_member_id', 'universityMember'),
             ])
             ->filtersFormWidth(MaxWidth::Large)
-            ->recordUrl(fn (Instance $record) => route('filament.app.pages.dashboard', ['tenant' => $record]))
+            ->recordUrl(fn (Instance $record) => route('filament.app.pages.app-dashboard', ['tenant' => $record]))
             ->actions([
                 Custom\Actions\Table\EditInstanceAction::make(),
             ])

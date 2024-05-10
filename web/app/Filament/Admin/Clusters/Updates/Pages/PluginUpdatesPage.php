@@ -19,6 +19,8 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
 
     protected static ?string $title = 'Update plugins';
 
+    protected static ?string $slug = 'plugins';
+
     public int $currentStep = 4;
 
     protected function getTableQuery()
@@ -28,6 +30,7 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
         })->withExists('updates');
     }
 
+    // todo: implement update action logic when update trigger endpoint will be provided (not yet)!
     public function table(Table $table): Table
     {
         return $table

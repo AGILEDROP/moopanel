@@ -12,6 +12,8 @@ class InstanceCoreUpdatesPage extends BaseUpdateWizardPage
 
     protected static ?string $title = 'Core update';
 
+    protected static ?string $slug = 'core';
+
     public int $currentStep = 4;
 
     public bool $hasUpdateAllAction = true;
@@ -49,6 +51,7 @@ class InstanceCoreUpdatesPage extends BaseUpdateWizardPage
         ]));
     }
 
+    // todo: implement update action logic when update trigger endpoint will be provided (not yet)!
     public function update(int $updateId): void
     {
         dd("Run update with id: {$updateId} on all instances!");

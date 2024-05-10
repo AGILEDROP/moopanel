@@ -21,7 +21,7 @@ class UniversityMemberResource extends Resource
 
     protected static ?string $cluster = Settings::class;
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     public static function can(string $action, ?Model $record = null): bool
     {

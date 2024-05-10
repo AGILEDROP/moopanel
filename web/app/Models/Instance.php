@@ -40,15 +40,6 @@ class Instance extends Model implements HasAvatar
         'status' => Status::class,
     ];
 
-    protected static function booted(): void
-    {
-        // Could also create the observer class for this!
-        // In first phase all users should have access to all instances (later we will add instances based on user role)!
-        static::created(function (Instance $instance) {
-            $instance->users()->attach(User::pluck('id')->toArray());
-        });
-    }
-
     public function universityMember(): BelongsTo
     {
         return $this->belongsTo(UniversityMember::class, 'university_member_id');

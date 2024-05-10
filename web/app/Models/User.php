@@ -49,15 +49,6 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         'password' => 'hashed',
     ];
 
-    protected static function booted(): void
-    {
-        // Could also create the observer class for this!
-        // In first phase all users should have access to all instances (later we will add instances based on user role)!
-        static::created(function (User $user) {
-            $user->instances()->attach(Instance::pluck('id')->toArray());
-        });
-    }
-
     //@todo: use spatie roles & permissions or custom roles table!
     public function appRoleId(): Attribute
     {

@@ -16,6 +16,8 @@ class ChooseInstancePage extends BaseUpdateWizardPage
 
     protected static ?string $title = 'Choose instances';
 
+    protected static ?string $slug = 'choose-instances';
+
     public int $currentStep = 2;
 
     public array $records = [];

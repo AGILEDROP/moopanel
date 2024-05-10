@@ -10,13 +10,7 @@ use Illuminate\Support\Facades\Bus;
 
 class SyncCoreUpdates extends Command
 {
-    public const SUCCESS = 0;
-
-    public const FAILURE = 1;
-
-    public const INVALID = 2;
-
-    protected $signature = 'module-api-service:sync-core-updates';
+    protected $signature = 'module-api:sync-core-updates';
 
     protected $description = 'Sync core updates for all existing instances.';
 

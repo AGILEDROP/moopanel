@@ -16,6 +16,8 @@ class ChooseClusterPage extends BaseUpdateWizardPage
 
     protected static ?string $title = 'Choose clusters';
 
+    protected static ?string $slug = 'choose-clusters';
+
     public int $currentStep = 1;
 
     public array $records = [];

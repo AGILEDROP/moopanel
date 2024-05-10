@@ -26,7 +26,7 @@ class PluginResource extends Resource
 
     protected static ?string $tenantOwnershipRelationshipName = 'instance';
 
-    protected static ?string $navigationLabel = 'Plugins';
+    protected static ?string $label = 'Plugins';
 
     public static function getTableDescription(): string|Htmlable|null
     {
@@ -35,6 +35,7 @@ class PluginResource extends Resource
             $lastSync = Sync::where([
                 ['instance_id', '=', filament()->getTenant()->id],
                 ['type', Plugin::class],
+                ['subtype', null],
             ]);
             if ($lastSync->exists()) {
                 $time = $lastSync
@@ -55,7 +56,7 @@ class PluginResource extends Resource
                 ->label('Sync')
                 ->icon('heroicon-o-arrow-path')
                 ->action(fn () => (new ModuleApiService)->syncInstancePlugins(Instance::find(filament()->getTenant()->id)))
-                ->after(fn ($livewire) => $livewire->dispatch('manageUpdateLogPage')),
+                ->after(fn ($livewire) => $livewire->dispatch('managePluginsPage')),
         ];
     }
 

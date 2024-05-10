@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Clusters\Settings\Resources;
 
+use App\Enums\Role;
 use App\Filament\Admin\Clusters\Settings;
 use App\Filament\Admin\Clusters\Settings\Resources\ClusterResource\Pages;
 use App\Models\Cluster;
@@ -17,11 +18,16 @@ class ClusterResource extends Resource
 {
     protected static ?string $model = Cluster::class;
 
-    protected static ?string $navigationIcon = 'fas-folder-closed';
+    protected static ?string $navigationIcon = 'fas-layer-group';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $cluster = Settings::class;
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->role() === Role::MasterAdmin;
+    }
 
     public static function form(Form $form): Form
     {
@@ -55,7 +61,7 @@ class ClusterResource extends Resource
                 Tables\Columns\TextColumn::make('master.name')
                     ->searchable()
                     ->sortable(),
-                //@todo: find fix for this alpine error!
+                // todo: find fix for this alpine error!
                 Tables\Columns\TextColumn::make('instances.name')
                     ->label(__('Instances'))
                     ->listWithLineBreaks()

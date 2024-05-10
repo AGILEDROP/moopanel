@@ -13,6 +13,8 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage
 
     protected static ?string $title = 'Choose update type';
 
+    protected static ?string $slug = 'choose-update-type';
+
     public int $currentStep = 3;
 
     public function getUpdateTypes(): array
@@ -49,7 +51,8 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage
             return;
         }
 
-        //@todo: update based on the diff between minor and major core update!
+        // todo: update based on the diff between minor and major core update!
+        // todo: wait for value in the endpoint (type should be set for all updates)!
         $redirectPage = match ($this->updateType) {
             UpdateType::MINOR_CORE->value, UpdateType::MAJOR_CORE->value => InstanceCoreUpdatesPage::getUrl([
                 'clusterIds' => urlencode(serialize($this->clusterIds)),

@@ -10,29 +10,10 @@ use Illuminate\Support\Facades\Bus;
 
 class RefreshAccountsData extends Command
 {
-    public const SUCCESS = 0;
-
-    public const FAILURE = 1;
-
-    public const INVALID = 2;
-
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'sis:refresh-accounts-data';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Assign all existing accounts to university members and set the account type based on SIS endpoint data.';
 
-    /**
-     * Execute the console command.
-     */
     public function handle(): int
     {
         $jobs = [];
