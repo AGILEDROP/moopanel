@@ -5,6 +5,9 @@ namespace App\Filament\Admin\Clusters\Logs\Resources;
 use App\Enums\Role;
 use App\Filament\Admin\Clusters\Logs;
 use App\Filament\Admin\Clusters\Logs\Resources\ActivityLogResource\Pages;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Spatie\Activitylog\Models\Activity;
 use Z3d0X\FilamentLogger\Resources\ActivityResource;
 
 class ActivityLogResource extends ActivityResource
@@ -25,6 +28,13 @@ class ActivityLogResource extends ActivityResource
     {
         return null;
     }
+
+    // Use if you want to show only users activity log!
+    //    public static function table(Table $table): Table
+    //    {
+    //        $table = parent::table($table);
+    //        return $table->modifyQueryUsing(fn (Builder $query) => $query->whereNotNull('causer_id'));
+    //    }
 
     public static function getPages(): array
     {
