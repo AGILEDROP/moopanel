@@ -216,6 +216,7 @@ class ModuleApiService
                 'release' => $item['release'],
                 'maturity' => $item['maturity'],
             ], [
+                'type' => $item['type'],
                 'url' => $item['url'],
                 'download' => $item['download'],
                 'downloadmd5' => $item['downloadmd5'],
@@ -242,7 +243,7 @@ class ModuleApiService
                 'type' => $item['type'],
                 'version' => $item['version'],
                 'targetversion' => $item['targetversion'],
-                'timemodified' => Carbon::createFromFormat('U', $item['timemodified'])->rawFormat('Y-m-d H:i:s'),
+                'timemodified' => Carbon::createFromTimestamp($item['timemodified'])->rawFormat('Y-m-d H:i:s'),
                 'info' => $item['info'],
                 'details' => $item['details'],
                 'backtrace' => $item['backtrace'],
@@ -262,7 +263,9 @@ class ModuleApiService
         $pluginPivotData = [];
         foreach ($results as $item) {
             $plugin = Plugin::updateOrCreate(
-                ['name' => $item['plugin']],
+                [
+                    'name' => $item['plugin'],
+                ],
                 [
                     'display_name' => $item['display_name'],
                     'type' => $item['plugintype'],

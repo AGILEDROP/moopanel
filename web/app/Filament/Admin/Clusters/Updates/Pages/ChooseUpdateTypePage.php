@@ -54,7 +54,7 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage
         // todo: update based on the diff between minor and major core update!
         // todo: wait for value in the endpoint (type should be set for all updates)!
         $redirectPage = match ($this->updateType) {
-            UpdateType::MINOR_CORE->value, UpdateType::MAJOR_CORE->value => InstanceCoreUpdatesPage::getUrl([
+            UpdateType::CORE_MINOR->value, UpdateType::CORE_MAJOR->value, UpdateType::CORE_MEGA->value => InstanceCoreUpdatesPage::getUrl([
                 'clusterIds' => urlencode(serialize($this->clusterIds)),
                 'instanceIds' => urlencode(serialize($this->instanceIds)),
                 'updateType' => $this->updateType,
@@ -83,7 +83,21 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage
             UpdateType::PLUGIN => Plugin::whereHas('updates', function ($q) {
                 $q->whereIn('updates.instance_id', $this->instanceIds);
             })->count(),
-            UpdateType::MINOR_CORE, UpdateType::MAJOR_CORE => Update::whereIn('instance_id', $this->instanceIds)->whereNull('plugin_id')->distinct('release')->count(),
+            UpdateType::CORE_MINOR => Update::whereIn('instance_id', $this->instanceIds)
+                ->whereNull('plugin_id')
+                ->where('type', UpdateType::CORE_MINOR)
+                ->distinct('release')
+                ->count(),
+            UpdateType::CORE_MAJOR => Update::whereIn('instance_id', $this->instanceIds)
+                ->whereNull('plugin_id')
+                ->where('type', UpdateType::CORE_MAJOR)
+                ->distinct('release')
+                ->count(),
+            UpdateType::CORE_MEGA => Update::whereIn('instance_id', $this->instanceIds)
+                ->whereNull('plugin_id')
+                ->where('type', UpdateType::CORE_MEGA)
+                ->distinct('release')
+                ->count(),
         };
     }
 

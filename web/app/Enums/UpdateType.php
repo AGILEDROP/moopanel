@@ -5,15 +5,17 @@ namespace App\Enums;
 enum UpdateType: string
 {
     case PLUGIN = 'plugin';
-    case MINOR_CORE = 'minor-core';
-    case MAJOR_CORE = 'major-core';
+    case CORE_MINOR = 'core-minor';
+    case CORE_MAJOR = 'core-major';
+    case CORE_MEGA = 'core-mega';
 
     public function toReadableString(): string
     {
         return match ($this) {
             self::PLUGIN => __('Plugin'),
-            self::MINOR_CORE => __('Minor core'),
-            self::MAJOR_CORE => __('Major core'),
+            self::CORE_MINOR => __('Minor core'),
+            self::CORE_MAJOR => __('Major core'),
+            self::CORE_MEGA => __('Mega core'),
         };
     }
 
@@ -21,8 +23,9 @@ enum UpdateType: string
     {
         return match ($this) {
             self::PLUGIN => __('Plugin update'),
-            self::MINOR_CORE => __('Minor core update'),
-            self::MAJOR_CORE => __('Major core update'),
+            self::CORE_MINOR => __('Minor core update'),
+            self::CORE_MAJOR => __('Major core update'),
+            self::CORE_MEGA => __('Mega core update'),
         };
     }
 }

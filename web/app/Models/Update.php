@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UpdateMaturity;
+use App\Enums\UpdateType;
 use App\Models\Concerns\HasInstance;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +22,7 @@ class Update extends Model
         'release',
         'maturity',
         'url',
+        'type',
         'download',
         'downloadmd5',
     ];
@@ -28,6 +30,7 @@ class Update extends Model
     protected $casts = [
         'instance_id' => 'int',
         'maturity' => UpdateMaturity::class,
+        'type' => UpdateType::class,
     ];
 
     public function instance(): BelongsTo
