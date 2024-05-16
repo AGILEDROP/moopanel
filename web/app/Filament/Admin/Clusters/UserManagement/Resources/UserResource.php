@@ -6,7 +6,7 @@ use App\Enums\Role;
 use App\Filament\Admin\Clusters\UserManagement;
 use App\Filament\Admin\Clusters\UserManagement\Resources\UserResource\Pages;
 use App\Filament\Admin\Clusters\UserManagement\Resources\UserResource\RelationManagers\InstancesRelationManager;
-use App\Filament\Admin\Custom;
+use App\Filament\Custom;
 use App\Models\User;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconPosition;
@@ -34,11 +34,11 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Custom\Columns\IdColumn::make('id', __('ID')),
-                Custom\Columns\NameColumn::make('name', __('Name')),
-                Custom\Columns\UpnColumn::make('username', __('UPN')),
-                Custom\Columns\EmailColumn::make('email', __('Email')),
-                Custom\Columns\AzureIdColumn::make('azure_id', __('Azure ID')),
+                Custom\Admin\Columns\IdColumn::make('id', __('ID')),
+                Custom\Admin\Columns\NameColumn::make('name', __('Name')),
+                Custom\Admin\Columns\UpnColumn::make('username', __('UPN')),
+                Custom\Admin\Columns\EmailColumn::make('email', __('Email')),
+                Custom\Admin\Columns\AzureIdColumn::make('azure_id', __('Azure ID')),
                 Tables\Columns\TextColumn::make('employee_id')
                     ->label(__('Employee ID'))
                     ->copyable()
@@ -51,7 +51,7 @@ class UserResource extends Resource
                     ->badge()
                     ->color(fn (User $record): string => $record->role() ? $record->role()->toDisplayColor() : 'gray')
                     ->sortable(),
-                Custom\Columns\SortableDateTimeColumn::make('updated_at', __('Updated At')),
+                Custom\Admin\Columns\SortableDateTimeColumn::make('updated_at', __('Updated At')),
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([

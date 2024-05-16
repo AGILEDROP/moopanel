@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Admin\Custom\Filters;
+namespace App\Filament\Custom\Admin\Filters;
 
 use Filament\Tables\Filters\SelectFilter;
 

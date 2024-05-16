@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Admin\Custom\Actions\Forms;
+namespace App\Filament\Custom\Admin\Actions\Forms;
 
 use Filament\Forms\Components\Actions\Action;
 

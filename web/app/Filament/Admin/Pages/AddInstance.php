@@ -4,8 +4,8 @@ namespace App\Filament\Admin\Pages;
 
 use App\Enums\Status;
 use App\Events\InstanceCreated;
-use App\Filament\Admin\Custom\Actions\Forms\CopyFieldStateAction;
 use App\Filament\Admin\Resources\InstanceResource;
+use App\Filament\Custom\Admin\Actions\Forms\CopyFieldStateAction;
 use App\Models\Cluster;
 use App\Models\Instance;
 use App\Services\ModuleApiService;

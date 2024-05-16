@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Admin\Custom\Columns;
+namespace App\Filament\Custom\Admin\Columns;
 
 use Filament\Tables\Columns\TextColumn;
 
-class IdColumn
+class EmailColumn
 {
     public static function make(string $name, ?string $label = null): TextColumn
     {
         return TextColumn::make($name)
             ->label($label ?? $name)
-            ->numeric()
-            ->toggleable(isToggledHiddenByDefault: true);
+            ->searchable()
+            ->copyable();
     }
 }

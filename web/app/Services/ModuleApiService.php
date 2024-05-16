@@ -31,6 +31,15 @@ class ModuleApiService
         ]));
     }
 
+    public function triggerPluginsUpdates(string $baseUrl, string $apiKey, ?array $updates): PromiseInterface|Response
+    {
+        return Http::withHeaders([
+            'X-API-KEY' => $apiKey,
+        ])->post($baseUrl.self::PLUGIN_PATH.'/plugins/update', wrapData([
+            'updates' => $updates,
+        ]));
+    }
+
     public function getInstanceData(string $baseUrl, string $apiKey): PromiseInterface|Response
     {
         return Http::withHeader('X-API-KEY', $apiKey)
@@ -112,12 +121,12 @@ class ModuleApiService
                 $this->updateLogCrudAction($request->json('update_log'), $instance->id);
             }
 
-            Sync::updateOrCreate([
+            Sync::withoutGlobalScopes()->updateOrCreate([
                 'instance_id' => $instance->id,
                 'type' => Update::class,
                 'subtype' => Instance::class,
             ], ['synced_at' => now()]);
-            Sync::updateOrCreate([
+            Sync::withoutGlobalScopes()->updateOrCreate([
                 'instance_id' => $instance->id,
                 'type' => UpdateLog::class,
                 'subtype' => Instance::class,
@@ -165,7 +174,7 @@ class ModuleApiService
                 'theme' => $results['theme'] ?? null,
                 'status' => Status::Connected,
             ]);
-            Sync::updateOrCreate([
+            Sync::withoutGlobalScopes()->updateOrCreate([
                 'instance_id' => $instance->id,
                 'type' => Instance::class,
             ], ['synced_at' => now()]);
@@ -209,7 +218,7 @@ class ModuleApiService
     {
         $availableUpdateIds = [];
         foreach ($results as $item) {
-            $update = Update::updateOrCreate([
+            $update = Update::withoutGlobalScopes()->updateOrCreate([
                 'instance_id' => $instanceId,
                 'plugin_id' => $pluginId,
                 'version' => $item['version'],
@@ -234,7 +243,7 @@ class ModuleApiService
     {
         $updatesIds = [];
         foreach ($results as $item) {
-            $update = UpdateLog::updateOrCreate([
+            $update = UpdateLog::withoutGlobalScopes()->updateOrCreate([
                 'operation_id' => $item['id'],
                 'instance_id' => $instanceId,
                 'plugin_id' => $pluginId,
@@ -262,14 +271,14 @@ class ModuleApiService
     {
         $pluginPivotData = [];
         foreach ($results as $item) {
-            $plugin = Plugin::updateOrCreate(
+            $plugin = Plugin::withoutGlobalScopes()->updateOrCreate(
                 [
-                    'name' => $item['plugin'],
+                    'component' => $item['component'],
                 ],
                 [
+                    'name' => $item['plugin'],
                     'display_name' => $item['display_name'],
                     'type' => $item['plugintype'],
-                    'component' => $item['component'],
                     'is_standard' => $item['is_standard'],
                     'settings_section' => $item['settings_section'],
                     'directory' => $item['directory'],
@@ -292,16 +301,16 @@ class ModuleApiService
 
         $instance->plugins()->sync($pluginPivotData);
 
-        Sync::updateOrCreate([
+        Sync::withoutGlobalScopes()->updateOrCreate([
             'instance_id' => $instance->id,
             'type' => Plugin::class,
         ], ['synced_at' => now()]);
-        Sync::updateOrCreate([
+        Sync::withoutGlobalScopes()->updateOrCreate([
             'instance_id' => $instance->id,
             'type' => UpdateLog::class,
             'subtype' => Plugin::class,
         ], ['synced_at' => now()]);
-        Sync::updateOrCreate([
+        Sync::withoutGlobalScopes()->updateOrCreate([
             'instance_id' => $instance->id,
             'type' => Update::class,
             'subtype' => Plugin::class,

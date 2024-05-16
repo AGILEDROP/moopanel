@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('sis:refresh-accounts-data')->dailyAt('03:00');
         $schedule->command('module-api-service:sync-data')->everyTwoHours();
+        $schedule->command('activitylog:clean --force')->daily();
     }
 
     /**
