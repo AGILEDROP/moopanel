@@ -12,7 +12,7 @@ class UserObserver
     {
         // Assign user all university members on creation.
         $universityMembers = (UniversityMember::count() > 0) ? UniversityMember::pluck('id')->toArray() : [];
-        $user->universityMembers()->syncWithoutDetaching($universityMembers);
+        $user->universityMembers()->sync($universityMembers);
         // In first phase all users should have access to all instances (later we will add instances based on user role)!
         $user->instances()->attach(Instance::pluck('id')->toArray());
     }

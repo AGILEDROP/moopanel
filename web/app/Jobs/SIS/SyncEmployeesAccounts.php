@@ -4,7 +4,7 @@ namespace App\Jobs\SIS;
 
 use App\Enums\AccountTypes;
 
-class RefreshEmployeesAccounts extends BaseSisJob
+class SyncEmployeesAccounts extends BaseSisJob
 {
     public function handle(): void
     {
