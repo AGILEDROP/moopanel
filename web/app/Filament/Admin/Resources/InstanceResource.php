@@ -3,9 +3,9 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Enums\Status;
-use App\Filament\Admin\Custom;
-use App\Filament\Admin\Custom\Actions\Forms\CopyFieldStateAction;
 use App\Filament\Admin\Resources\InstanceResource\Pages;
+use App\Filament\Custom;
+use App\Filament\Custom\Admin\Actions\Forms\CopyFieldStateAction;
 use App\Models\Cluster;
 use App\Models\Instance;
 use App\Services\ModuleApiService;
@@ -144,12 +144,12 @@ class InstanceResource extends Resource
                 Tables\Filters\SelectFilter::make('cluster')
                     ->relationship('cluster', 'name')
                     ->multiple(),
-                Custom\Filters\UniversityMembersFilter::make('university_member_id', 'universityMember'),
+                Custom\Admin\Filters\UniversityMembersFilter::make('university_member_id', 'universityMember'),
             ])
             ->filtersFormWidth(MaxWidth::Large)
             ->recordUrl(fn (Instance $record) => route('filament.app.pages.app-dashboard', ['tenant' => $record]))
             ->actions([
-                Custom\Actions\Table\EditInstanceAction::make(),
+                Custom\Admin\Actions\Table\EditInstanceAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

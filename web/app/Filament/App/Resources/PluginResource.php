@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources;
 
 use App\Filament\App\Resources\PluginResource\Pages;
+use App\Filament\Custom;
 use App\Livewire\Plugin\UpdateLogTable;
 use App\Models\Instance;
 use App\Models\InstancePlugin;
@@ -12,6 +13,7 @@ use App\Services\ModuleApiService;
 use Filament\Infolists\Components\Livewire;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
@@ -60,13 +62,6 @@ class PluginResource extends Resource
         ];
     }
 
-    protected function getTableHeading(): string|Htmlable|null
-    {
-        $instance = Instance::find(filament()->getTenant()->id);
-
-        return $instance->name.': '.__('Plugin updates');
-    }
-
     public static function getTableQuery()
     {
         return InstancePlugin::where('instance_id', filament()->getTenant()->id)->with('plugin')->withExists('updates');
@@ -84,11 +79,10 @@ class PluginResource extends Resource
                     ->description(fn (Model $record) => $record->plugin->type)
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('plugin.type')
-                    ->label(__('Type'))
-                    ->hidden()
+                Tables\Columns\TextColumn::make('plugin.component')
+                    ->label(__('Component'))
                     ->sortable()
-                    ->badge(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('enabled')
                     ->label(__('Enabled'))
                     ->sortable()
@@ -106,14 +100,16 @@ class PluginResource extends Resource
                     ->dateTime(),
             ])
             ->defaultSort('updates_exists', 'desc')
+            ->filters([
+                Tables\Filters\TernaryFilter::make('enabled')
+                    ->label(__('Enabled'))
+                    ->placeholder(__('Select option')),
+                Custom\App\Filters\AvailableUpdatesFilter::make('available_updates'),
+                Custom\App\Filters\InstancePluginTypeFilter::make('plugin_type'),
+            ])
             ->headerActions(self::getTableHeaderActions())
             ->actions([
-                Action::make('update_plugin')
-                    ->label(__('Update'))
-                    ->hidden(fn (Model $record): bool => ! $record->updates_exists)
-                    ->iconButton()
-                    ->icon('heroicon-o-arrow-up-circle')
-                    ->action(fn () => dd('Implement update logic!')),
+                Custom\App\Actions\Table\UpdatePluginAction::make('update_plugin'),
                 Action::make('plugin_log')
                     ->iconButton()
                     ->visible(fn (Model $record): bool => $record->updateLog()->count() > 0)
@@ -135,14 +131,13 @@ class PluginResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('update_plugins')
+                    Tables\Actions\BulkAction::make('enable_plugins')
                         ->label(__('Enable'))
-                        ->icon('heroicon-o-check-circle'),
-                    Tables\Actions\BulkAction::make('update_plugins')
-                        ->label(__('Update'))
-                        ->icon('heroicon-o-arrow-up-circle'),
+                        ->icon('heroicon-o-check-circle')
+                        ->action(fn () => dd('Implement logic when endpoint will be available!')),
+                    Custom\App\Actions\Table\UpdatePluginsBulkAction::make('update_plugins'),
                     Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ])->dropdownWidth(MaxWidth::Medium),
             ]);
     }
 

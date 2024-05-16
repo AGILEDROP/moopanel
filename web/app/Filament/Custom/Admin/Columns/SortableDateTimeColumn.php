@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Filament\Admin\Custom\Columns;
+namespace App\Filament\Custom\Admin\Columns;
 
 use Filament\Tables\Columns\TextColumn;
 
-class UpnColumn
+class SortableDateTimeColumn
 {
     public static function make(string $name, ?string $label = null): TextColumn
     {
         return TextColumn::make($name)
             ->label($label ?? $name)
-            ->searchable()
-            ->copyable();
+            ->dateTime()
+            ->sortable()
+            ->toggleable(isToggledHiddenByDefault: true);
     }
 }

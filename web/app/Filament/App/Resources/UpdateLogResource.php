@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources;
 
 use App\Enums\UpdateLogType;
 use App\Filament\App\Resources\UpdateLogResource\Pages;
+use App\Filament\Custom;
 use App\Models\Instance;
 use App\Models\Plugin;
 use App\Models\Sync;
@@ -77,6 +78,10 @@ class UpdateLogResource extends Resource
                     ->color('gray')
                     ->badge()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('plugin.display_name')
+                    ->toggleable()
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('info')
                     ->searchable()
                     ->sortable(),
@@ -91,6 +96,10 @@ class UpdateLogResource extends Resource
                 Tables\Columns\TextColumn::make('version')
                     ->label(__('Version'))
                     ->sortable(),
+                Tables\Columns\TextColumn::make('targetversion')
+                    ->label(__('Target version'))
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('type')
                     ->label(__('Operation result'))
                     ->formatStateUsing(fn (UpdateLogType $state): string => $state->toReadableString())
@@ -111,6 +120,9 @@ class UpdateLogResource extends Resource
                                             <div><b>'.__('Backtrace').':</b><br/>'.$record->backtrace.'</div>'))
                     ->modalSubmitAction(false)
                     ->modalCancelAction(false),
+            ])
+            ->filters([
+                Custom\App\Filters\UpdateLogTypeFilter::make('main'),
             ])
             ->defaultSort('timemodified', 'desc')
             ->paginationPageOptions([5, 10, 25, 50, 100]);

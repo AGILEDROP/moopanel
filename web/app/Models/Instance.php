@@ -55,7 +55,7 @@ class Instance extends Model implements HasAvatar
         return $this->belongsToMany(Plugin::class)->withPivot(['enabled', 'version']);
     }
 
-    public function availableUpdates(): HasMany
+    public function updates(): HasMany
     {
         return $this->hasMany(Update::class);
     }

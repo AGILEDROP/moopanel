@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Admin\Custom\Actions\Table;
+namespace App\Filament\Custom\Admin\Actions\Table;
 
 use App\Enums\Status;
 use App\Services\ModuleApiService;
