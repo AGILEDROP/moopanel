@@ -31,6 +31,16 @@ class ModuleApiService
         ]));
     }
 
+    public function triggerZipFileUpdates(string $baseUrl, string $apiKey, ?array $updates): PromiseInterface|Response
+    {
+        // @todo: path doesn't exist yet! I need post endpoint for this!
+        return Http::withHeaders([
+            'X-API-KEY' => $apiKey,
+        ])->post($baseUrl.self::PLUGIN_PATH.'/zip_update', wrapData([
+            'updates' => $updates,
+        ]));
+    }
+
     public function triggerPluginsUpdates(string $baseUrl, string $apiKey, ?array $updates): PromiseInterface|Response
     {
         return Http::withHeaders([
