@@ -28,4 +28,13 @@ enum UpdateType: string
             self::CORE_MEGA => __('Mega core update'),
         };
     }
+
+    public function getIconComponent(?string $class): string
+    {
+        return match ($this) {
+            self::PLUGIN => '<x-fas-plug class="'.$class.'"></x-fas-plug>',
+            self::CORE_MINOR, self::CORE_MAJOR => '<x-fas-cube class="'.$class.'"></x-fas-cube>',
+            self::CORE_MEGA => '<x-fas-cubes class="'.$class.'"></x-fas-cube>',
+        };
+    }
 }

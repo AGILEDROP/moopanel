@@ -3,12 +3,21 @@
 namespace App\Filament\Admin\Clusters\Updates\Pages;
 
 use App\Enums\UpdateType;
+use App\Models\Instance;
 use App\Models\Plugin;
 use App\Models\Update;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Storage;
 
-class ChooseUpdateTypePage extends BaseUpdateWizardPage
+class ChooseUpdateTypePage extends BaseUpdateWizardPage implements HasActions
 {
+    use InteractsWithActions;
+
     protected static string $view = 'filament.admin.pages.choose-update-type-page';
 
     protected static ?string $title = 'Choose update type';
@@ -127,5 +136,47 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage
         }
 
         return true;
+    }
+
+    public function zipAction(): Action
+    {
+        // @todo: I need post endpoint for this!
+        return Action::make('zip')
+            ->label(__('Update with zip file'))
+            ->icon('fas-upload')
+            ->link()
+            ->form([
+                // todo: it would be best to update file to s3, and then just sent the id to the moodle instance!
+                // other option is to store zip files to public storage and then send the public storage and delete it when it is finished!
+                FileUpload::make('updates')
+                    ->uploadingMessage(__('Uploading files...'))
+                    ->multiple()
+                    ->required()
+                    ->disk('public')
+                    ->directory('updates')
+                    ->maxSize(1024)
+                    ->rules('file|mimes:zip'),
+            ])
+            ->action(function (Action $action, array $data) {
+                $updates = [];
+                foreach ($data['updates'] as $key => $zipFile) {
+                    $updates['updates'][] = Storage::disk('public')->url($zipFile);
+                }
+
+                //  $instances = Instance::whereIn('id', $this->instanceIds)->get();
+                //  foreach ($instances as $instance) {
+                //      // Trigger endpoint for each selected instance
+                //      $instance->triggerZipFileUpdates($instance->url, Crypt::decrypt($instance->api_key), $updates);
+                //      // Check if update was successful based on returned status and return user notification
+                //      // which updates were successful/failed!
+                //  }
+
+                // Delete updated files!
+                foreach ($data['updates'] as $key => $zipFile) {
+                    Storage::disk('public')->delete($zipFile);
+                }
+
+                dd($updates);
+            });
     }
 }
