@@ -9,7 +9,7 @@ class Backups extends Cluster
 {
     protected static ?string $navigationIcon = 'heroicon-o-circle-stack';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 3;
 
     public function mount(): void
     {
