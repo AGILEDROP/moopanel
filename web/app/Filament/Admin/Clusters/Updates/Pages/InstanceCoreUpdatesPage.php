@@ -23,7 +23,7 @@ class InstanceCoreUpdatesPage extends BaseUpdateWizardPage
         $records = Update::select('id', 'maturity', 'version', 'release', 'url')
             ->whereIn('instance_id', $this->instanceIds)
             ->whereNull('plugin_id')
-            ->where('type', $this->updateType)
+            ->where('type', $this->type)
             ->distinct('release')
             ->orderBy('release', 'desc')
             ->get();
@@ -32,7 +32,7 @@ class InstanceCoreUpdatesPage extends BaseUpdateWizardPage
             $updateInstances = Instance::whereIn('id',
                 Update::whereIn('instance_id', $this->instanceIds)
                     ->whereNull('plugin_id')
-                    ->where('type', $this->updateType)
+                    ->where('type', $this->type)
                     ->where('release', $update->release)
                     ->pluck('instance_id')
                     ->toArray()
@@ -49,7 +49,7 @@ class InstanceCoreUpdatesPage extends BaseUpdateWizardPage
         $this->redirect(ChooseUpdateTypePage::getUrl([
             'clusterIds' => urlencode(serialize($this->clusterIds)),
             'instanceIds' => urlencode(serialize($this->instanceIds)),
-            'updateType' => $this->updateType,
+            'type' => $this->type,
         ]));
     }
 
