@@ -11,7 +11,7 @@ class UserManagement extends Cluster
 {
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
 
     public function mount(): void
     {
