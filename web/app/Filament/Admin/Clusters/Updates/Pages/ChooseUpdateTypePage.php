@@ -18,7 +18,7 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage implements HasActions
 {
     use InteractsWithActions;
 
-    protected static string $view = 'filament.admin.pages.choose-update-type-page';
+    protected static string $view = 'filament.admin.pages.choose-type-page';
 
     protected static ?string $title = 'Choose update type';
 
@@ -26,32 +26,36 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage implements HasActions
 
     public int $currentStep = 3;
 
-    public function getUpdateTypes(): array
+    public bool $hasHeaderAction = true;
+
+    public function getTypes(): array
     {
-        $updateTypes = [];
+        $types = [];
         foreach (UpdateType::cases() as $case) {
-            $updateTypes[] = [
+            $types[] = [
+                'class' => 'h-[340px]',
                 'type' => $case->value,
                 'text' => $case->getText(),
-                'count' => $this->getUpdateTypeCount($case),
+                'icon' => $case->getIconComponent('h-32 w-32 mx-auto text-gray-500 dark:text-gray-300 mb-8'),
+                'count' => $this->getTypeCount($case),
             ];
         }
 
-        return $updateTypes;
+        return $types;
     }
 
-    public function selectUpdateType(?string $type): void
+    public function selectType(?string $type): void
     {
-        if ($type !== $this->updateType) {
-            $this->updateType = $type;
+        if ($type !== $this->type) {
+            $this->type = $type;
         } else {
-            $this->updateType = null;
+            $this->type = null;
         }
     }
 
     public function isSelected(?string $type): bool
     {
-        return $type === $this->updateType;
+        return $type === $this->type;
     }
 
     public function goToNextStep(): void
@@ -60,18 +64,16 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage implements HasActions
             return;
         }
 
-        // todo: update based on the diff between minor and major core update!
-        // todo: wait for value in the endpoint (type should be set for all updates)!
-        $redirectPage = match ($this->updateType) {
+        $redirectPage = match ($this->type) {
             UpdateType::CORE_MINOR->value, UpdateType::CORE_MAJOR->value, UpdateType::CORE_MEGA->value => InstanceCoreUpdatesPage::getUrl([
                 'clusterIds' => urlencode(serialize($this->clusterIds)),
                 'instanceIds' => urlencode(serialize($this->instanceIds)),
-                'updateType' => $this->updateType,
+                'type' => $this->type,
             ]),
             UpdateType::PLUGIN->value => PluginUpdatesPage::getUrl([
                 'clusterIds' => urlencode(serialize($this->clusterIds)),
                 'instanceIds' => urlencode(serialize($this->instanceIds)),
-                'updateType' => $this->updateType,
+                'type' => $this->type,
             ]),
         };
 
@@ -86,7 +88,7 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage implements HasActions
         ]));
     }
 
-    private function getUpdateTypeCount(UpdateType $updateTypeEnum)
+    private function getTypeCount(UpdateType $updateTypeEnum)
     {
         return match ($updateTypeEnum) {
             UpdateType::PLUGIN => Plugin::whereHas('updates', function ($q) {
@@ -112,21 +114,21 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage implements HasActions
 
     private function validateSelectionBeforeNextStep(): bool
     {
-        if ($this->updateType === null) {
+        if ($this->type === null) {
             Notification::make()
                 ->danger()
                 ->title(__('You should select update type.'))
                 ->send();
 
             return false;
-        } elseif (UpdateType::tryFrom($this->updateType) === null) {
+        } elseif (UpdateType::tryFrom($this->type) === null) {
             Notification::make()
                 ->danger()
                 ->title(__('Selected update type is not allowed!'))
                 ->send();
 
             return false;
-        } elseif ($this->getUpdateTypeCount(UpdateType::tryFrom($this->updateType)) === 0) {
+        } elseif ($this->getTypeCount(UpdateType::tryFrom($this->type)) === 0) {
             Notification::make()
                 ->info()
                 ->title(__('There are no new updates for selected update type.'))

@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Admin\Clusters\Updates\Pages;
+namespace App\Filament\Admin\Clusters\Backups\Pages;
 
-use App\Enums\UpdateType;
-use App\Filament\Admin\Clusters\Updates;
+use App\Enums\BackupType;
+use App\Filament\Admin\Clusters\Backups;
 use App\Filament\Admin\Resources\InstanceResource;
 use Filament\Pages\Page;
 use Illuminate\Support\HtmlString;
 
-class BaseUpdateWizardPage extends Page
+class BaseBackupWizardPage extends Page
 {
-    protected static ?string $cluster = Updates::class;
+    protected static ?string $cluster = Backups::class;
 
     protected static bool $shouldRegisterNavigation = false;
 
@@ -24,15 +24,13 @@ class BaseUpdateWizardPage extends Page
 
     public ?string $type = null;
 
-    public bool $hasUpdateAllAction = false;
-
     public function getBreadcrumbs(): array
     {
         return [
             InstanceResource::getUrl() => new HtmlString('<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg>'),
-            ChooseClusterPage::getUrl() => __('Updates'),
+            ChooseClusterPage::getUrl() => __('Backups'),
         ];
     }
 
@@ -51,12 +49,12 @@ class BaseUpdateWizardPage extends Page
                     'step' => 2,
                 ],
                 [
-                    'name' => __('Choose update type'),
+                    'name' => __('Choose backup type'),
                     'url' => $this->getStepUrl(3),
                     'step' => 3,
                 ],
                 [
-                    'name' => __('Update'),
+                    'name' => __('Create backups'),
                     'url' => $this->getStepUrl(4),
                     'step' => 4,
                 ],
@@ -95,10 +93,10 @@ class BaseUpdateWizardPage extends Page
                     'clusterIds' => urlencode(serialize($this->clusterIds)),
                     'instanceIds' => urlencode(serialize($this->instanceIds)),
                 ]),
-                3 => ChooseUpdateTypePage::getUrl([
+                3 => ChooseBackupTypePage::getUrl([
                     'clusterIds' => urlencode(serialize($this->clusterIds)),
                     'instanceIds' => urlencode(serialize($this->instanceIds)),
-                    'type' => $this->type,
+                    'updateType' => $this->type,
                 ]),
                 4 => '#',
             }
@@ -145,13 +143,13 @@ class BaseUpdateWizardPage extends Page
     protected function mountType(): void
     {
         if ($this->currentStep === 3) {
-            if (request('type') != null && UpdateType::tryFrom(request('type')) != null) {
+            if (request('type') != null && BackupType::tryFrom(request('type')) != null) {
                 $this->type = request('type');
             }
         } elseif ($this->currentStep > 3) {
             $this->type = request('type');
-            if ($this->type === null || UpdateType::tryFrom($this->type) === null) {
-                $this->redirect(ChooseUpdateTypePage::getUrl([
+            if ($this->type === null || BackupType::tryFrom($this->type) === null) {
+                $this->redirect(ChooseBackupTypePage::getUrl([
                     'clusterIds' => urlencode(serialize($this->clusterIds)),
                     'instanceIds' => urlencode(serialize($this->instanceIds)),
                 ]));

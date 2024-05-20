@@ -4,11 +4,9 @@ namespace App\Filament\Admin\Clusters\Updates\Pages;
 
 use App\Filament\Custom;
 use App\Models\Plugin;
-use App\Models\Update;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -33,7 +31,6 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
         })->withExists('updates');
     }
 
-    // todo: implement update action logic when update trigger endpoint will be provided (not yet)!
     // todo: show only stable releases?
     public function table(Table $table): Table
     {
@@ -80,7 +77,7 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
         $this->redirect(ChooseUpdateTypePage::getUrl([
             'clusterIds' => urlencode(serialize($this->clusterIds)),
             'instanceIds' => urlencode(serialize($this->instanceIds)),
-            'updateType' => $this->updateType,
+            'type' => $this->type,
         ]));
     }
 }
