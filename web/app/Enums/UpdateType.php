@@ -37,4 +37,13 @@ enum UpdateType: string
             self::CORE_MEGA => '<x-fas-cubes class="'.$class.'"></x-fas-cube>',
         };
     }
+
+    public function getIcon(): string
+    {
+        return match ($this) {
+            self::PLUGIN => 'fas-plug',
+            self::CORE_MINOR, self::CORE_MAJOR => 'fas-cube',
+            self::CORE_MEGA => 'fas-cubes',
+        };
+    }
 }
