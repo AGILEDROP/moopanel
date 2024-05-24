@@ -5,7 +5,10 @@ namespace App\Livewire\App\Core;
 use App\Enums\UpdateMaturity;
 use App\Enums\UpdateType;
 use App\Filament\Custom\App as CustomAppComponents;
+use App\Models\Instance;
 use App\Models\Update;
+use App\UseCases\Syncs\SingleInstance\CoreSyncType;
+use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables;
@@ -24,9 +27,11 @@ class AvailableUpdatesTable extends Component implements HasForms, HasTable
 
     public function table(Table $table): Table
     {
+        $syncType = SyncTypeFactory::create(CoreSyncType::TYPE, Instance::find(filament()->getTenant()->id));
+
         return $table
             ->heading(__('Available Updates'))
-            ->description(CustomAppComponents\Actions\Table\SyncAction::getLastSyncTime('core-update'))
+            ->description($syncType->getLatestTimeText())
             ->query(Update::query()->whereNull('plugin_id'))
             ->columns([
                 Tables\Columns\TextColumn::make('type')
@@ -45,9 +50,6 @@ class AvailableUpdatesTable extends Component implements HasForms, HasTable
                     ->sortable(),
             ])
             ->defaultSort('release', 'desc')
-            ->headerActions([
-                CustomAppComponents\Actions\Table\SyncAction::make('sync_core_update', 'core-update', 'availableCoreUpdatesTableComponent'),
-            ])
             ->actions([
                 CustomAppComponents\Actions\Table\UpdateCoreAction::make(),
             ]);

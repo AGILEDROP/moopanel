@@ -2,15 +2,16 @@
 
 namespace App\Console\Commands\ModuleApi;
 
-use App\Jobs\ModuleApi\SyncInstanceCoreUpdates;
+use App\Jobs\ModuleApi\Sync;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
+use App\UseCases\Syncs\SingleInstance\CoreSyncType;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Bus;
 
-class SyncCoreUpdates extends Command
+class SyncCore extends Command
 {
-    protected $signature = 'module-api:sync-core-updates';
+    protected $signature = 'module-api:sync-core';
 
     protected $description = 'Sync core updates for all existing instances.';
 
@@ -19,7 +20,7 @@ class SyncCoreUpdates extends Command
         $jobs = [];
         $instances = Instance::withoutGlobalScope(InstanceScope::class)->get();
         foreach ($instances as $instance) {
-            $jobs[] = new SyncInstanceCoreUpdates($instance);
+            $jobs[] = new Sync($instance, CoreSyncType::TYPE, 'Core updates sync failed.');
         }
 
         Bus::batch($jobs)->dispatch();
