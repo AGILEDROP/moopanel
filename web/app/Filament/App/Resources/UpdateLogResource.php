@@ -5,7 +5,10 @@ namespace App\Filament\App\Resources;
 use App\Enums\UpdateLogType;
 use App\Filament\App\Resources\UpdateLogResource\Pages;
 use App\Filament\Custom\App as CustomAppComponents;
+use App\Models\Instance;
 use App\Models\UpdateLog;
+use App\UseCases\Syncs\SingleInstance\UpdateLogSyncType;
+use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -18,8 +21,10 @@ class UpdateLogResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $syncType = SyncTypeFactory::create(UpdateLogSyncType::TYPE, Instance::find(filament()->getTenant()->id));
+
         return $table
-            ->description(CustomAppComponents\Actions\Table\SyncAction::getLastSyncTime('update-log'))
+            ->description($syncType->getLatestTimeText())
             ->columns([
                 Tables\Columns\TextColumn::make('plugin_exists')
                     ->visibleOn(Pages\ManageUpdateLogs::class)
@@ -62,7 +67,7 @@ class UpdateLogResource extends Resource
                     ->sortable(),
             ])
             ->headerActions([
-                CustomAppComponents\Actions\Table\SyncAction::make('sync', 'update-log', 'manageUpdateLogPage'),
+                $syncType->getTableAction('sync', ['manageUpdateLogPage']),
             ])
             ->actions([
                 CustomAppComponents\Actions\Table\UpdateLogDetailsAction::make(),

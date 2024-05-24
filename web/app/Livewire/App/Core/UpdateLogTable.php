@@ -3,8 +3,10 @@
 namespace App\Livewire\App\Core;
 
 use App\Filament\App\Resources\UpdateLogResource;
-use App\Filament\Custom\App as CustomAppComponents;
+use App\Models\Instance;
 use App\Models\UpdateLog;
+use App\UseCases\Syncs\SingleInstance\CoreSyncType;
+use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -22,12 +24,14 @@ class UpdateLogTable extends Component implements HasForms, HasTable
 
     public function table(Table $table): Table
     {
+        $syncType = SyncTypeFactory::create(CoreSyncType::TYPE, Instance::find(filament()->getTenant()->id));
+
         return UpdateLogResource::table($table)
             ->heading(__('Log'))
-            ->description(CustomAppComponents\Actions\Table\SyncAction::getLastSyncTime('core-update-log'))
+            ->description($syncType->getLatestTimeText())
             ->query(UpdateLog::query()->whereNull('plugin_id'))
             ->headerActions([
-                CustomAppComponents\Actions\Table\SyncAction::make('sync_core_update_log', 'core-update-log', 'coreUpdateLogTableComponent'),
+                //
             ]);
     }
 

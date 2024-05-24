@@ -5,6 +5,9 @@ namespace App\Filament\App\Pages;
 use App\Livewire\App\Core\AvailableUpdatesTable;
 use App\Livewire\App\Core\CurrentVersion;
 use App\Livewire\App\Core\UpdateLogTable;
+use App\Models\Instance;
+use App\UseCases\Syncs\SingleInstance\CoreSyncType;
+use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\Livewire;
 use Filament\Infolists\Infolist;
@@ -24,6 +27,19 @@ class Core extends Page
         return $breadcrumbs;
     }
 
+    protected function getHeaderActions(): array
+    {
+        $syncType = SyncTypeFactory::create(CoreSyncType::TYPE, Instance::find(filament()->getTenant()->id));
+
+        return [
+            $syncType->getHeaderAction('sync', [
+                'availableCoreUpdatesTableComponent',
+                'coreUpdateLogTableComponent',
+                'coreCurrentVersionComponent',
+            ]),
+        ];
+    }
+
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist
@@ -33,10 +49,13 @@ class Core extends Page
                     'lg' => 3,
                 ])->schema([
                     Livewire::make(CurrentVersion::class)
+                        ->key('current-version-component')
                         ->columnSpan(1),
                     Livewire::make(AvailableUpdatesTable::class)
+                        ->key('available-updates-table')
                         ->columnSpan(['default' => 1, 'lg' => 2]),
                     Livewire::make(UpdateLogTable::class)
+                        ->key('update-log-table')
                         ->columnSpanFull(),
                 ]),
             ]);

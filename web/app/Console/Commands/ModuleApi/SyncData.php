@@ -2,11 +2,12 @@
 
 namespace App\Console\Commands\ModuleApi;
 
-use App\Jobs\ModuleApi\SyncInstanceCoreUpdates;
-use App\Jobs\ModuleApi\SyncInstanceInfo;
-use App\Jobs\ModuleApi\SyncInstancePlugins;
+use App\Jobs\ModuleApi\Sync;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
+use App\UseCases\Syncs\SingleInstance\CoreSyncType;
+use App\UseCases\Syncs\SingleInstance\InfoSyncType;
+use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Bus;
 
@@ -21,9 +22,9 @@ class SyncData extends Command
         $jobs = [];
         $instances = Instance::withoutGlobalScope(InstanceScope::class)->get();
         foreach ($instances as $instance) {
-            $jobs[] = new SyncInstanceInfo($instance);
-            $jobs[] = new SyncInstanceCoreUpdates($instance);
-            $jobs[] = new SyncInstancePlugins($instance);
+            $jobs[] = new Sync($instance, InfoSyncType::TYPE, 'Instance information sync failed.');
+            $jobs[] = new Sync($instance, CoreSyncType::TYPE, 'Core updates sync failed.');
+            $jobs[] = new Sync($instance, PluginsSyncType::TYPE, 'Plugin sync failed!');
         }
 
         Bus::batch($jobs)->dispatch();

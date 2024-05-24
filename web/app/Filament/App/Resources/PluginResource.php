@@ -4,7 +4,10 @@ namespace App\Filament\App\Resources;
 
 use App\Filament\App\Resources\PluginResource\Pages;
 use App\Filament\Custom\App as CustomAppComponents;
+use App\Models\Instance;
 use App\Models\InstancePlugin;
+use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
+use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\MaxWidth;
@@ -29,9 +32,11 @@ class PluginResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $syncType = SyncTypeFactory::create(PluginsSyncType::TYPE, Instance::find(filament()->getTenant()->id));
+
         return $table
             ->query(fn () => self::getTableQuery())
-            ->description(CustomAppComponents\Actions\Table\SyncAction::getLastSyncTime('plugin-update'))
+            ->description($syncType->getLatestTimeText())
             ->columns([
                 Tables\Columns\TextColumn::make('plugin.display_name')
                     ->label(__('Plugin name'))
@@ -68,7 +73,7 @@ class PluginResource extends Resource
                 CustomAppComponents\Filters\InstancePluginTypeFilter::make('plugin_type'),
             ])
             ->headerActions([
-                CustomAppComponents\Actions\Table\SyncAction::make('sync', 'plugin-update', 'managePluginsPage'),
+                $syncType->getTableAction('sync', ['managePluginsPage']),
             ])
             ->actions([
                 CustomAppComponents\Actions\Table\UpdatePluginAction::make('update_plugin'),
