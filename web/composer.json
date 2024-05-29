@@ -11,6 +11,7 @@
         "php": "^8.2",
         "arsanchez/laravel-azure-provisioning": "^1.1.8",
         "filament/filament": "^3.0-stable",
+        "flowframe/laravel-trend": "^0.2.0",
         "guzzlehttp/guzzle": "^7.2",
         "hydrat/filament-table-layout-toggle": "^1.2",
         "laravel/framework": "^10.10",

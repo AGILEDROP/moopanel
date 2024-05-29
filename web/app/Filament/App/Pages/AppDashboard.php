@@ -9,7 +9,7 @@ class AppDashboard extends Dashboard
 {
     public function getColumns(): int|string|array
     {
-        return 4;
+        return 8;
     }
 
     public function getBreadcrumbs(): array

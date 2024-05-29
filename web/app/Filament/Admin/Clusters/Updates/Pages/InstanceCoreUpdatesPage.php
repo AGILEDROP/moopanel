@@ -37,7 +37,7 @@ class InstanceCoreUpdatesPage extends BaseUpdateWizardPage
                     ->pluck('instance_id')
                     ->toArray()
             )->get();
-            $update['date'] = $update->version_date;
+            $update['date'] = $update->version_date->toDateString();
             $update['instances'] = $updateInstances;
         });
 
