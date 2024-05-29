@@ -95,6 +95,11 @@ class Instance extends Model implements HasAvatar
         return $this->hasMany(Sync::class);
     }
 
+    public function activeMoodleUsersLog(): HasMany
+    {
+        return $this->hasMany(ActiveMoodleUsersLog::class);
+    }
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);

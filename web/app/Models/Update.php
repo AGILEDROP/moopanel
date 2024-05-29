@@ -53,7 +53,7 @@ class Update extends Model
                 $versionMonth = substr($version, 4, -2);
                 $versionDay = substr($version, 6);
 
-                return Carbon::createFromDate($versionYear, $versionMonth, $versionDay)->toDateString();
+                return Carbon::createFromDate($versionYear, $versionMonth, $versionDay);
             }
         );
     }

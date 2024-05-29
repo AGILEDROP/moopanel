@@ -62,12 +62,6 @@ class ModuleApiService
             ->get($baseUrl.self::PLUGIN_PATH.'/plugins/updates');
     }
 
-    public function getOnlineUsers(Model|Instance $instance): PromiseInterface|Response
-    {
-        return Http::withHeader('X-API-KEY', Crypt::decrypt($instance->api_key))
-            ->get($instance->url.self::PLUGIN_PATH.'/users/online');
-    }
-
     public function sync(Model|Instance $instance, string $syncType, bool $silent = false): bool
     {
         $sync = SyncTypeFactory::create($syncType, $instance);
@@ -75,13 +69,18 @@ class ModuleApiService
         return $sync->run($silent);
     }
 
-    public function getOnlineUsersCount(Model|Instance $instance): ?int
+    public function getActiveMoodleUsersCount(Model|Instance $instance, int $timeStart, int $timeEnd): ?int
     {
-        $request = $this->getOnlineUsers($instance);
+        $request = Http::withHeader('X-API-KEY', Crypt::decrypt($instance->api_key))
+            ->get($instance->url.self::PLUGIN_PATH.'/users/online', [
+                'timeStart' => $timeStart,
+                'timeEnd' => $timeEnd,
+            ]);
+
         if (! $request->ok()) {
             Log::error("Unsuccessful active users fetch (instance id: {$instance->id})!");
         }
 
-        return $request->json('number_of_users');
+        return $request->json('online');
     }
 }

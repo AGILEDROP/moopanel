@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('sis:sync-accounts-data')->dailyAt('03:00');
         $schedule->command('module-api:sync-data')->everyTwoHours();
+        $schedule->command('module-api:get-active-moodle-users-count')->hourly();
         $schedule->command('activitylog:clean --force')->daily();
     }
 
