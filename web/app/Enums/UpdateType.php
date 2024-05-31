@@ -5,15 +5,17 @@ namespace App\Enums;
 enum UpdateType: string
 {
     case PLUGIN = 'plugin';
-    case MINOR_CORE = 'minor-core';
-    case MAJOR_CORE = 'major-core';
+    case CORE_MINOR = 'core-minor';
+    case CORE_MAJOR = 'core-major';
+    case CORE_MEGA = 'core-mega';
 
     public function toReadableString(): string
     {
         return match ($this) {
             self::PLUGIN => __('Plugin'),
-            self::MINOR_CORE => __('Minor core'),
-            self::MAJOR_CORE => __('Major core'),
+            self::CORE_MINOR => __('Minor core'),
+            self::CORE_MAJOR => __('Major core'),
+            self::CORE_MEGA => __('Mega core'),
         };
     }
 
@@ -21,8 +23,27 @@ enum UpdateType: string
     {
         return match ($this) {
             self::PLUGIN => __('Plugin update'),
-            self::MINOR_CORE => __('Minor core update'),
-            self::MAJOR_CORE => __('Major core update'),
+            self::CORE_MINOR => __('Minor core update'),
+            self::CORE_MAJOR => __('Major core update'),
+            self::CORE_MEGA => __('Mega core update'),
+        };
+    }
+
+    public function getIconComponent(?string $class): string
+    {
+        return match ($this) {
+            self::PLUGIN => '<x-fas-plug class="'.$class.'"></x-fas-plug>',
+            self::CORE_MINOR, self::CORE_MAJOR => '<x-fas-cube class="'.$class.'"></x-fas-cube>',
+            self::CORE_MEGA => '<x-fas-cubes class="'.$class.'"></x-fas-cube>',
+        };
+    }
+
+    public function getIcon(): string
+    {
+        return match ($this) {
+            self::PLUGIN => 'fas-plug',
+            self::CORE_MINOR, self::CORE_MAJOR => 'fas-cube',
+            self::CORE_MEGA => 'fas-cubes',
         };
     }
 }

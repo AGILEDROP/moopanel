@@ -10,7 +10,7 @@ class UniversityMemberObserver
     public function created(UniversityMember $universityMember): void
     {
         $users = (User::count() > 0) ? User::pluck('id')->toArray() : [];
-        $universityMember->users()->syncWithoutDetaching($users);
+        $universityMember->users()->sync($users);
     }
 
     public function deleted(UniversityMember $universityMember): void

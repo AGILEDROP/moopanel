@@ -82,6 +82,16 @@ class SisApiService
                 ->update([
                     'type' => $type,
                 ]);
+            // Handle also detaching -> Sync can't be used because this function is used on two different endpoints
+            // (one for students and one for employees).
+            $accountsThatShouldBeDetached = $universityMember
+                ->accounts()
+                ->where('type', $type)
+                ->whereNotIn('id', $accounts)
+                ->pluck('id');
+            if (count($accountsThatShouldBeDetached) > 0) {
+                $universityMember->accounts()->detach($accountsThatShouldBeDetached);
+            }
         } else {
             Log::warning("{$universityMember->name} endpoint returned an empty {$typeName} collection.");
         }

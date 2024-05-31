@@ -3,19 +3,16 @@
 namespace App\Filament\App\Resources;
 
 use App\Filament\App\Resources\PluginResource\Pages;
-use App\Livewire\Plugin\UpdateLogTable;
+use App\Filament\Custom\App as CustomAppComponents;
 use App\Models\Instance;
 use App\Models\InstancePlugin;
-use App\Models\Plugin;
-use App\Models\Sync;
-use App\Services\ModuleApiService;
-use Filament\Infolists\Components\Livewire;
+use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
+use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 
 class PluginResource extends Resource
@@ -28,45 +25,6 @@ class PluginResource extends Resource
 
     protected static ?string $label = 'Plugins';
 
-    public static function getTableDescription(): string|Htmlable|null
-    {
-        $time = __('never');
-        if (isset(filament()->getTenant()->id)) {
-            $lastSync = Sync::where([
-                ['instance_id', '=', filament()->getTenant()->id],
-                ['type', Plugin::class],
-                ['subtype', null],
-            ]);
-            if ($lastSync->exists()) {
-                $time = $lastSync
-                    ->latest('synced_at')
-                    ->first()
-                    ->synced_at
-                    ->diffForHumans();
-            }
-        }
-
-        return __('Last sync: ').$time;
-    }
-
-    public static function getTableHeaderActions(): array
-    {
-        return [
-            Tables\Actions\Action::make('sync_plugins')
-                ->label('Sync')
-                ->icon('heroicon-o-arrow-path')
-                ->action(fn () => (new ModuleApiService)->syncInstancePlugins(Instance::find(filament()->getTenant()->id)))
-                ->after(fn ($livewire) => $livewire->dispatch('managePluginsPage')),
-        ];
-    }
-
-    protected function getTableHeading(): string|Htmlable|null
-    {
-        $instance = Instance::find(filament()->getTenant()->id);
-
-        return $instance->name.': '.__('Plugin updates');
-    }
-
     public static function getTableQuery()
     {
         return InstancePlugin::where('instance_id', filament()->getTenant()->id)->with('plugin')->withExists('updates');
@@ -74,9 +32,11 @@ class PluginResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $syncType = SyncTypeFactory::create(PluginsSyncType::TYPE, Instance::find(filament()->getTenant()->id));
+
         return $table
             ->query(fn () => self::getTableQuery())
-            ->description(self::getTableDescription())
+            ->description($syncType->getLatestTimeText())
             ->columns([
                 Tables\Columns\TextColumn::make('plugin.display_name')
                     ->label(__('Plugin name'))
@@ -84,11 +44,10 @@ class PluginResource extends Resource
                     ->description(fn (Model $record) => $record->plugin->type)
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('plugin.type')
-                    ->label(__('Type'))
-                    ->hidden()
+                Tables\Columns\TextColumn::make('plugin.component')
+                    ->label(__('Component'))
                     ->sortable()
-                    ->badge(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('enabled')
                     ->label(__('Enabled'))
                     ->sortable()
@@ -106,43 +65,32 @@ class PluginResource extends Resource
                     ->dateTime(),
             ])
             ->defaultSort('updates_exists', 'desc')
-            ->headerActions(self::getTableHeaderActions())
+            ->filters([
+                Tables\Filters\TernaryFilter::make('enabled')
+                    ->label(__('Enabled'))
+                    ->placeholder(__('Select option')),
+                CustomAppComponents\Filters\AvailableUpdatesFilter::make('available_updates'),
+                CustomAppComponents\Filters\InstancePluginTypeFilter::make('plugin_type'),
+            ])
+            ->headerActions([
+                $syncType->getTableAction('sync', ['managePluginsPage']),
+            ])
             ->actions([
-                Action::make('update_plugin')
-                    ->label(__('Update'))
-                    ->hidden(fn (Model $record): bool => ! $record->updates_exists)
-                    ->iconButton()
-                    ->icon('heroicon-o-arrow-up-circle')
-                    ->action(fn () => dd('Implement update logic!')),
-                Action::make('plugin_log')
-                    ->iconButton()
-                    ->visible(fn (Model $record): bool => $record->updateLog()->count() > 0)
-                    // One way to show custom livewire table inside modal window. You can also use modalContent,
-                    // but then there you need two views for same table.
-                    ->infolist(fn (Model $record) => [
-                        Livewire::make(UpdateLogTable::class, ['plugin' => $record->plugin])
-                            ->key('plugin-log-'.$record->id)
-                            ->id('plugin-log-'.$record->id),
-                    ])
-                    ->modalHeading(fn (Model $record) => __('Plugin log: :plugin', ['plugin' => $record->plugin->display_name]))
-                    ->modalCancelAction(false)
-                    ->modalSubmitAction(false)
-                    ->slideOver()
-                    ->icon('fas-timeline')
-                    ->color('gray'),
+                CustomAppComponents\Actions\Table\UpdatePluginAction::make('update_plugin'),
+                CustomAppComponents\Actions\Table\PluginUpdateLogAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->iconButton(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('update_plugins')
+                    // todo: wait for endpoint and implement action logic!
+                    Tables\Actions\BulkAction::make('enable_plugins')
                         ->label(__('Enable'))
-                        ->icon('heroicon-o-check-circle'),
-                    Tables\Actions\BulkAction::make('update_plugins')
-                        ->label(__('Update'))
-                        ->icon('heroicon-o-arrow-up-circle'),
+                        ->icon('heroicon-o-check-circle')
+                        ->action(fn () => dd('Implement logic when endpoint will be available!')),
+                    CustomAppComponents\Actions\Table\UpdatePluginsBulkAction::make('update_plugins'),
                     Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ])->dropdownWidth(MaxWidth::Medium),
             ]);
     }
 

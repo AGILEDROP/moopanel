@@ -12,8 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('sis:refresh-accounts-data')->dailyAt('03:00');
-        $schedule->command('module-api-service:sync-data')->everyTwoHours();
+        $schedule->command('sis:sync-accounts-data')->dailyAt('03:00');
+        $schedule->command('module-api:sync-data')->everyTwoHours();
+        $schedule->command('module-api:get-active-moodle-users-count')->hourly();
+        $schedule->command('activitylog:clean --force')->daily();
     }
 
     /**

@@ -7,6 +7,11 @@ use Illuminate\Support\HtmlString;
 
 class AppDashboard extends Dashboard
 {
+    public function getColumns(): int|string|array
+    {
+        return 8;
+    }
+
     public function getBreadcrumbs(): array
     {
         return [

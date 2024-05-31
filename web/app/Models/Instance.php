@@ -55,7 +55,7 @@ class Instance extends Model implements HasAvatar
         return $this->belongsToMany(Plugin::class)->withPivot(['enabled', 'version']);
     }
 
-    public function availableUpdates(): HasMany
+    public function updates(): HasMany
     {
         return $this->hasMany(Update::class);
     }
@@ -93,6 +93,11 @@ class Instance extends Model implements HasAvatar
     public function syncs(): HasMany
     {
         return $this->hasMany(Sync::class);
+    }
+
+    public function activeMoodleUsersLog(): HasMany
+    {
+        return $this->hasMany(ActiveMoodleUsersLog::class);
     }
 
     public function users(): BelongsToMany

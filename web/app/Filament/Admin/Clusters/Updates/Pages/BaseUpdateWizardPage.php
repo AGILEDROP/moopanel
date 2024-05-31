@@ -22,7 +22,7 @@ class BaseUpdateWizardPage extends Page
 
     public string|array|null $clusterIds;
 
-    public ?string $updateType = null;
+    public ?string $type = null;
 
     public bool $hasUpdateAllAction = false;
 
@@ -98,7 +98,7 @@ class BaseUpdateWizardPage extends Page
                 3 => ChooseUpdateTypePage::getUrl([
                     'clusterIds' => urlencode(serialize($this->clusterIds)),
                     'instanceIds' => urlencode(serialize($this->instanceIds)),
-                    'updateType' => $this->updateType,
+                    'type' => $this->type,
                 ]),
                 4 => '#',
             }
@@ -109,7 +109,7 @@ class BaseUpdateWizardPage extends Page
     {
         $this->mountClusterIds();
         $this->mountInstanceIds();
-        $this->mountUpdateType();
+        $this->mountType();
     }
 
     protected function mountClusterIds(): void
@@ -142,15 +142,15 @@ class BaseUpdateWizardPage extends Page
         }
     }
 
-    protected function mountUpdateType(): void
+    protected function mountType(): void
     {
         if ($this->currentStep === 3) {
-            if (request('updateType') != null && UpdateType::tryFrom(request('updateType')) != null) {
-                $this->updateType = request('updateType');
+            if (request('type') != null && UpdateType::tryFrom(request('type')) != null) {
+                $this->type = request('type');
             }
         } elseif ($this->currentStep > 3) {
-            $this->updateType = request('updateType');
-            if ($this->updateType === null || UpdateType::tryFrom($this->updateType) === null) {
+            $this->type = request('type');
+            if ($this->type === null || UpdateType::tryFrom($this->type) === null) {
                 $this->redirect(ChooseUpdateTypePage::getUrl([
                     'clusterIds' => urlencode(serialize($this->clusterIds)),
                     'instanceIds' => urlencode(serialize($this->instanceIds)),

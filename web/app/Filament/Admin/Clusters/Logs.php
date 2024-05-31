@@ -8,5 +8,5 @@ class Logs extends Cluster
 {
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?int $navigationSort = 990;
+    protected static ?int $navigationSort = 6;
 }

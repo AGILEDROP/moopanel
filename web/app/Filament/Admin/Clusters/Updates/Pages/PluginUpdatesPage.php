@@ -2,10 +2,11 @@
 
 namespace App\Filament\Admin\Clusters\Updates\Pages;
 
+use App\Filament\Custom;
 use App\Models\Plugin;
 use Filament\Support\Enums\FontWeight;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -30,7 +31,7 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
         })->withExists('updates');
     }
 
-    // todo: implement update action logic when update trigger endpoint will be provided (not yet)!
+    // todo: show only stable releases?
     public function table(Table $table): Table
     {
         return $table
@@ -42,11 +43,10 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
                     ->description(fn (Model $record) => $record->type)
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('type')
-                    ->label(__('Type'))
-                    ->hidden()
+                Tables\Columns\TextColumn::make('component')
+                    ->label(__('Component'))
                     ->sortable()
-                    ->badge(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('updates_exists')
                     ->icon('fas-plug')
                     ->color(fn ($state) => $state === true ? 'danger' : 'gray')
@@ -60,22 +60,15 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
             ])
             ->defaultSort('display_name', 'desc')
             ->actions([
-                Action::make('update_plugin')
-                    ->label(__('Update'))
-                    ->iconButton()
-                    ->icon('heroicon-o-arrow-up-circle')
-                    ->action(fn () => dd('Implement action logic')),
+                Custom\Admin\Actions\Table\WizardPluginsUpdateAction::make('update_plugins', $this->instanceIds),
                 Tables\Actions\DeleteAction::make()
                     ->iconButton(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('update_plugins')
-                        ->label(__('Update'))
-                        ->icon('heroicon-o-arrow-up-circle')
-                        ->action(fn () => dd('Implement action logic!')),
+                    Custom\Admin\Actions\Table\WizardPluginsUpdateBulkAction::make('bulk_plugins_update', $this->instanceIds),
                     Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ])->dropdownWidth(MaxWidth::Medium),
             ]);
     }
 
@@ -84,7 +77,7 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
         $this->redirect(ChooseUpdateTypePage::getUrl([
             'clusterIds' => urlencode(serialize($this->clusterIds)),
             'instanceIds' => urlencode(serialize($this->instanceIds)),
-            'updateType' => $this->updateType,
+            'type' => $this->type,
         ]));
     }
 }
