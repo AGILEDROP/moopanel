@@ -11,8 +11,10 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use JetBrains\PhpStorm\NoReturn;
+use Jfcherng\Diff\DiffHelper;
 
 class DeltaReports extends Page implements HasForms
 {
@@ -25,6 +27,8 @@ class DeltaReports extends Page implements HasForms
     protected static ?int $navigationSort = 4;
 
     public ?array $data = [];
+
+    public ?string $diffHtml = null;
 
     public function mount(): void
     {
@@ -120,9 +124,14 @@ class DeltaReports extends Page implements HasForms
     #[NoReturn]
     public function compare(): void
     {
-        $data = $this->form->getState();
+        dd('Implement when endpoint will be prepared!');
 
-        // @todo: implement delta report logic when endpoint will be prepared!
-        dd('Display delta report when endpoint will be prepared!');
+        // Todo: implement when endpoint will be provided!
+        // $data = $this->form->getState();
+
+        // $old = Storage::disk('local')->get('presets/razvoj-pf_20240530.xml');
+        // $new = Storage::disk('local')->get('presets/test-01_ucilnice20240520.xml');
+        // // one-line simply compare two strings
+        // $this->diffHtml = DiffHelper::calculate($old, $new, config('delta-reports-settings.rendererName'), config('delta-reports-settings.differOptions'), config('delta-reports-settings.rendererOptions'));
     }
 }

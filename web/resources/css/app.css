@@ -4,7 +4,122 @@
 @tailwind components;
 @tailwind utilities;
 
+/* SQUARED TABLE - CUSTOM-WIZARD */
 #custom-table-square .fi-ta-ctn {
     border-radius: 0;
-    /*box-shadow: none;*/
 }
+
+/* DELTA REPORTS TABLE */
+.diff-wrapper.diff {
+    --tab-size: 4;
+    empty-cells: show;
+
+    @apply w-full text-sm overflow-hidden border-collapse break-all border-spacing-0 rounded-xl text-gray-900 dark:text-white dark:bg-gray-800 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/20
+}
+.diff-wrapper.diff th {
+    font-weight: 700;
+    cursor: default;
+    -webkit-user-select: none;
+    user-select: none;
+}
+.diff-wrapper.diff td {
+    @apply align-baseline
+}
+.diff-wrapper.diff td,
+.diff-wrapper.diff th {
+    @apply px-0.5 py-0.5 border-separate border-none bg-white dark:bg-gray-800
+}
+.diff-wrapper.diff td:empty:after,
+.diff-wrapper.diff th:empty:after {
+    content: " ";
+    visibility: hidden;
+}
+.diff-wrapper.diff td a,
+.diff-wrapper.diff th a {
+    @apply text-black pointer-events-none
+}
+.diff-wrapper.diff thead th:first-child,
+.diff-wrapper.diff tbody td.old {
+    border-right: 1px solid black;
+
+    @apply border-r border-gray-950/10 dark:border-white/10
+}
+.diff-wrapper.diff thead th {
+    border-bottom: 1px solid black;
+
+    @apply p-3 text-left bg-white dark:bg-gray-800 border-b border-gray-950/10 dark:border-white/10 text-center
+}
+.diff-wrapper.diff tbody.skipped {
+    border-top: 1px solid black;
+
+    @apply border-t border-gray-950/10 dark:border-white/10
+}
+.diff-wrapper.diff tbody.skipped td,
+.diff-wrapper.diff tbody.skipped th {
+    @apply hidden
+}
+.diff-wrapper.diff tbody th {
+    border-right: 1px solid black;
+
+    @apply min-w-16 align-top text-right bg-white dark:bg-gray-800 border-r border-gray-950/10 dark:border-white/10
+}
+.diff-wrapper.diff tbody th.sign {
+    border-right: none;
+
+    @apply py-px px-0 text-center w-[1em] bg-white dark:bg-gray-800
+}
+.diff-wrapper.diff tbody th.sign.del {
+    @apply bg-primary-100 dark:bg-primary-400/30
+}
+.diff-wrapper.diff tbody th.sign.ins {
+    @apply bg-success-100 dark:bg-success-400/20
+}
+.diff-wrapper.diff.diff-html {
+    tab-size: var(--tab-size);
+
+    @apply whitespace-pre-wrap
+}
+.diff-wrapper.diff.diff-html .ch {
+    line-height: 1em;
+    background-clip: border-box;
+    background-repeat: repeat-x;
+    background-position: left center;
+}
+.diff-wrapper.diff.diff-html .ch.sp {
+    background-image: url('data:image/svg+xml,%3Csvg preserveAspectRatio="xMinYMid meet" viewBox="0 0 12 24" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M4.5 11C4.5 10.1716 5.17157 9.5 6 9.5C6.82843 9.5 7.5 10.1716 7.5 11C7.5 11.8284 6.82843 12.5 6 12.5C5.17157 12.5 4.5 11.8284 4.5 11Z" fill="rgba%2860, 60, 60, 50%25%29"/%3E%3C/svg%3E');
+    background-size: 1ch 1.25em;
+}
+.diff-wrapper.diff.diff-html .ch.tab {
+    background-image: url('data:image/svg+xml,%3Csvg preserveAspectRatio="xMinYMid meet" viewBox="0 0 12 24" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M9.5 10.44L6.62 8.12L7.32 7.26L12.04 11V11.44L7.28 14.9L6.62 13.9L9.48 11.78H0V10.44H9.5Z" fill="rgba%2860, 60, 60, 50%25%29"/%3E%3C/svg%3E');
+    background-size: calc(var(--tab-size) * 1ch) 1.25em;
+    background-position: 2px center;
+}
+.diff-wrapper.diff.diff-html .change.change-eq .old,
+.diff-wrapper.diff.diff-html .change.change-eq .new {
+    @apply bg-white dark:bg-gray-800 w-[45%] min-w-[300px]
+}
+.diff-wrapper.diff.diff-html .change .old {
+    @apply bg-primary-100 dark:bg-primary-400/30
+}
+.diff-wrapper.diff.diff-html .change .new {
+    @apply bg-success-100 dark:bg-success-400/20
+}
+.diff-wrapper.diff.diff-html .change .rep {
+    @apply bg-warning-100 dark:bg-warning-300/30
+}
+.diff-wrapper.diff.diff-html .change .old.none,
+.diff-wrapper.diff.diff-html .change .new.none,
+.diff-wrapper.diff.diff-html .change .rep.none {
+    @apply bg-white dark:bg-gray-800
+}
+.diff-wrapper.diff.diff-html .change ins,
+.diff-wrapper.diff.diff-html .change del {
+    @apply font-bold no-underline
+}
+.diff-wrapper.diff.diff-html .change ins {
+    @apply bg-success-300 dark:bg-success-700
+}
+.diff-wrapper.diff.diff-html .change del {
+    @apply bg-primary-300 dark:bg-primary-500
+}
+/* #END: DELTA REPORTS TABLE */
