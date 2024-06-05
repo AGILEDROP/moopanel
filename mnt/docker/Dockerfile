@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN docker-php-ext-install zip pdo_pgsql intl opcache
 RUN set -eux; \
     pecl install -o -f redis; \
+    pecl install xdebug; \
+    docker-php-ext-enable xdebug; \
     rm -rf /tmp/pear; \
     docker-php-ext-enable redis
 
