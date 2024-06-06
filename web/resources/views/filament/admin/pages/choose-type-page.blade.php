@@ -6,9 +6,7 @@
     >
         @if($this->hasHeaderAction)
             <div class="px-6 pt-6 pb-0 ms-auto">
-                {{ $this->zipAction }}
-
-                <x-filament-actions::modals />
+                {{ $this->redirectToZipUpdatesAction }}
             </div>
         @endif
         <div class="flex items-center justify-center gap-x-4 px-6 py-12">
