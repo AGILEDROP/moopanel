@@ -3,14 +3,14 @@ services:
     map-php:
         build:
             context: ./mnt/docker
-            dockerfile: Dockerfile
+            dockerfile: local.dockerfile
         image: map-php
         container_name: map-php
         restart: unless-stopped
         working_dir: /var/www
         volumes:
             - ./web:/var/www
-            - ./mnt/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+            - ./mnt/php/local/local.ini:/usr/local/etc/php/conf.d/local.ini
         extra_hosts:
             - "host.docker.internal:host-gateway"
         environment:

@@ -10,7 +10,7 @@ services:
         working_dir: /var/www
         volumes:
             - ./web:/var/www
-            - ./mnt/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+            - ./mnt/php/prod/local.ini:/usr/local/etc/php/conf.d/local.ini
 
     map-webserver:
         image: nginx:alpine
