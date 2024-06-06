@@ -145,12 +145,12 @@ class BaseUpdateWizardPage extends Page
     protected function mountType(): void
     {
         if ($this->currentStep === 3) {
-            if (request('type') != null && UpdateType::tryFrom(request('type')) != null) {
+            if (request('type') != null && (UpdateType::tryFrom(request('type')) != null || request('type') != 'zip')) {
                 $this->type = request('type');
             }
         } elseif ($this->currentStep > 3) {
             $this->type = request('type');
-            if ($this->type === null || UpdateType::tryFrom($this->type) === null) {
+            if ($this->type === null || (UpdateType::tryFrom($this->type) === null && $this->type != 'zip')) {
                 $this->redirect(ChooseUpdateTypePage::getUrl([
                     'clusterIds' => urlencode(serialize($this->clusterIds)),
                     'instanceIds' => urlencode(serialize($this->instanceIds)),
