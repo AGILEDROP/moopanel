@@ -2,9 +2,12 @@
 
 namespace App\Filament\Custom\App\Actions\Table;
 
+use App\Models\Instance;
 use App\Models\InstancePlugin;
 use App\Models\Update;
 use App\Services\ModuleApiService;
+use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
+use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
@@ -14,8 +17,9 @@ use Illuminate\Support\Facades\Log;
 
 class UpdatePluginAction
 {
-    public static function make(string $name): Action
+    public static function make(string $name, array $refreshComponents): Action
     {
+        // TODO: use combination of trigger and post request to avoid timeouts!
         return Action::make($name)
             ->label(__('Update'))
             ->hidden(fn (Model $record): bool => ! $record->updates_exists)
@@ -41,17 +45,22 @@ class UpdatePluginAction
                         'component' => $record->plugin->component,
                         'version' => $selectedUpdate->version,
                         'release' => $selectedUpdate->release,
+                        'download' => $selectedUpdate->download,
                     ];
 
                     $response = $moduleApiService->triggerPluginsUpdates($instance->url, Crypt::decrypt($instance->api_key), $postData);
                     if (! $response->ok()) {
                         throw new \Exception('Plugin update failed with status code: '.$response->status().'.');
                     }
-                    $success = ! ($response->json('updates.0.'.$data['update_id'].'.status') !== true);
+
+                    $success = ($response->json('updates.0.'.$data['update_id'].'.status') === true);
                     if (! $success) {
-                        throw new \Exception('Plugin update unsuccessful'.$response->status().'!');
+                        throw new \Exception('Plugin update unsuccessful with status code: '.$response->status().'!');
+                    } else {
+                        // Sync plugin data!
+                        $syncType = SyncTypeFactory::create(PluginsSyncType::TYPE, Instance::find(filament()->getTenant()->id));
+                        $syncType->run(true);
                     }
-                    // todo: currently endpoint doesnt execute update! Check when endpoint will be prepared!
 
                     Notification::make()
                         ->success()
@@ -65,6 +74,13 @@ class UpdatePluginAction
                         ->title(__('Plugin: :plugin update failed!', ['plugin' => $record->plugin->display_name]))
                         ->body(__('Please contact administrator for more information'))
                         ->send();
+                }
+            })
+            ->after(function ($livewire) use ($refreshComponents) {
+                if (! empty($refreshComponents)) {
+                    foreach ($refreshComponents as $refreshComponent) {
+                        $livewire->dispatch($refreshComponent);
+                    }
                 }
             });
     }

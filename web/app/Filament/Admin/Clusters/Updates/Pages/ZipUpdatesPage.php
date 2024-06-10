@@ -2,8 +2,10 @@
 
 namespace App\Filament\Admin\Clusters\Updates\Pages;
 
+use App\Jobs\ModuleApi\Sync;
 use App\Models\Instance;
 use App\Services\ModuleApiService;
+use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -67,6 +69,7 @@ class ZipUpdatesPage extends BaseUpdateWizardPage implements HasForms
 
     public function updateAll(): void
     {
+        // TODO: use combination of trigger and post request to avoid timeouts!
         $this->zipResults = [];
         $moduleApi = new ModuleApiService();
         $publicStorageUrl = config('filesystems.disks.public.url').'/';
@@ -95,6 +98,11 @@ class ZipUpdatesPage extends BaseUpdateWizardPage implements HasForms
             foreach ($response->json('updates') as $key => $values) {
                 $originalFilename = $data['original_filenames'][str_replace($publicStorageUrl, '', $key)];
                 $this->zipResults[$instance->name]['results'][$originalFilename] = $values;
+
+                // Sync data if at least one update is successful.
+                if (isset($values['status']) && $values['status'] === true) {
+                    new Sync($instance, PluginsSyncType::TYPE, 'Plugin sync failed!');
+                }
             }
         }
 
@@ -102,6 +110,7 @@ class ZipUpdatesPage extends BaseUpdateWizardPage implements HasForms
         foreach ($data['files'] as $key => $zipFile) {
             Storage::disk('public')->delete($zipFile);
         }
+
         // Needed to reset files inside the FileUpload component.
         $this->form->fill([]);
     }
