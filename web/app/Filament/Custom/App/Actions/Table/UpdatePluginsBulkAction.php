@@ -3,8 +3,11 @@
 namespace App\Filament\Custom\App\Actions\Table;
 
 use App\Enums\UpdateMaturity;
+use App\Models\Instance;
 use App\Models\Update;
 use App\Services\ModuleApiService;
+use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
+use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,8 +16,9 @@ use Illuminate\Support\Facades\Log;
 
 class UpdatePluginsBulkAction
 {
-    public static function make(string $name): BulkAction
+    public static function make(string $name, array $refreshComponents): BulkAction
     {
+        // TODO: use combination of trigger and post request to avoid timeouts!
         return BulkAction::make($name)
             ->label(__('Update to latest stable version'))
             ->icon('heroicon-o-arrow-up-circle')
@@ -45,6 +49,7 @@ class UpdatePluginsBulkAction
                             'component' => $record->plugin->component,
                             'version' => $latestStableUpdate->version,
                             'release' => $latestStableUpdate->release,
+                            'download' => $latestStableUpdate->download,
                         ];
                     }
 
@@ -66,7 +71,7 @@ class UpdatePluginsBulkAction
                         }
                     }
 
-                    // todo: currently endpoint doesnt execute update! Check when endpoint will be prepared!
+                    // Show message to current user!
                     if (count($successfulUpdates) === 0) {
                         Notification::make()
                             ->danger()
@@ -88,6 +93,12 @@ class UpdatePluginsBulkAction
                             ->persistent()
                             ->send();
                     }
+
+                    // Sync data when at least one update is successful.
+                    if (count($successfulUpdates) > 0) {
+                        $syncType = SyncTypeFactory::create(PluginsSyncType::TYPE, Instance::find(filament()->getTenant()->id));
+                        $syncType->run(true);
+                    }
                 } catch (\Exception $exception) {
                     Log::error($exception->getMessage());
 
@@ -98,6 +109,13 @@ class UpdatePluginsBulkAction
                         ->send();
                 }
 
+            })
+            ->after(function ($livewire) use ($refreshComponents) {
+                if (! empty($refreshComponents)) {
+                    foreach ($refreshComponents as $refreshComponent) {
+                        $livewire->dispatch($refreshComponent);
+                    }
+                }
             });
     }
 }

@@ -5,6 +5,8 @@ namespace App\Filament\Custom\Admin\Actions\Table;
 use App\Enums\UpdateMaturity;
 use App\Models\Instance;
 use App\Services\ModuleApiService;
+use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
+use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,8 +14,9 @@ use Illuminate\Support\Facades\Crypt;
 
 class WizardPluginsUpdateBulkAction
 {
-    public static function make(string $name, array $instanceIds): BulkAction
+    public static function make(string $name, array $instanceIds, array $refreshComponents): BulkAction
     {
+        // TODO: use combination of trigger and post request to avoid timeouts!
         return BulkAction::make($name)
             ->label(__('Update to last stable version'))
             ->icon('heroicon-o-arrow-up-circle')
@@ -26,6 +29,7 @@ class WizardPluginsUpdateBulkAction
                 $instances = Instance::whereIn('id', $instanceIds)->get();
                 foreach ($instances as $instance) {
                     $updatesData = [];
+                    $triggerSync = false;
                     foreach ($records as $record) {
                         $latestStablePluginUpdateOnInstance = $record->updates()
                             ->where('instance_id', $instance->id)
@@ -39,28 +43,37 @@ class WizardPluginsUpdateBulkAction
                                 'component' => $record->component,
                                 'version' => $latestStablePluginUpdateOnInstance->version,
                                 'release' => $latestStablePluginUpdateOnInstance->release,
+                                'download' => $latestStablePluginUpdateOnInstance->download,
                             ];
                         }
                     }
 
-                    // Run update action and show the response!
-                    $response = $moduleApiService->triggerPluginsUpdates($instance->url, Crypt::decrypt($instance->api_key), $updatesData);
-                    if (! $response->ok()) {
-                        throw new \Exception('Plugin update failed with status code: '.$response->status().'.');
-                    }
-                    $results = $response->json('updates');
-                    $resultsCount += count($results);
+                    if (! empty($updatesData)) {
+                        // Run update action and show the response!
+                        $response = $moduleApiService->triggerPluginsUpdates($instance->url, Crypt::decrypt($instance->api_key), $updatesData);
+                        if (! $response->ok()) {
+                            throw new \Exception('Plugin update failed with status code: '.$response->status().'.');
+                        }
+                        $results = $response->json('updates');
+                        $resultsCount += count($results);
 
-                    foreach ($results as $pluginUpdateResult) {
-                        $key = key($pluginUpdateResult);
-                        $values = $pluginUpdateResult[$key];
-                        if ($values['status']) {
-                            $successfulUpdatesCount++;
+                        foreach ($results as $pluginUpdateResult) {
+                            $key = key($pluginUpdateResult);
+                            $values = $pluginUpdateResult[$key];
+                            if ($values['status']) {
+                                $triggerSync = true;
+                                $successfulUpdatesCount++;
+                            }
+                        }
+
+                        // Sync plugins data if at least one update was successful.
+                        if ($triggerSync) {
+                            $syncType = SyncTypeFactory::create(PluginsSyncType::TYPE, $instance);
+                            $syncType->run(true);
                         }
                     }
                 }
 
-                // todo: currently endpoint doesnt execute update! Check when endpoint will be prepared!
                 if ($successfulUpdatesCount === $resultsCount) {
                     Notification::make()
                         ->success()

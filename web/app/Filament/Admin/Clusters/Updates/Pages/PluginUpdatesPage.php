@@ -22,6 +22,8 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
 
     protected static ?string $slug = 'plugins';
 
+    protected $listeners = ['pluginUpdatesPage' => '$refresh'];
+
     public int $currentStep = 4;
 
     protected function getTableQuery()
@@ -56,17 +58,16 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
                     ->label(__('Newest version')),
                 Tables\Columns\TextColumn::make('newestAvailableUpdateRelease')
                     ->label(__('Newest release')),
-
             ])
             ->defaultSort('display_name', 'desc')
             ->actions([
-                Custom\Admin\Actions\Table\WizardPluginsUpdateAction::make('update_plugins', $this->instanceIds),
+                Custom\Admin\Actions\Table\WizardPluginsUpdateAction::make('update_plugins', $this->instanceIds, ['pluginUpdatesPage']),
                 Tables\Actions\DeleteAction::make()
                     ->iconButton(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Custom\Admin\Actions\Table\WizardPluginsUpdateBulkAction::make('bulk_plugins_update', $this->instanceIds),
+                    Custom\Admin\Actions\Table\WizardPluginsUpdateBulkAction::make('bulk_plugins_update', $this->instanceIds, ['pluginUpdatesPage']),
                     Tables\Actions\DeleteBulkAction::make(),
                 ])->dropdownWidth(MaxWidth::Medium),
             ]);
