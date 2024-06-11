@@ -39,7 +39,7 @@ class DeltaReports extends Page implements HasForms
 
     public function mount(): void
     {
-        if (!empty(request()->query('delta_report_id', ''))) {
+        if (! empty(request()->query('delta_report_id', ''))) {
             $deltaReportId = request()->query('delta_report_id', '');
             $this->renderDiffComparison($deltaReportId);
         }
@@ -111,7 +111,7 @@ class DeltaReports extends Page implements HasForms
             if ($cluster->master()->exists()) {
                 $options->map(function ($name, $id) use ($masterId, $options) {
                     if ($id === $masterId) {
-                        $options[$id] = __('MASTER') . ': ' . $name;
+                        $options[$id] = __('MASTER').': '.$name;
                     }
                 });
             }
@@ -146,7 +146,9 @@ class DeltaReports extends Page implements HasForms
         if (! $firstInstanceHasPendingDeltaReportGenerationProcess) {
             $isFirstRequestSuccessfullySent = $this->requestAdminPreset($firstInstance);
 
-            if (!$isFirstRequestSuccessfullySent) return;
+            if (! $isFirstRequestSuccessfullySent) {
+                return;
+            }
         }
 
         // Request admin preset for the instances if they dont have any pending delta report generation
@@ -154,7 +156,9 @@ class DeltaReports extends Page implements HasForms
         if (! $secondInstanceHasPendingDeltaReportGenerationProcess) {
             $isSecondRequestSuccessfullySent = $this->requestAdminPreset($secondInstance);
 
-            if (!$isSecondRequestSuccessfullySent) return;
+            if (! $isSecondRequestSuccessfullySent) {
+                return;
+            }
         }
 
         // Skip creating new delta report if there is already a pending delta report generation for selected two instances
@@ -172,7 +176,7 @@ class DeltaReports extends Page implements HasForms
         }
 
         DeltaReport::create([
-            'name' => $firstInstance->name . ' vs ' . $secondInstance->name,
+            'name' => $firstInstance->name.' vs '.$secondInstance->name,
             'user_id' => auth()->id(),
             'first_instance_id' => $data['first_instance_id'],
             'second_instance_id' => $data['second_instance_id'],
@@ -190,20 +194,17 @@ class DeltaReports extends Page implements HasForms
 
     /**
      * Request admin preset for the instance.
-     *
-     * @param Instance $instance
-     * @return bool
      */
     private function requestAdminPreset(Instance $instance): bool
     {
         $response = Http::withHeaders([
             'X-API-KEY' => Crypt::decrypt($instance->api_key),
         ])
-            ->get($instance->url . ModuleApiService::PLUGIN_PATH . "/admin_presets", [
+            ->get($instance->url.ModuleApiService::PLUGIN_PATH.'/admin_presets', [
                 'instanceid' => $instance->id,
             ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Notification::make()
                 ->danger()
                 ->title(__('Failed to request admin preset.'))
@@ -213,7 +214,7 @@ class DeltaReports extends Page implements HasForms
                 ->persisitent()
                 ->send();
 
-            Log::error('Failed to request admin preset for instance ' . $instance->name . '. Response: ' . $response->body());
+            Log::error('Failed to request admin preset for instance '.$instance->name.'. Response: '.$response->body());
 
             return false;
         }
@@ -223,9 +224,6 @@ class DeltaReports extends Page implements HasForms
 
     /**
      * Check if there is a pending delta report generation for the instance.
-     *
-     * @param Instance $instance
-     * @return bool
      */
     private function hasPendingDeltaReportGenerationProcess(Instance $instance): bool
     {
@@ -242,12 +240,10 @@ class DeltaReports extends Page implements HasForms
 
     /**
      * Render diff comparison between two instances configurations.
-     *
-     * @param string $deltaReportId
      */
     private function renderDiffComparison(string $deltaReportId): void
     {
-        if (!DeltaReport::where('id', (int) $deltaReportId)->exists()) {
+        if (! DeltaReport::where('id', (int) $deltaReportId)->exists()) {
             return;
         }
 

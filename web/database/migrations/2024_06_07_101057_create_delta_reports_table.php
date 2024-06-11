@@ -32,7 +32,6 @@ return new class extends Migration
             $table->boolean('first_instance_config_received')->default(false);
             $table->boolean('second_instance_config_received')->default(false);
 
-
             $table->timestamps();
         });
     }

@@ -12,7 +12,7 @@ class DeltaReport extends Model
     protected $table = 'delta_reports';
 
     protected $fillable = [
-        'name', 
+        'name',
         'user_id',
         'first_instance_id',
         'second_instance_id',

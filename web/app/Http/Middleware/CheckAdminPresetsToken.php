@@ -5,8 +5,6 @@ namespace App\Http\Middleware;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use Closure;
-use Illuminate\Database\Eloquent\Casts\Json;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\ValidationException;
@@ -25,24 +23,24 @@ class CheckAdminPresetsToken
 
         if ($instanceId === null) {
             throw ValidationException::withMessages([
-                'instance_id' => 'Missing instance_id'
+                'instance_id' => 'Missing instance_id',
             ]);
         }
 
         $instance = Instance::withoutGlobalScope(InstanceScope::class)->where('id', (int) $instanceId)->first();
 
-        if (!$instance) {
+        if (! $instance) {
             throw ValidationException::withMessages([
-                'instance_id' => 'Invalid instance_id'
+                'instance_id' => 'Invalid instance_id',
             ]);
         }
-        
+
         $apiKey = Crypt::decrypt($instance->api_key);
 
         if ($request->header('X-API-KEY') !== $apiKey) {
             return response()->json(
                 [
-                    'message' => 'You are not authorized'
+                    'message' => 'You are not authorized',
                 ],
                 403
             );

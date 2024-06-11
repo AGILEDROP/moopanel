@@ -9,9 +9,7 @@ use App\Models\Scopes\InstanceScope;
 use App\Models\User;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use SimpleXMLElement;
 
 class AdminPresetController extends Controller
 {
@@ -26,7 +24,7 @@ class AdminPresetController extends Controller
 
         // Update the instance configuration_path
         $instance = Instance::withoutGlobalScope(InstanceScope::class)->find((int) $instance_id);
-        $instance->configuration_path =  $filePath;
+        $instance->configuration_path = $filePath;
         $instance->save();
 
         // Find all delta reports that are waiting for the instance configuration

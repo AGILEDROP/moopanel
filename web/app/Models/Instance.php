@@ -30,7 +30,7 @@ class Instance extends Model implements HasAvatar
         'api_key',
         'key_expiration_date',
         'status',
-        'configuration_path'
+        'configuration_path',
     ];
 
     protected $hidden = [

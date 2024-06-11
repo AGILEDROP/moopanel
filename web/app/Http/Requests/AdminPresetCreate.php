@@ -14,7 +14,7 @@ class AdminPresetCreate extends FormRequest
     {
         if (empty($this->getContent())) {
             throw ValidationException::withMessages([
-                'message' => 'Empty XML content'
+                'message' => 'Empty XML content',
             ]);
         }
 
@@ -25,10 +25,10 @@ class AdminPresetCreate extends FormRequest
             $errors = libxml_get_errors();
             libxml_clear_errors();
 
-            if (!empty($errors)) {
+            if (! empty($errors)) {
                 throw ValidationException::withMessages([
                     'message' => 'Invalid XML format',
-                    'errors' => $errors
+                    'errors' => $errors,
                 ]);
             }
 
@@ -47,13 +47,13 @@ class AdminPresetCreate extends FormRequest
 
         if ($instanceId === null) {
             throw ValidationException::withMessages([
-                'instance_id' => 'Missing instance_id'
+                'instance_id' => 'Missing instance_id',
             ]);
         }
 
-        if (!Instance::withoutGlobalScope(InstanceScope::class)->where('id', (int) $instanceId)->exists()) {
+        if (! Instance::withoutGlobalScope(InstanceScope::class)->where('id', (int) $instanceId)->exists()) {
             throw ValidationException::withMessages([
-                'instance_id' => 'Invalid instance_id'
+                'instance_id' => 'Invalid instance_id',
             ]);
         }
     }
