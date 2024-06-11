@@ -34,7 +34,18 @@ return [
         // renderer language: eng, cht, chs, jpn, ...
         // or an array which has the same keys with a language file
         // check the "Custom Language" section in the readme for more advanced usage
-        'language' => 'eng',
+        'language' => [
+            // use English as the base language
+            'eng',
+            // your custom overrides
+            [
+                // use "Diff" as the new value of the "differences" key
+                'differences' => 'Differences',
+                'old_version' => 'First instance',
+                'new_version' => 'Second instance',
+            ],
+            // maybe more overrides if you somehow need them...
+        ],
         // show line numbers in HTML renderers
         'lineNumbers' => true,
         // show a separator between different diff hunks in HTML renderers
