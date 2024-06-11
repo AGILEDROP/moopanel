@@ -53,12 +53,6 @@ class InstanceCoreUpdatesPage extends BaseUpdateWizardPage
         ]));
     }
 
-    // todo: implement update action logic when update trigger endpoint will be provided (not yet)!
-    public function update(int $updateId): void
-    {
-        dd("Run update with id: {$updateId} on all instances!");
-    }
-
     public function updateAll(): void
     {
         dd('Implement update all logic!');

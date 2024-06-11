@@ -76,7 +76,7 @@ class PluginResource extends Resource
                 $syncType->getTableAction('sync', ['managePluginsPage']),
             ])
             ->actions([
-                CustomAppComponents\Actions\Table\UpdatePluginAction::make('update_plugin'),
+                CustomAppComponents\Actions\Table\UpdatePluginAction::make('update_plugin', ['managePluginsPage']),
                 CustomAppComponents\Actions\Table\PluginUpdateLogAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->iconButton(),
@@ -84,11 +84,11 @@ class PluginResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     // todo: wait for endpoint and implement action logic!
-                    Tables\Actions\BulkAction::make('enable_plugins')
-                        ->label(__('Enable'))
-                        ->icon('heroicon-o-check-circle')
-                        ->action(fn () => dd('Implement logic when endpoint will be available!')),
-                    CustomAppComponents\Actions\Table\UpdatePluginsBulkAction::make('update_plugins'),
+                    //  Tables\Actions\BulkAction::make('enable_plugins')
+                    //      ->label(__('Enable'))
+                    //      ->icon('heroicon-o-check-circle')
+                    //      ->action(fn () => dd('Implement logic when endpoint will be available!')),
+                    CustomAppComponents\Actions\Table\UpdatePluginsBulkAction::make('update_plugins', ['managePluginsPage']),
                     Tables\Actions\DeleteBulkAction::make(),
                 ])->dropdownWidth(MaxWidth::Medium),
             ]);
