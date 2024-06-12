@@ -15,6 +15,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -175,21 +176,31 @@ class DeltaReports extends Page implements HasForms
             return;
         }
 
-        DeltaReport::create([
+        $newDeltaReport = DeltaReport::create([
             'name' => $firstInstance->name.' vs '.$secondInstance->name,
             'user_id' => auth()->id(),
             'first_instance_id' => $data['first_instance_id'],
             'second_instance_id' => $data['second_instance_id'],
         ]);
 
+        // UI notification
         Notification::make()
             ->success()
             ->title(__('Delta report creation in progress.'))
             ->body(__('It might take a while to generate delta report. Please wait. You will be notified when it is ready.'))
             ->icon('heroicon-o-document-text')
             ->iconColor('success')
-            ->seconds(10)
+            ->seconds(7)
             ->send();
+
+        // DB notification
+        Notification::make()
+            ->success()
+            ->title(__('Delta report creation in progress.'))
+            ->body(__(':name report generation in progress. It might take a while to generate delta report. Please wait. You will be notified when it is ready.', ['name' => $newDeltaReport->name]))
+            ->icon('heroicon-o-document-text')
+            ->iconColor('success')
+            ->sendToDatabase(Auth::user());
     }
 
     /**
