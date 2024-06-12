@@ -211,7 +211,7 @@ class DeltaReports extends Page implements HasForms
                 ->body(__('Failed to request admin preset for instance :instance.', ['instance' => $instance->name]))
                 ->icon('heroicon-o-document-text')
                 ->iconColor('danger')
-                ->persisitent()
+                ->persistent()
                 ->send();
 
             Log::error('Failed to request admin preset for instance '.$instance->name.'. Response: '.$response->body());
