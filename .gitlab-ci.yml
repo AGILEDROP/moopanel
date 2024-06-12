@@ -4,8 +4,8 @@ deploy:
     # Git
     #- rsync -av --exclude=.git --no-perms -O . /var/www/;
     - cd /var/www;
-#    - git checkout master;
-#    - git pull origin master;
+    - git checkout master;
+    - git pull origin master;
     # Docker
     - docker image prune -f
     - docker-compose -f production.yml pull && docker-compose -f production.yml up -d --build --no-deps
