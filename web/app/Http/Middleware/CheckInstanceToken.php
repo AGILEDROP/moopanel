@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckAdminPresetsToken
+class CheckInstanceToken
 {
     /**
      * Handle an incoming request.
