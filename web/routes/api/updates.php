@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminPresetController;
+use App\Http\Controllers\Updates\PluginUpdateController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,10 +27,8 @@ Route::prefix('updates')->group(function () {
     */
 
     Route::prefix('plugins')->group(function () {
-        
-        Route::middleware(['checkInstanceToken'])->post('instance/{instance_id}', function (Request $request, $instance_id) {
-            return response()->json(['message' => 'This is a test plugin route']);
-        });
-        
+
+        Route::middleware(['checkInstanceToken'])->post('instance/{instance_id}', [PluginUpdateController::class, 'store']);
+
     });
 });
