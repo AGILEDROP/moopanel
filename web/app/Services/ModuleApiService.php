@@ -33,13 +33,11 @@ class ModuleApiService
         ]));
     }
 
-    public function triggerPluginsUpdates(string $baseUrl, string $apiKey, ?array $updates): PromiseInterface|Response
+    public function triggerPluginsUpdates(string $baseUrl, string $apiKey, ?array $payload): PromiseInterface|Response
     {
         return Http::withHeaders([
             'X-API-KEY' => $apiKey,
-        ])->post($baseUrl.self::PLUGIN_PATH.'/plugins/updates', wrapData([
-            'updates' => $updates,
-        ]));
+        ])->post($baseUrl.self::PLUGIN_PATH.'/plugins/updates', wrapData($payload));
     }
 
     public function getInstanceData(string $baseUrl, string $apiKey): PromiseInterface|Response
