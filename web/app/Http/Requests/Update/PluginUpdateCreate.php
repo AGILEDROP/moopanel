@@ -50,6 +50,7 @@ class PluginUpdateCreate extends FormRequest
         return [
             'user_id' => 'required|integer|exists:users,id',
             'username' => 'nullable|string|email',
+            'moodle_job_id' => 'required|integer',
             'updates' => 'required|array|min:1',
             'updates.*.model_id' => 'required|integer|exists:updates,id',
             'updates.*.status' => 'required|boolean',

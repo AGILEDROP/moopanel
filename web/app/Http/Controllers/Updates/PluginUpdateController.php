@@ -7,13 +7,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Update\PluginUpdateCreate;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
+use App\Models\UpdateRequest;
+use App\Models\UpdateRequestItem;
 use App\Models\User;
 use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
 use App\UseCases\Syncs\SyncTypeFactory;
+use Exception;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PluginUpdateController extends Controller
 {
@@ -28,21 +32,31 @@ class PluginUpdateController extends Controller
     {
         $validatedData = $request->validated();
         $instance = Instance::withoutGlobalScope(InstanceScope::class)->where('id', (int) $instance_id)->first();
+        $isSuccessfull = true;
 
-        // TODO: update updateRequest general status and updateRequestItems statuses
-
-        $this->notify($validatedData, $instance);
+        // Avoid duplicated notifications if request repeated for already successful update
+        if ($instance->hasPendingUpdateRequest()) {
+            $isSuccessfull = $isSuccessfull && $this->statusUpdate($instance, $validatedData);
+            $this->notify($validatedData, $instance);
+        }
+        
+        if(!$isSuccessfull) {
+            return response()->json([
+                'message' => 'There was and error while updating the plugin statuses. Please try again or contact support.',
+                'status' => false,
+            ], 500);
+        }
 
         // TODO: razmisli, ali bi syncali na interval, namesto na request
-        $syncType = SyncTypeFactory::create(PluginsSyncType::TYPE, $instance);
-        $syncType->run();
+        /* $syncType = SyncTypeFactory::create(PluginsSyncType::TYPE, $instance);
+        $syncType->run(); */
 
         return response()->json([
             'message' => 'Plugin update statuses received successfully.',
             'status' => true,
         ]);
     }
-    
+
     /**
      * Notifies the user about the plugin updates
      * 
@@ -77,7 +91,54 @@ class PluginUpdateController extends Controller
             ->iconColor($status)
             ->sendToDatabase(User::find($validatedData['user_id']));
     }
-    
+
+    /**
+     * Updates the status of the update request and its items
+     *
+     * @param  Instance $instance
+     * @param  array $data
+     * @return void
+     */
+    private function statusUpdate(Instance $instance, array $data): bool
+    {
+        $status = true;
+
+        try {
+            $successfullUpdates = array_filter($data['updates'], function ($update) {
+                return $update['status'];
+            });
+            $allUpdatesSuccessful = count($successfullUpdates) === count($data['updates']);
+
+            // update parent UpdateRequest status
+            $updateRequest = UpdateRequest::where('instance_id', $instance->id)
+                ->where('status', UpdateRequest::STATUS_PENDING)
+                ->first();
+
+            $updateRequest->update([
+                'status' => $allUpdatesSuccessful ? UpdateRequest::STATUS_SUCCESS : UpdateRequest::STATUS_FAIL,
+                'moodle_job_id' => $data['moodle_job_id'],
+            ]);
+
+            $updateItems = $updateRequest->items;
+
+            // update update-request-items statuses
+            foreach ($data['updates'] as $update) {
+                $updateItems->where('model_id', $update['model_id'])
+                    ->first()
+                    ->update([
+                        'status' => $update['status'],
+                        'error' => $update['error'],
+                    ]);
+            }
+        } catch (Exception $e) {
+            Log::error(__FILE__ . ':' . __LINE__ . ' - ' . 'Failed to update update plugin request status for instance: ' . $instance->name . " Error message: " . $e->getMessage());
+
+            $status = false;
+        }
+
+        return $status;
+    }
+
     /**
      * Returns the response status based on the number of successful updates
      *

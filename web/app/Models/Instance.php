@@ -115,4 +115,21 @@ class Instance extends Model implements HasAvatar
     {
         return $this->image;
     }
+
+    public function update_requests(): HasMany
+    {
+        return $this->hasMany(UpdateRequest::class);
+    }
+
+    /**
+     * Check if there is a pending update request for the instance.
+     *
+     * @return bool
+     */
+    public function hasPendingUpdateRequest(): bool
+    {
+        return UpdateRequest::where('instance_id', $this->id)
+            ->where('status', UpdateRequest::STATUS_PENDING)
+            ->exists();
+    }
 }
