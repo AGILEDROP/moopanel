@@ -10,12 +10,15 @@ use App\Models\User;
 use App\Services\ModuleApiService;
 use Exception;
 use Filament\Notifications\Notification;
+use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\Client\Response;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PluginUpdateJob implements ShouldQueue
@@ -23,6 +26,8 @@ class PluginUpdateJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     private bool $canSubmitRequest;
+
+    private UpdateRequest $updateRequest;
 
     /**
      * Create a new job instance.
@@ -73,6 +78,13 @@ class PluginUpdateJob implements ShouldQueue
                 throw new \Exception('No plugin updates found in payload for instance: ' . $this->instance->name);
             }
 
+            if ($response->json() && array_key_exists('moodle_job_id', $response->json())) {
+
+                $this->updateRequest->update([
+                    'moodle_job_id' => $response->json('moodle_job_id')
+                ]);
+            }
+
             Notification::make()
                 ->success()
                 ->title(__('Plugin updates in progress.'))
@@ -115,7 +127,10 @@ class PluginUpdateJob implements ShouldQueue
      */
     private function createUpdateRequest(Instance $instance, User $userToNotify, array $payload): void
     {
-        $parent = UpdateRequest::create([
+        $name = UpdateRequest::generateName($instance->short_name, UpdateRequest::TYPE_PLUGIN);
+
+        $this->updateRequest = UpdateRequest::create([
+            'name' => $name,
             'type' => UpdateRequest::TYPE_PLUGIN,
             'instance_id' => $instance->id,
             'user_id' => $userToNotify->id,
@@ -127,7 +142,7 @@ class PluginUpdateJob implements ShouldQueue
         if (!empty($payload['updates'])) {
             foreach ($payload['updates'] as $update) {
                 UpdateRequestItem::create([
-                    'update_request_id' => $parent->id,
+                    'update_request_id' => $this->updateRequest->id,
                     'status' => UpdateRequest::STATUS_PENDING,
                     'model_id' => $update['model_id'],
                     'component' => $update['component'],

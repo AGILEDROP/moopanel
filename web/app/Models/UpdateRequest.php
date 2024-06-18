@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,6 +19,7 @@ class UpdateRequest extends Model
     public const TYPE_PLUGIN_ZIP = 'plugin_zip';
 
     protected $fillable = [
+        'name',
         'type',
         'instance_id',
         'user_id',
@@ -25,6 +27,32 @@ class UpdateRequest extends Model
         'payload',
         'moodle_job_id',
     ];
+
+    protected function statusName(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return match ($this->status) {
+                    self::STATUS_PENDING => __('Pending'),
+                    self::STATUS_SUCCESS => __('Success'),
+                    self::STATUS_FAIL => __('Fail'),
+                    default => __('Unknown'),
+                };
+            }
+        );
+    }
+        
+    /**
+     * Generate a name for the update request.
+     *
+     * @param  string $instanceName
+     * @param  string $requestType
+     * @return string
+     */
+    public static function generateName(string $instanceName, string $requestType): string
+    {
+        return $instanceName . '-' . $requestType . '-' . "update" . '-' . now()->format('d-m-y_H-i');
+    }
 
     public function user()
     {
