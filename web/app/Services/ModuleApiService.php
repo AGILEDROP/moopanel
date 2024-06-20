@@ -40,6 +40,13 @@ class ModuleApiService
         ])->post($baseUrl.self::PLUGIN_PATH.'/plugins/updates', wrapData($payload));
     }
 
+    public function triggerUpdateRequestCheck(string $baseUrl, string $apiKey, ?array $payload): PromiseInterface|Response
+    {
+        return Http::withHeaders([
+            'X-API-KEY' => $apiKey,
+        ])->get($baseUrl.self::PLUGIN_PATH.'/tasks/check', wrapData($payload));
+    }
+
     public function getInstanceData(string $baseUrl, string $apiKey): PromiseInterface|Response
     {
         return Http::withHeader('X-API-KEY', $apiKey)
