@@ -3,6 +3,7 @@
 namespace App\Filament\Custom\Admin\Actions\Table;
 
 use App\Enums\UpdateMaturity;
+use App\Jobs\Update\PluginUpdateJob;
 use App\Models\Instance;
 use App\Services\ModuleApiService;
 use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
@@ -10,26 +11,30 @@ use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 
 class WizardPluginsUpdateBulkAction
 {
     public static function make(string $name, array $instanceIds, array $refreshComponents): BulkAction
     {
-        // TODO: use combination of trigger and post request to avoid timeouts!
         return BulkAction::make($name)
             ->label(__('Update to last stable version'))
             ->icon('heroicon-o-arrow-up-circle')
             ->action(function (Collection $records) use ($instanceIds) {
-                $moduleApiService = new ModuleApiService();
-                $resultsCount = 0;
-                $successfulUpdatesCount = 0;
-
                 // Get all instances
                 $instances = Instance::whereIn('id', $instanceIds)->get();
+                $user = Auth::user();
+
                 foreach ($instances as $instance) {
-                    $updatesData = [];
-                    $triggerSync = false;
+
+                    $payload = [
+                        'user_id' => $user->id,
+                        'username' => $user->email,
+                        'instance_id' => $instance->id,
+                        'updates' => []
+                    ];
+
                     foreach ($records as $record) {
                         $latestStablePluginUpdateOnInstance = $record->updates()
                             ->where('instance_id', $instance->id)
@@ -38,7 +43,7 @@ class WizardPluginsUpdateBulkAction
                             ->first();
 
                         if ($latestStablePluginUpdateOnInstance) {
-                            $updatesData[] = [
+                            $payload['updates'][] = [
                                 'model_id' => $latestStablePluginUpdateOnInstance->id,
                                 'component' => $record->component,
                                 'version' => $latestStablePluginUpdateOnInstance->version,
@@ -48,43 +53,15 @@ class WizardPluginsUpdateBulkAction
                         }
                     }
 
-                    if (! empty($updatesData)) {
-                        // Run update action and show the response!
-                        $response = $moduleApiService->triggerPluginsUpdates($instance->url, Crypt::decrypt($instance->api_key), $updatesData);
-                        if (! $response->ok()) {
-                            throw new \Exception('Plugin update failed with status code: '.$response->status().'.');
-                        }
-                        $results = $response->json('updates');
-                        $resultsCount += count($results);
-
-                        foreach ($results as $pluginUpdateResult) {
-                            $key = key($pluginUpdateResult);
-                            $values = $pluginUpdateResult[$key];
-                            if ($values['status']) {
-                                $triggerSync = true;
-                                $successfulUpdatesCount++;
-                            }
-                        }
-
-                        // Sync plugins data if at least one update was successful.
-                        if ($triggerSync) {
-                            $syncType = SyncTypeFactory::create(PluginsSyncType::TYPE, $instance);
-                            $syncType->run(true);
-                        }
-                    }
+                    PluginUpdateJob::dispatch($instance, Auth::user(), $payload);
                 }
 
-                if ($successfulUpdatesCount === $resultsCount) {
-                    Notification::make()
-                        ->success()
-                        ->title(__('Plugins successfully updated to latest version on all selected instances.'))
-                        ->send();
-                } else {
-                    Notification::make()
-                        ->warning()
-                        ->title(__('Bulk plugin update failed! Check instances update log for more information.'))
-                        ->send();
-                }
+                Notification::make()
+                    ->success()
+                    ->title(__('Available plugin updates started'))
+                    ->body(__('Plugin updates have been started. It might take a while. Check notifications for progress.'))
+                    ->seconds(7)
+                    ->send();
             });
     }
 }

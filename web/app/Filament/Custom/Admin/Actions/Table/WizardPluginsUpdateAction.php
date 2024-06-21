@@ -2,6 +2,7 @@
 
 namespace App\Filament\Custom\Admin\Actions\Table;
 
+use App\Jobs\Update\PluginUpdateJob;
 use App\Models\Instance;
 use App\Models\Plugin;
 use App\Models\Update;
@@ -11,6 +12,7 @@ use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\HtmlString;
 
@@ -18,7 +20,6 @@ class WizardPluginsUpdateAction
 {
     public static function make(string $name, array $instanceIds, array $refreshComponents): Action
     {
-        // TODO: use combination of trigger and post request to avoid timeouts!
         return Action::make($name)
             ->label(__('Update'))
             ->iconButton()
@@ -27,22 +28,17 @@ class WizardPluginsUpdateAction
             ->form([
                 Select::make('update_release')
                     ->label(__('Release'))
-                    ->options(fn (Plugin $record) => $record
-                        ->updates()
-                        ->whereIn('instance_id', $instanceIds)
-                        ->distinct('release')
-                        ->pluck('release', 'release')
-                        ->toArray()
+                    ->options(
+                        fn (Plugin $record) => $record
+                            ->updates()
+                            ->whereIn('instance_id', $instanceIds)
+                            ->distinct('release')
+                            ->pluck('release', 'release')
+                            ->toArray()
                     )
                     ->rules(['required', 'string', 'exists:updates,release']),
             ])
             ->action(function (Plugin $record, array $data) use ($instanceIds) {
-                $moduleApiService = new ModuleApiService();
-                $resultsCount = 0;
-                $successfulUpdatesCount = 0;
-                $unsuccessfulUpdatesCount = 0;
-                $notificationBody = null;
-
                 // Get plugin updates
                 $updateIds = $record->updates()
                     ->whereIn('instance_id', $instanceIds)
@@ -54,17 +50,25 @@ class WizardPluginsUpdateAction
                     ->distinct('instance_id')
                     ->pluck('instance_id');
                 $instances = Instance::whereIn('id', $distinctInstanceIds)->get();
+
+                $user = Auth::user();
                 foreach ($instances as $instance) {
-                    $triggerSync = false;
                     $selectedUpdates = $instance->updates()
                         ->where('plugin_id', $record->id)
                         ->whereIn('id', $updateIds)
                         ->get();
 
+
+                    $payload = [
+                        'user_id' => $user->id,
+                        'username' => $user->email,
+                        'instance_id' => $instance->id,
+                        'updates' => []
+                    ];
+
                     if (count($selectedUpdates) > 0) {
-                        $updatesData = [];
                         foreach ($selectedUpdates as $selectedUpdate) {
-                            $updatesData[] = [
+                            $payload['updates'][] = [
                                 'model_id' => $selectedUpdate->id,
                                 'component' => $record->component,
                                 'version' => $selectedUpdate->version,
@@ -73,59 +77,19 @@ class WizardPluginsUpdateAction
                             ];
                         }
 
-                        // Run update action and show the response!
-                        $response = $moduleApiService->triggerPluginsUpdates($instance->url, Crypt::decrypt($instance->api_key), $updatesData);
-                        if (! $response->ok()) {
-                            throw new \Exception('Plugin update failed with status code: '.$response->status().'.');
-                        }
-
-                        $results = $response->json('updates');
-                        $resultsCount += count($results);
-
-                        foreach ($results as $pluginUpdateResult) {
-                            $key = key($pluginUpdateResult);
-                            $values = $pluginUpdateResult[$key];
-                            if ($values['status']) {
-                                $triggerSync = true;
-                                $successfulUpdatesCount++;
-                                $notificationBody .= new HtmlString('<b>'.$instance->name.'</b>: '.__('successfully updated to :release', ['release' => $data['update_release']]).'<br/>');
-                            } else {
-                                $unsuccessfulUpdatesCount++;
-                                $notificationBody .= new HtmlString('<b>'.$instance->name.'</b>: '.__('update to :release failed! Check <a class="text-primary-500 font-medium" href="'.route('filament.app.resources.update-logs.index', ['tenant' => $instance->id]).'" target="_blank">update log</a> for more information.', ['release' => $data['update_release']]).'<br/>');
-                            }
-                        }
-
-                        // Sync plugins data if at least one update was successful.
-                        if ($triggerSync) {
-                            $syncType = SyncTypeFactory::create(PluginsSyncType::TYPE, $instance);
-                            $syncType->run(true);
-                        }
+                        PluginUpdateJob::dispatch($instance, Auth::user(), $payload);
                     }
                 }
 
-                // Display result to user.
-                if ($successfulUpdatesCount === $resultsCount && $successfulUpdatesCount > 0) {
-                    Notification::make()
-                        ->success()
-                        ->title(__('Plugins successfully updated to latest chosen release on all instances.'))
-                        ->send();
-                } elseif ($unsuccessfulUpdatesCount > 0) {
-                    Notification::make()
-                        ->warning()
-                        ->title(__(':numSuccessfully plugins was successfully updated and :numUnsuccessfully update failed!', [
-                            'numSuccessfully' => $successfulUpdatesCount,
-                            'numUnsuccessfully' => $unsuccessfulUpdatesCount,
-                        ]))
-                        ->body($notificationBody)
-                        ->send();
-                } else {
-                    Notification::make()
-                        ->warning()
-                        ->title(__('Plugin update failed! Check instances update log for more information.'))
-                        ->send();
-                }
+                Notification::make()
+                    ->success()
+                    ->title(__('Available plugin updates started'))
+                    ->body(__('Plugin updates have been started. It might take a while. Check notifications for progress.'))
+                    ->seconds(7)
+                    ->send();
+
             })->after(function ($livewire) use ($refreshComponents) {
-                if (! empty($refreshComponents)) {
+                if (!empty($refreshComponents)) {
                     foreach ($refreshComponents as $refreshComponent) {
                         $livewire->dispatch($refreshComponent);
                     }

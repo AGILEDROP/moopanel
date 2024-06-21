@@ -3,6 +3,7 @@
 namespace App\Filament\Custom\App\Actions\Table;
 
 use App\Enums\UpdateMaturity;
+use App\Jobs\Update\PluginUpdateJob;
 use App\Models\Instance;
 use App\Models\Update;
 use App\Services\ModuleApiService;
@@ -11,6 +12,7 @@ use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
@@ -18,100 +20,56 @@ class UpdatePluginsBulkAction
 {
     public static function make(string $name, array $refreshComponents): BulkAction
     {
-        // TODO: use combination of trigger and post request to avoid timeouts!
         return BulkAction::make($name)
             ->label(__('Update to latest stable version'))
             ->icon('heroicon-o-arrow-up-circle')
             ->action(function (Collection $records) {
-                try {
-                    $moduleApiService = new ModuleApiService();
-                    $instance = filament()->getTenant();
-                    $updatesData = [];
+                $instance = filament()->getTenant();
+                $user = Auth::user();
 
-                    foreach ($records as $record) {
-                        $latestStableUpdate = $record->updates()
-                            ->where('maturity', UpdateMaturity::STABLE)
-                            ->orderBy('version', 'desc')
-                            ->first();
-                        if (! $latestStableUpdate) {
-                            Notification::make()
-                                ->danger()
-                                ->persistent()
-                                ->title(__('Failed! :plugin doesn\'t have any available stable updates.', ['plugin' => $record->plugin->display_name]))
-                                ->body(__('Please check if all selected plugins have available updates, before you try again.'))
-                                ->send();
+                $payload = [
+                    'user_id' => $user->id,
+                    'username' => $user->email,
+                    'instance_id' => $instance->id,
+                    'updates' => []
+                ];
 
-                            return;
-                        }
-
-                        $updatesData[] = [
-                            'model_id' => $latestStableUpdate->id,
-                            'component' => $record->plugin->component,
-                            'version' => $latestStableUpdate->version,
-                            'release' => $latestStableUpdate->release,
-                            'download' => $latestStableUpdate->download,
-                        ];
-                    }
-
-                    $response = $moduleApiService->triggerPluginsUpdates($instance->url, Crypt::decrypt($instance->api_key), $updatesData);
-                    if (! $response->ok()) {
-                        throw new \Exception('Plugins update to latest stable version failed with status code: '.$response->status().'.');
-                    }
-                    $results = $response->json('updates');
-
-                    $successfulUpdates = [];
-                    $unsuccessfulUpdates = [];
-                    foreach ($results as $pluginUpdateResult) {
-                        $key = key($pluginUpdateResult);
-                        $values = $pluginUpdateResult[$key];
-                        if ($values['status']) {
-                            $successfulUpdates[] = $key;
-                        } else {
-                            $unsuccessfulUpdates[] = $key;
-                        }
-                    }
-
-                    // Show message to current user!
-                    if (count($successfulUpdates) === 0) {
+                foreach ($records as $record) {
+                    $latestStableUpdate = $record->updates()
+                        ->where('maturity', UpdateMaturity::STABLE)
+                        ->orderBy('version', 'desc')
+                        ->first();
+                    if (!$latestStableUpdate) {
                         Notification::make()
                             ->danger()
-                            ->title(__('None of selected plugins was updated successfully!'))
-                            ->send();
-                    } elseif (count($successfulUpdates) === count($results)) {
-                        Notification::make()
-                            ->success()
-                            ->title(__('All selected plugins successfully updated to latest stable version.'))
-                            ->send();
-                    } elseif (count($unsuccessfulUpdates) > 0) {
-                        Notification::make()
-                            ->warning()
-                            ->title(__(':numSuccessfully plugins was successfully updated and :numUnsuccessfully update failed!', [
-                                'numSuccessfully' => count($successfulUpdates),
-                                'numUnsuccessfully' => count($unsuccessfulUpdates),
-                            ]))
-                            ->body(__('Check update log for more information.'))
                             ->persistent()
+                            ->title(__('Failed! :plugin doesn\'t have any available stable updates.', ['plugin' => $record->plugin->display_name]))
+                            ->body(__('Please check if all selected plugins have available updates, before you try again.'))
                             ->send();
+
+                        return;
                     }
 
-                    // Sync data when at least one update is successful.
-                    if (count($successfulUpdates) > 0) {
-                        $syncType = SyncTypeFactory::create(PluginsSyncType::TYPE, Instance::find(filament()->getTenant()->id));
-                        $syncType->run(true);
-                    }
-                } catch (\Exception $exception) {
-                    Log::error($exception->getMessage());
-
-                    Notification::make()
-                        ->danger()
-                        ->title(__('Plugins update to latest stable version failed!'))
-                        ->body(__('Please contact administrator for more information.'))
-                        ->send();
+                    $payload['updates'][] = [
+                        'model_id' => $latestStableUpdate->id,
+                        'component' => $record->plugin->component,
+                        'version' => $latestStableUpdate->version,
+                        'release' => $latestStableUpdate->release,
+                        'download' => $latestStableUpdate->download,
+                    ];
                 }
 
+                PluginUpdateJob::dispatch($instance, Auth::user(), $payload);
+
+                Notification::make()
+                    ->success()
+                    ->title(__('Plugin updates have started'))
+                    ->body(__('Plugin updates have started. It might take a while. Check notifications for progress.'))
+                    ->seconds(7)
+                    ->send();
             })
             ->after(function ($livewire) use ($refreshComponents) {
-                if (! empty($refreshComponents)) {
+                if (!empty($refreshComponents)) {
                     foreach ($refreshComponents as $refreshComponent) {
                         $livewire->dispatch($refreshComponent);
                     }

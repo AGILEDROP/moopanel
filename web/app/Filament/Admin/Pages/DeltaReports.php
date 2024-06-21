@@ -8,6 +8,7 @@ use App\Models\DeltaReport;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use App\Services\ModuleApiService;
+use Exception;
 use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -40,7 +41,7 @@ class DeltaReports extends Page implements HasForms
 
     public function mount(): void
     {
-        if (! empty(request()->query('delta_report_id', ''))) {
+        if (!empty(request()->query('delta_report_id', ''))) {
             $deltaReportId = request()->query('delta_report_id', '');
             $this->renderDiffComparison($deltaReportId);
         }
@@ -112,7 +113,7 @@ class DeltaReports extends Page implements HasForms
             if ($cluster->master()->exists()) {
                 $options->map(function ($name, $id) use ($masterId, $options) {
                     if ($id === $masterId) {
-                        $options[$id] = __('MASTER').': '.$name;
+                        $options[$id] = __('MASTER') . ': ' . $name;
                     }
                 });
             }
@@ -144,20 +145,20 @@ class DeltaReports extends Page implements HasForms
 
         // Request admin preset for the instances if they dont have any pending delta report generation
         $firstInstanceHasPendingDeltaReportGenerationProcess = $this->hasPendingDeltaReportGenerationProcess($firstInstance);
-        if (! $firstInstanceHasPendingDeltaReportGenerationProcess) {
+        if (!$firstInstanceHasPendingDeltaReportGenerationProcess) {
             $isFirstRequestSuccessfullySent = $this->requestAdminPreset($firstInstance);
 
-            if (! $isFirstRequestSuccessfullySent) {
+            if (!$isFirstRequestSuccessfullySent) {
                 return;
             }
         }
 
         // Request admin preset for the instances if they dont have any pending delta report generation
         $secondInstanceHasPendingDeltaReportGenerationProcess = $this->hasPendingDeltaReportGenerationProcess($secondInstance);
-        if (! $secondInstanceHasPendingDeltaReportGenerationProcess) {
+        if (!$secondInstanceHasPendingDeltaReportGenerationProcess) {
             $isSecondRequestSuccessfullySent = $this->requestAdminPreset($secondInstance);
 
-            if (! $isSecondRequestSuccessfullySent) {
+            if (!$isSecondRequestSuccessfullySent) {
                 return;
             }
         }
@@ -177,7 +178,7 @@ class DeltaReports extends Page implements HasForms
         }
 
         $newDeltaReport = DeltaReport::create([
-            'name' => $firstInstance->name.' vs '.$secondInstance->name,
+            'name' => $firstInstance->name . ' vs ' . $secondInstance->name,
             'user_id' => auth()->id(),
             'first_instance_id' => $data['first_instance_id'],
             'second_instance_id' => $data['second_instance_id'],
@@ -208,14 +209,20 @@ class DeltaReports extends Page implements HasForms
      */
     private function requestAdminPreset(Instance $instance): bool
     {
-        $response = Http::withHeaders([
-            'X-API-KEY' => Crypt::decrypt($instance->api_key),
-        ])
-            ->get($instance->url.ModuleApiService::PLUGIN_PATH.'/admin_presets', [
-                'instanceid' => $instance->id,
-            ]);
+        $connectionSuccess = true;
+        try {
+            $response = Http::withHeaders([
+                'X-API-KEY' => Crypt::decrypt($instance->api_key),
+            ])
+                ->get($instance->url . ModuleApiService::PLUGIN_PATH . '/admin_presets', [
+                    'instanceid' => $instance->id,
+                ]);
+        } catch (Exception $e) {
+            $connectionSuccess = false;
+            Log::error('Failed to request admin preset for instance ' . $instance->name . '. Error: ' . $e->getMessage());
+        }
 
-        if (! $response->successful()) {
+        if (!$connectionSuccess || !$response->successful()) {
             Notification::make()
                 ->danger()
                 ->title(__('Failed to request admin preset.'))
@@ -225,7 +232,11 @@ class DeltaReports extends Page implements HasForms
                 ->persistent()
                 ->send();
 
-            Log::error('Failed to request admin preset for instance '.$instance->name.'. Response: '.$response->body());
+            if (isset($response)){
+                Log::error('Failed to request admin preset for instance ' . $instance->name . '. Response: ' . $response->body());
+            }else{
+                Log::error('Failed to request admin preset for instance ' . $instance->name);
+            }
 
             return false;
         }
@@ -254,7 +265,7 @@ class DeltaReports extends Page implements HasForms
      */
     private function renderDiffComparison(string $deltaReportId): void
     {
-        if (! DeltaReport::where('id', (int) $deltaReportId)->exists()) {
+        if (!DeltaReport::where('id', (int) $deltaReportId)->exists()) {
             return;
         }
 
