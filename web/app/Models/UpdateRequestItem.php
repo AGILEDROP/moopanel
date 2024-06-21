@@ -23,6 +23,7 @@ class UpdateRequestItem extends Model
         'release',
         'download',
         'zip_path',
+        'zip_name',
         'error'
     ];
 

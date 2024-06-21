@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Clusters\Updates\Pages;
 
 use App\Jobs\ModuleApi\Sync;
+use App\Jobs\Update\PluginZipUpdateJob;
 use App\Models\Instance;
 use App\Services\ModuleApiService;
 use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
@@ -10,6 +11,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -69,46 +71,56 @@ class ZipUpdatesPage extends BaseUpdateWizardPage implements HasForms
 
     public function updateAll(): void
     {
-        // TODO: use combination of trigger and post request to avoid timeouts!
-        $this->zipResults = [];
-        $moduleApi = new ModuleApiService();
-        $publicStorageUrl = config('filesystems.disks.public.url').'/';
-
-        // Validate form and set updates for post request!
         $data = $this->form->getState();
+
         $updates = [];
+        // For saving zip file name to be able to write it to the update request items table
+        $updatesAdittionalInfo = [];
+
         foreach ($data['files'] as $key => $zipFile) {
-            $updates[] = Storage::disk('public')->url($zipFile);
+            $fullFilePath = Storage::disk('public')->url($zipFile);
+
+            $updates[] = $fullFilePath;
+
+            // Get original filename for zip file
+            try {
+                $updatesAdittionalInfo[] = [
+                    'zip_name' => $data['original_filenames'][$zipFile],
+                    'zip_path' => $fullFilePath
+                ];
+            } catch (\Exception $e) {
+                Log::error('Failed to get original filename for zip file: ' . $zipFile . ' Error message: ' . $e->getMessage());
+
+                $updatesAdittionalInfo[] = [
+                    'zip_name' => $zipFile,
+                    'zip_path' => $fullFilePath
+                ];
+            }
         }
 
-        // Run updates and display results!
         $instances = Instance::whereIn('id', $this->instanceIds)->get();
         foreach ($instances as $instance) {
-            // Trigger updates with post request!
-            $response = $moduleApi->triggerPluginZipFileUpdates($instance->url, Crypt::decrypt($instance->api_key), $updates);
-            if (! $response->ok()) {
-                Log::error('Zip updates failed with '.$response->status().' response status on instance '.$instance->name.'!');
-                $this->zipResults[$instance->name]['results'] = null;
-                $this->zipResults[$instance->name]['error'] = __('Zip files update failed, due to connection error. Please contact the administrator.');
 
-                continue;
-            }
+            $payload = [
+                'user_id' => auth()->id(),
+                'username' => auth()->user()->email,
+                'instance_id' => $instance->id,
+                'updates' => $updates,
+                'temp_updates_data' => $updatesAdittionalInfo
+            ];
 
-            // Set update results.
-            foreach ($response->json('updates') as $key => $values) {
-                $originalFilename = $data['original_filenames'][str_replace($publicStorageUrl, '', $key)];
-                $this->zipResults[$instance->name]['results'][$originalFilename] = $values;
-
-                // Sync data if at least one update is successful.
-                if (isset($values['status']) && $values['status'] === true) {
-                    new Sync($instance, PluginsSyncType::TYPE, 'Plugin sync failed!');
-                }
-            }
+            PluginZipUpdateJob::dispatch($instance, auth()->user(), $payload);
         }
 
-        // Delete updated files!
-        foreach ($data['files'] as $key => $zipFile) {
-            Storage::disk('public')->delete($zipFile);
+        if (count($instances) && count($updates)) {
+            Notification::make()
+                ->success()
+                ->title(__('Zip updates have been successfully triggered.'))
+                ->body(__('Zip updates(:count) for instances(:instances) have been successfully triggered.', ['count' => count($updates), 'instances' => count($instances)]))
+                ->icon('heroicon-o-arrow-up-circle')
+                ->iconColor('success')
+                ->seconds(7)
+                ->send();
         }
 
         // Needed to reset files inside the FileUpload component.
