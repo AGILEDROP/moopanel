@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,13 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
+
+            // Load all route files in the routes/api directory
+            foreach (File::allFiles(base_path('routes/api')) as $route_file) {
+                Route::prefix('api')
+                    ->middleware('api')
+                    ->group($route_file->getPathname());
+            }
         });
     }
 }
