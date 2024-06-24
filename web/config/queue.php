@@ -106,4 +106,12 @@ return [
         'table' => 'failed_jobs',
     ],
 
+    'jobs' => [
+        'plugin-zip-update' => [
+            // seconds
+            'retry_after' => env('PLUGIN_ZIP_UPDATE_RETRY_AFTER', 15),
+            'max_tries' => env('PLUGIN_ZIP_UPDATE_MAX_TRIES', 3),
+        ]
+    ],
+
 ];

@@ -15,10 +15,14 @@ use Filament\Notifications\Notification;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Facades\Http;
 
 class PluginZipUpdateJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    // Has to be max_tries(from config) + 1 
+    public $tries = 4;
 
     private bool $canSubmitRequest;
 
@@ -65,9 +69,19 @@ class PluginZipUpdateJob implements ShouldQueue
             $response = $moduleApi->triggerPluginZipFileUpdates($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
             if (!$response->ok()) {
-                Log::error('Plugin ZIP updates for instance failed with status code and body: ' . $response->status() . ' - ' . $response->body());
 
-                // TODO: if error code 503, retry job since service might be only temporarily unavailable
+                // Retry job if service is temporarily unavailable
+                $maxRetries = config('queue.jobs.plugin-zip-update.max_tries') ?? 3;
+                if ($response->status() == 503 && $this->attempts() <= $maxRetries) {
+                    Log::info('Retrying ZIP plugin update request for instance: ' . $this->instance->name . ' as the service is temporarily unavailable.');
+
+                    $retryAfter = config('queue.jobs.plugin-zip-update.retry_after');
+                    $this->release($retryAfter);
+
+                    return;
+                }
+
+                Log::error('Plugin ZIP updates for instance failed with status code and body: ' . $response->status() . ' - ' . $response->body());
 
                 throw new \Exception('Plugin update failed with status code: ' . $response->status() . '.');
             }
