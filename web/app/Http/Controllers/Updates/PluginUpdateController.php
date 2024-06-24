@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Updates;
 use App\Filament\App\Pages\AppDashboard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Update\PluginUpdateCreate;
+use App\Jobs\ModuleApi\Sync;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use App\Models\UpdateRequest;
@@ -38,6 +39,11 @@ class PluginUpdateController extends Controller
         if ($instance->hasPendingUpdateRequest()) {
             $isSuccessfull = $isSuccessfull && $this->statusUpdate($instance, $validatedData);
             $this->notify($validatedData, $instance);
+
+            // Sync instances available plugins
+            if ($isSuccessfull) {
+                Sync::dispatch($instance, PluginsSyncType::TYPE, 'Plugin sync failed!');
+            }
         }
         
         if(!$isSuccessfull) {
@@ -46,10 +52,6 @@ class PluginUpdateController extends Controller
                 'status' => false,
             ], 500);
         }
-
-        // TODO: razmisli, ali bi syncali na interval, namesto na request
-        /* $syncType = SyncTypeFactory::create(PluginsSyncType::TYPE, $instance);
-        $syncType->run(); */
 
         return response()->json([
             'message' => 'Plugin update statuses received successfully.',
