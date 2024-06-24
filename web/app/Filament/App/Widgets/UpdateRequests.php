@@ -5,7 +5,6 @@ namespace App\Filament\App\Widgets;
 use App\Filament\App\Pages\UpdateRequests as PagesUpdateRequests;
 use App\Models\UpdateRequest;
 use Filament\Support\Enums\FontWeight;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
@@ -23,8 +22,6 @@ class UpdateRequests extends BaseWidget
 
     public int $maxItems = 5;
 
-
-
     public function table(Table $table): Table
     {
         return $table
@@ -41,14 +38,14 @@ class UpdateRequests extends BaseWidget
                         UpdateRequest::STATUS_SUCCESS => __('Success'),
                         UpdateRequest::STATUS_FAIL => __('Fail'),
                         UpdateRequest::STATUS_PENDING => __('Pending'),
-                    ])
+                    ]),
             ], layout: FiltersLayout::Modal)
             ->query(
                 UpdateRequest::where('instance_id', filament()->getTenant()->id)
                     ->orderBy('created_at', 'desc')
             )
             ->recordUrl(
-                fn (Model $record): string => PagesUpdateRequests::getUrl() . '?id=' . ((string) $record->id),
+                fn (Model $record): string => PagesUpdateRequests::getUrl().'?id='.((string) $record->id),
                 true
             )
             ->actions([
@@ -61,14 +58,14 @@ class UpdateRequests extends BaseWidget
                     ->badge(),
                 TextColumn::make('type')
                     ->label(__('Type'))
-                    ->color("gray")
+                    ->color('gray')
                     ->badge(),
                 TextColumn::make('name')
                     ->label(__('Name'))
                     ->weight(FontWeight::Bold)
-                    ->description(fn (Model $model): string => "Short description of the update request"),
+                    ->description(fn (Model $model): string => 'Short description of the update request'),
                 TextColumn::make('created_at')
-                    ->since()
+                    ->since(),
             ]);
     }
 }

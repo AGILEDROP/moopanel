@@ -33,7 +33,7 @@ class PluginUpdateCreate extends FormRequest
             ]);
         }
 
-        if (!Instance::withoutGlobalScope(InstanceScope::class)->where('id', (int) $instanceId)->exists()) {
+        if (! Instance::withoutGlobalScope(InstanceScope::class)->where('id', (int) $instanceId)->exists()) {
             throw ValidationException::withMessages([
                 'instance_id' => 'Invalid instance_id',
             ]);

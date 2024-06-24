@@ -36,7 +36,7 @@ class PluginZipUpdateController extends Controller
             }
         }
 
-        if (!$isSuccessfull) {
+        if (! $isSuccessfull) {
             return response()->json([
                 'message' => 'There was and error while updating the plugin statuses. Please try again or contact support.',
                 'status' => false,
@@ -51,13 +51,11 @@ class PluginZipUpdateController extends Controller
 
     /**
      * Notifies the user about the plugin updates
-     * 
+     *
      * The notification will be sent to the user with the given user_id
      * Notification contains link to instance dashboard where user can see update request status in detail
      *
-     * @param  mixed $validatedData
-     * @param  Instance $instance
-     * @return void
+     * @param  mixed  $validatedData
      */
     private function notify(array $validatedData, Instance $instance): void
     {
@@ -69,7 +67,7 @@ class PluginZipUpdateController extends Controller
         Notification::make()
             ->status($status)
             ->title(__($message))
-            ->body(__(':count plugins for instance :instance_name have been updated with ZIP files.', ['count' => $successfullUpdates . '/' . $allUpdates, 'instance_name' => $instance->name]))
+            ->body(__(':count plugins for instance :instance_name have been updated with ZIP files.', ['count' => $successfullUpdates.'/'.$allUpdates, 'instance_name' => $instance->name]))
             ->actions([
                 Action::make('view')
                     ->color($status)
@@ -87,8 +85,6 @@ class PluginZipUpdateController extends Controller
     /**
      * Updates the status of the update request and its items
      *
-     * @param  Instance $instance
-     * @param  array $data
      * @return void
      */
     private function statusUpdate(Instance $instance, array $data): bool
@@ -120,12 +116,12 @@ class PluginZipUpdateController extends Controller
                     ->update([
                         'status' => $update['status'],
                         'error' => $update['error'],
-                        'component' => isset($update['component']) ? $update['component'] : " - ",
-                        'version' => isset($update['version']) ? $update['version'] : " - ",
+                        'component' => isset($update['component']) ? $update['component'] : ' - ',
+                        'version' => isset($update['version']) ? $update['version'] : ' - ',
                     ]);
             }
         } catch (Exception $e) {
-            Log::error(__FILE__ . ':' . __LINE__ . ' - ' . 'Failed to update ZIP update plugin request status for instance: ' . $instance->name . " Error message: " . $e->getMessage());
+            Log::error(__FILE__.':'.__LINE__.' - '.'Failed to update ZIP update plugin request status for instance: '.$instance->name.' Error message: '.$e->getMessage());
 
             $status = false;
         }
@@ -136,9 +132,8 @@ class PluginZipUpdateController extends Controller
     /**
      * Returns the response status based on the number of successful updates
      *
-     * @param  mixed $successfulUpdates
-     * @param  mixed $allUpdates
-     * @return string
+     * @param  mixed  $successfulUpdates
+     * @param  mixed  $allUpdates
      */
     private function getResponseStatus(int $successfulUpdates, int $allUpdates): string
     {
@@ -156,9 +151,8 @@ class PluginZipUpdateController extends Controller
     /**
      * Returns the response message based on the number of successful updates
      *
-     * @param  mixed $successfulUpdates
-     * @param  mixed $allUpdates
-     * @return string
+     * @param  mixed  $successfulUpdates
+     * @param  mixed  $allUpdates
      */
     private function getResponseMessage(int $successfulUpdates, int $allUpdates): string
     {
@@ -176,8 +170,7 @@ class PluginZipUpdateController extends Controller
     /**
      * Returns the number of successful updates
      *
-     * @param  mixed $validatedData
-     * @return int
+     * @param  mixed  $validatedData
      */
     private function getSuccessUpdatesCount(array $validatedData): int
     {
@@ -189,8 +182,7 @@ class PluginZipUpdateController extends Controller
     /**
      * Returns the number of updates
      *
-     * @param  mixed $validatedData
-     * @return int
+     * @param  mixed  $validatedData
      */
     private function getUpdatesCount(array $validatedData): int
     {

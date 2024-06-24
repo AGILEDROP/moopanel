@@ -2,26 +2,25 @@
 
 namespace App\Jobs\Update;
 
-use App\Models\User;
 use App\Models\Instance;
 use App\Models\UpdateRequest;
-use Illuminate\Bus\Queueable;
 use App\Models\UpdateRequestItem;
+use App\Models\User;
 use App\Services\ModuleApiService;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Queue\SerializesModels;
 use Filament\Notifications\Notification;
-use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 
 class PluginZipUpdateJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    // Has to be max_tries(from config) + 1 
+    // Has to be max_tries(from config) + 1
     public $tries = 4;
 
     private bool $canSubmitRequest;
@@ -34,7 +33,7 @@ class PluginZipUpdateJob implements ShouldQueue
     public function __construct(public Instance $instance, private User $userToNotify, private array $payload)
     {
         // Skip request submission if there is already a pending request for the instance.
-        $this->canSubmitRequest = !$instance->hasPendingUpdateRequest();
+        $this->canSubmitRequest = ! $instance->hasPendingUpdateRequest();
 
         if ($this->canSubmitRequest) {
             $this->createUpdateRequest($instance, $userToNotify, $this->payload);
@@ -49,8 +48,8 @@ class PluginZipUpdateJob implements ShouldQueue
     public function handle(): void
     {
         // Abort if there is already a pending request for the instance.
-        if (!$this->canSubmitRequest) {
-            Log::info('Skipping ZIP plugin update request for instance: ' . $this->instance->name . ' as there is already a pending request.');
+        if (! $this->canSubmitRequest) {
+            Log::info('Skipping ZIP plugin update request for instance: '.$this->instance->name.' as there is already a pending request.');
 
             Notification::make()
                 ->warning()
@@ -68,12 +67,12 @@ class PluginZipUpdateJob implements ShouldQueue
         try {
             $response = $moduleApi->triggerPluginZipFileUpdates($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
-            if (!$response->ok()) {
+            if (! $response->ok()) {
 
                 // Retry job if service is temporarily unavailable
                 $maxRetries = config('queue.jobs.plugin-zip-update.max_tries') ?? 3;
                 if ($response->status() == 503 && $this->attempts() <= $maxRetries) {
-                    Log::info('Retrying ZIP plugin update request for instance: ' . $this->instance->name . ' as the service is temporarily unavailable.');
+                    Log::info('Retrying ZIP plugin update request for instance: '.$this->instance->name.' as the service is temporarily unavailable.');
 
                     $retryAfter = config('queue.jobs.plugin-zip-update.retry_after');
                     $this->release($retryAfter);
@@ -81,21 +80,21 @@ class PluginZipUpdateJob implements ShouldQueue
                     return;
                 }
 
-                Log::error('Plugin ZIP updates for instance failed with status code and body: ' . $response->status() . ' - ' . $response->body());
+                Log::error('Plugin ZIP updates for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
-                throw new \Exception('Plugin update failed with status code: ' . $response->status() . '.');
+                throw new \Exception('Plugin update failed with status code: '.$response->status().'.');
             }
 
             $pluginUpdatesCount = isset($this->payload['updates']) ? count($this->payload['updates']) : null;
 
             if ($pluginUpdatesCount === null) {
-                throw new \Exception('No ZIP plugin updates found in payload for instance: ' . $this->instance->name);
+                throw new \Exception('No ZIP plugin updates found in payload for instance: '.$this->instance->name);
             }
 
             if ($response->json() && array_key_exists('moodle_job_id', $response->json())) {
 
                 $this->updateRequest->update([
-                    'moodle_job_id' => $response->json('moodle_job_id')
+                    'moodle_job_id' => $response->json('moodle_job_id'),
                 ]);
             }
 
@@ -132,11 +131,6 @@ class PluginZipUpdateJob implements ShouldQueue
 
     /**
      * Create update request for the instance.
-     *
-     * @param  Instance $instance
-     * @param  User $userToNotify
-     * @param  array $payload
-     * @return void
      */
     private function createUpdateRequest(Instance $instance, User $userToNotify, array $payload): void
     {
@@ -151,18 +145,17 @@ class PluginZipUpdateJob implements ShouldQueue
             'payload' => json_encode($payload),
         ]);
 
-
-        if (!empty($payload['temp_updates_data'])) {
+        if (! empty($payload['temp_updates_data'])) {
             foreach ($payload['temp_updates_data'] as $update) {
                 UpdateRequestItem::create([
                     'update_request_id' => $this->updateRequest->id,
                     'status' => UpdateRequest::STATUS_PENDING,
                     'zip_name' => $update['zip_name'],
-                    'zip_path' => $update['zip_path']
+                    'zip_path' => $update['zip_path'],
                 ]);
             }
         }
 
-        Log::info('Plugin ZIP update request and request items created for instance: ' . $instance->name);
+        Log::info('Plugin ZIP update request and request items created for instance: '.$instance->name);
     }
 }

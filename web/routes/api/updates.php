@@ -1,9 +1,7 @@
 <?php
 
-use App\Http\Controllers\AdminPresetController;
 use App\Http\Controllers\Updates\PluginUpdateController;
 use App\Http\Controllers\Updates\PluginZipUpdateController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,7 +22,7 @@ Route::prefix('updates')->group(function () {
     //TODO: core update routes here
     /* Route::prefix('core')->group(function () {
         // Add your core routes here
-        }); 
+        });
     */
 
     Route::prefix('zip-plugins')->group(function () {

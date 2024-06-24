@@ -2,19 +2,13 @@
 
 namespace App\Filament\App\Pages;
 
-use App\Livewire\App\Core\CurrentVersion;
 use App\Models\UpdateRequest;
 use App\Models\UpdateRequestItem;
-use Filament\Infolists\Components\Grid;
-use Filament\Infolists\Components\Livewire;
-use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Infolist;
 use Filament\Pages\Page;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
-use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -36,13 +30,14 @@ class UpdateRequests extends Page implements HasTable
     public function mount(): void
     {
         // Render update request items
-        if (!empty(request()->query('id', ''))) {
+        if (! empty(request()->query('id', ''))) {
             $updateRequestId = (int) request()->query('id', '');
             $updateRequest = UpdateRequest::find($updateRequestId);
 
             // Check if the user is the owner of the update request
             if (Auth::user()->id === $updateRequest->user_id) {
                 $this->updateRequestId = $updateRequestId;
+
                 return;
             }
         }
@@ -79,7 +74,7 @@ class UpdateRequests extends Page implements HasTable
             TextColumn::make('version'),
             TextColumn::make('release'),
             TextColumn::make('error')
-                ->label(__('Message'))
+                ->label(__('Message')),
         ];
     }
 }

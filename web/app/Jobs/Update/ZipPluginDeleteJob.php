@@ -39,7 +39,6 @@ class ZipPluginDeleteJob implements ShouldQueue
             ->where('update_requests.type', UpdateRequest::TYPE_PLUGIN_ZIP)
             ->get();
 
-
         // Get all files in storage/public/zip_files
         $zipFiles = Storage::files('zip_updates');
 
@@ -57,7 +56,7 @@ class ZipPluginDeleteJob implements ShouldQueue
                 }
             }
 
-            if (!$isCurrentFileUsedInPendingUpdate) {
+            if (! $isCurrentFileUsedInPendingUpdate) {
                 $filesToDelete[] = $filePath;
             }
         }
@@ -68,7 +67,7 @@ class ZipPluginDeleteJob implements ShouldQueue
                 Log::info("Deleted file: {$filePath} as it is not part of any pending update requests.");
             }
         } catch (Exception $e) {
-            Log::error('Failed to delete zip file: ' . $path . ' Error message: ' . $e->getMessage());
+            Log::error('Failed to delete zip file: '.$path.' Error message: '.$e->getMessage());
         }
     }
 }

@@ -2,17 +2,13 @@
 
 namespace App\Filament\Admin\Clusters\Updates\Pages;
 
-use App\Jobs\ModuleApi\Sync;
 use App\Jobs\Update\PluginZipUpdateJob;
 use App\Models\Instance;
-use App\Services\ModuleApiService;
-use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -86,14 +82,14 @@ class ZipUpdatesPage extends BaseUpdateWizardPage implements HasForms
             try {
                 $updatesAdittionalInfo[] = [
                     'zip_name' => $data['original_filenames'][$zipFile],
-                    'zip_path' => $fullFilePath
+                    'zip_path' => $fullFilePath,
                 ];
             } catch (\Exception $e) {
-                Log::error('Failed to get original filename for zip file: ' . $zipFile . ' Error message: ' . $e->getMessage());
+                Log::error('Failed to get original filename for zip file: '.$zipFile.' Error message: '.$e->getMessage());
 
                 $updatesAdittionalInfo[] = [
                     'zip_name' => $zipFile,
-                    'zip_path' => $fullFilePath
+                    'zip_path' => $fullFilePath,
                 ];
             }
         }
@@ -106,7 +102,7 @@ class ZipUpdatesPage extends BaseUpdateWizardPage implements HasForms
                 'username' => auth()->user()->email,
                 'instance_id' => $instance->id,
                 'updates' => $updates,
-                'temp_updates_data' => $updatesAdittionalInfo
+                'temp_updates_data' => $updatesAdittionalInfo,
             ];
 
             PluginZipUpdateJob::dispatch($instance, auth()->user(), $payload);

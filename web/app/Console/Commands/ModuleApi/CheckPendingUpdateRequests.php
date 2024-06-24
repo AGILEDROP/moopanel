@@ -9,7 +9,6 @@ use App\Models\Scopes\InstanceScope;
 use App\Models\UpdateRequest;
 use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class CheckPendingUpdateRequests extends Command
 {

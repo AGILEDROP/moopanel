@@ -11,11 +11,15 @@ class UpdateRequest extends Model
     use HasFactory;
 
     public const STATUS_PENDING = null;
+
     public const STATUS_SUCCESS = true;
+
     public const STATUS_FAIL = false;
 
     public const TYPE_CORE = 'core';
+
     public const TYPE_PLUGIN = 'plugin';
+
     public const TYPE_PLUGIN_ZIP = 'plugin_zip';
 
     protected $fillable = [
@@ -41,17 +45,13 @@ class UpdateRequest extends Model
             }
         );
     }
-        
+
     /**
      * Generate a name for the update request.
-     *
-     * @param  string $instanceName
-     * @param  string $requestType
-     * @return string
      */
     public static function generateName(string $instanceName, string $requestType): string
     {
-        return $instanceName . '-' . $requestType . '-' . "update" . '-' . now()->format('d-m-y_H-i');
+        return $instanceName.'-'.$requestType.'-'.'update'.'-'.now()->format('d-m-y_H-i');
     }
 
     public function user()

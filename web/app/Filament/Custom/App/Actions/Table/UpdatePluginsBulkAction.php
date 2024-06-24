@@ -4,17 +4,10 @@ namespace App\Filament\Custom\App\Actions\Table;
 
 use App\Enums\UpdateMaturity;
 use App\Jobs\Update\PluginUpdateJob;
-use App\Models\Instance;
-use App\Models\Update;
-use App\Services\ModuleApiService;
-use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
-use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Log;
 
 class UpdatePluginsBulkAction
 {
@@ -31,7 +24,7 @@ class UpdatePluginsBulkAction
                     'user_id' => $user->id,
                     'username' => $user->email,
                     'instance_id' => $instance->id,
-                    'updates' => []
+                    'updates' => [],
                 ];
 
                 foreach ($records as $record) {
@@ -39,7 +32,7 @@ class UpdatePluginsBulkAction
                         ->where('maturity', UpdateMaturity::STABLE)
                         ->orderBy('version', 'desc')
                         ->first();
-                    if (!$latestStableUpdate) {
+                    if (! $latestStableUpdate) {
                         Notification::make()
                             ->danger()
                             ->persistent()
@@ -69,7 +62,7 @@ class UpdatePluginsBulkAction
                     ->send();
             })
             ->after(function ($livewire) use ($refreshComponents) {
-                if (!empty($refreshComponents)) {
+                if (! empty($refreshComponents)) {
                     foreach ($refreshComponents as $refreshComponent) {
                         $livewire->dispatch($refreshComponent);
                     }

@@ -2,17 +2,14 @@
 
 namespace App\Http\Controllers\Updates;
 
-use App\Filament\App\Pages\AppDashboard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Update\PluginUpdateCreate;
 use App\Jobs\ModuleApi\Sync;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use App\Models\UpdateRequest;
-use App\Models\UpdateRequestItem;
 use App\Models\User;
 use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
-use App\UseCases\Syncs\SyncTypeFactory;
 use Exception;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
@@ -25,9 +22,7 @@ class PluginUpdateController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  PluginUpdateCreate  $request
      * @param  int  $instance_id
-     * @return JsonResponse
      */
     public function store(PluginUpdateCreate $request, $instance_id): JsonResponse
     {
@@ -45,8 +40,8 @@ class PluginUpdateController extends Controller
                 Sync::dispatch($instance, PluginsSyncType::TYPE, 'Plugin sync failed!');
             }
         }
-        
-        if(!$isSuccessfull) {
+
+        if (! $isSuccessfull) {
             return response()->json([
                 'message' => 'There was and error while updating the plugin statuses. Please try again or contact support.',
                 'status' => false,
@@ -61,13 +56,11 @@ class PluginUpdateController extends Controller
 
     /**
      * Notifies the user about the plugin updates
-     * 
+     *
      * The notification will be sent to the user with the given user_id
      * Notification contains link to instance dashboard where user can see update request status in detail
      *
-     * @param  mixed $validatedData
-     * @param  Instance $instance
-     * @return void
+     * @param  mixed  $validatedData
      */
     private function notify(array $validatedData, Instance $instance): void
     {
@@ -79,7 +72,7 @@ class PluginUpdateController extends Controller
         Notification::make()
             ->status($status)
             ->title(__($message))
-            ->body(__(':count plugins for instance :instance_name have been updated.', ['count' => $successfullUpdates . '/' . $allUpdates, 'instance_name' => $instance->name]))
+            ->body(__(':count plugins for instance :instance_name have been updated.', ['count' => $successfullUpdates.'/'.$allUpdates, 'instance_name' => $instance->name]))
             ->actions([
                 Action::make('view')
                     ->color($status)
@@ -97,8 +90,6 @@ class PluginUpdateController extends Controller
     /**
      * Updates the status of the update request and its items
      *
-     * @param  Instance $instance
-     * @param  array $data
      * @return void
      */
     private function statusUpdate(Instance $instance, array $data): bool
@@ -133,7 +124,7 @@ class PluginUpdateController extends Controller
                     ]);
             }
         } catch (Exception $e) {
-            Log::error(__FILE__ . ':' . __LINE__ . ' - ' . 'Failed to update update plugin request status for instance: ' . $instance->name . " Error message: " . $e->getMessage());
+            Log::error(__FILE__.':'.__LINE__.' - '.'Failed to update update plugin request status for instance: '.$instance->name.' Error message: '.$e->getMessage());
 
             $status = false;
         }
@@ -144,9 +135,8 @@ class PluginUpdateController extends Controller
     /**
      * Returns the response status based on the number of successful updates
      *
-     * @param  mixed $successfulUpdates
-     * @param  mixed $allUpdates
-     * @return string
+     * @param  mixed  $successfulUpdates
+     * @param  mixed  $allUpdates
      */
     private function getResponseStatus(int $successfulUpdates, int $allUpdates): string
     {
@@ -164,9 +154,8 @@ class PluginUpdateController extends Controller
     /**
      * Returns the response message based on the number of successful updates
      *
-     * @param  mixed $successfulUpdates
-     * @param  mixed $allUpdates
-     * @return string
+     * @param  mixed  $successfulUpdates
+     * @param  mixed  $allUpdates
      */
     private function getResponseMessage(int $successfulUpdates, int $allUpdates): string
     {
@@ -184,8 +173,7 @@ class PluginUpdateController extends Controller
     /**
      * Returns the number of successful updates
      *
-     * @param  mixed $validatedData
-     * @return int
+     * @param  mixed  $validatedData
      */
     private function getSuccessUpdatesCount(array $validatedData): int
     {
@@ -197,8 +185,7 @@ class PluginUpdateController extends Controller
     /**
      * Returns the number of updates
      *
-     * @param  mixed $validatedData
-     * @return int
+     * @param  mixed  $validatedData
      */
     private function getUpdatesCount(array $validatedData): int
     {

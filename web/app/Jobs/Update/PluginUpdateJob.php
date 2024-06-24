@@ -3,22 +3,17 @@
 namespace App\Jobs\Update;
 
 use App\Models\Instance;
-use App\Models\Scopes\InstanceScope;
 use App\Models\UpdateRequest;
 use App\Models\UpdateRequestItem;
 use App\Models\User;
 use App\Services\ModuleApiService;
-use Exception;
 use Filament\Notifications\Notification;
-use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Http\Client\Response;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PluginUpdateJob implements ShouldQueue
@@ -35,7 +30,7 @@ class PluginUpdateJob implements ShouldQueue
     public function __construct(public Instance $instance, private User $userToNotify, private array $payload)
     {
         // Skip request submission if there is already a pending request for the instance.
-        $this->canSubmitRequest = !$instance->hasPendingUpdateRequest();
+        $this->canSubmitRequest = ! $instance->hasPendingUpdateRequest();
 
         if ($this->canSubmitRequest) {
             $this->createUpdateRequest($instance, $userToNotify, $payload);
@@ -48,8 +43,8 @@ class PluginUpdateJob implements ShouldQueue
     public function handle(): void
     {
         // Abort if there is already a pending request for the instance.
-        if (!$this->canSubmitRequest) {
-            Log::info('Skipping plugin update request for instance: ' . $this->instance->name . ' as there is already a pending request.');
+        if (! $this->canSubmitRequest) {
+            Log::info('Skipping plugin update request for instance: '.$this->instance->name.' as there is already a pending request.');
 
             Notification::make()
                 ->warning()
@@ -67,22 +62,22 @@ class PluginUpdateJob implements ShouldQueue
 
             $response = $moduleApiService->triggerPluginsUpdates($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
-            if (!$response->ok()) {
-                Log::error('Plugin update for instance failed with status code and body: ' . $response->status() . ' - ' . $response->body());
+            if (! $response->ok()) {
+                Log::error('Plugin update for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
-                throw new \Exception('Plugin update failed with status code: ' . $response->status() . '.');
+                throw new \Exception('Plugin update failed with status code: '.$response->status().'.');
             }
 
             $pluginUpdatesCount = isset($this->payload['updates']) ? count($this->payload['updates']) : null;
 
             if ($pluginUpdatesCount === null) {
-                throw new \Exception('No plugin updates found in payload for instance: ' . $this->instance->name);
+                throw new \Exception('No plugin updates found in payload for instance: '.$this->instance->name);
             }
 
             if ($response->json() && array_key_exists('moodle_job_id', $response->json())) {
 
                 $this->updateRequest->update([
-                    'moodle_job_id' => $response->json('moodle_job_id')
+                    'moodle_job_id' => $response->json('moodle_job_id'),
                 ]);
             }
 
@@ -120,11 +115,6 @@ class PluginUpdateJob implements ShouldQueue
 
     /**
      * Create update request for the instance.
-     *
-     * @param  Instance $instance
-     * @param  User $userToNotify
-     * @param  array $payload
-     * @return void
      */
     private function createUpdateRequest(Instance $instance, User $userToNotify, array $payload): void
     {
@@ -139,8 +129,7 @@ class PluginUpdateJob implements ShouldQueue
             'payload' => json_encode($payload),
         ]);
 
-
-        if (!empty($payload['updates'])) {
+        if (! empty($payload['updates'])) {
             foreach ($payload['updates'] as $update) {
                 UpdateRequestItem::create([
                     'update_request_id' => $this->updateRequest->id,
@@ -149,11 +138,11 @@ class PluginUpdateJob implements ShouldQueue
                     'component' => $update['component'],
                     'version' => $update['version'],
                     'release' => $update['release'],
-                    'download' => $update['download']
+                    'download' => $update['download'],
                 ]);
             }
         }
 
-        Log::info('Plugin update request created for instance: ' . $instance->name);
+        Log::info('Plugin update request created for instance: '.$instance->name);
     }
 }

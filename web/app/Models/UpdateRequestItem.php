@@ -11,7 +11,9 @@ class UpdateRequestItem extends Model
     use HasFactory;
 
     public const STATUS_PENDING = null;
+
     public const STATUS_SUCCESS = true;
+
     public const STATUS_FAIL = false;
 
     protected $fillable = [
@@ -24,7 +26,7 @@ class UpdateRequestItem extends Model
         'download',
         'zip_path',
         'zip_name',
-        'error'
+        'error',
     ];
 
     protected function statusName(): Attribute
