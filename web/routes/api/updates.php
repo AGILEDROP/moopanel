@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminPresetController;
 use App\Http\Controllers\Updates\PluginUpdateController;
+use App\Http\Controllers\Updates\PluginZipUpdateController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,12 @@ Route::prefix('updates')->group(function () {
         // Add your core routes here
         }); 
     */
+
+    Route::prefix('zip-plugins')->group(function () {
+
+        Route::middleware(['checkInstanceToken'])->post('instance/{instance_id}', [PluginZipUpdateController::class, 'store']);
+
+    });
 
     Route::prefix('plugins')->group(function () {
 
