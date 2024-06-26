@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Updates;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Update\PluginUpdateCreate;
+use App\Http\Requests\Update\PluginZipUpdateCreate;
 use App\Jobs\ModuleApi\Sync;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
@@ -17,14 +17,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class PluginUpdateController extends Controller
+class PluginZipUpdateController extends Controller
 {
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  int  $instance_id
-     */
-    public function store(PluginUpdateCreate $request, $instance_id): JsonResponse
+    public function store(PluginZipUpdateCreate $request, $instance_id): JsonResponse
     {
         $validatedData = $request->validated();
         $instance = Instance::withoutGlobalScope(InstanceScope::class)->where('id', (int) $instance_id)->first();
@@ -49,7 +44,7 @@ class PluginUpdateController extends Controller
         }
 
         return response()->json([
-            'message' => 'Plugin update statuses received successfully.',
+            'message' => 'Plugin ZIP update statuses received successfully.',
             'status' => true,
         ]);
     }
@@ -72,7 +67,7 @@ class PluginUpdateController extends Controller
         Notification::make()
             ->status($status)
             ->title(__($message))
-            ->body(__(':count plugins for instance :instance_name have been updated.', ['count' => $successfullUpdates.'/'.$allUpdates, 'instance_name' => $instance->name]))
+            ->body(__(':count plugins for instance :instance_name have been updated with ZIP files.', ['count' => $successfullUpdates.'/'.$allUpdates, 'instance_name' => $instance->name]))
             ->actions([
                 Action::make('view')
                     ->color($status)
@@ -116,15 +111,17 @@ class PluginUpdateController extends Controller
 
             // update update-request-items statuses
             foreach ($data['updates'] as $update) {
-                $updateItems->where('model_id', $update['model_id'])
+                $updateItems->where('zip_path', $update['link'])
                     ->first()
                     ->update([
                         'status' => $update['status'],
                         'error' => $update['error'],
+                        'component' => isset($update['component']) ? $update['component'] : ' - ',
+                        'version' => isset($update['version']) ? $update['version'] : ' - ',
                     ]);
             }
         } catch (Exception $e) {
-            Log::error(__FILE__.':'.__LINE__.' - '.'Failed to update update plugin request status for instance: '.$instance->name.' Error message: '.$e->getMessage());
+            Log::error(__FILE__.':'.__LINE__.' - '.'Failed to update ZIP update plugin request status for instance: '.$instance->name.' Error message: '.$e->getMessage());
 
             $status = false;
         }
@@ -159,12 +156,12 @@ class PluginUpdateController extends Controller
      */
     private function getResponseMessage(int $successfulUpdates, int $allUpdates): string
     {
-        $message = 'Instance plugins updated successfully';
+        $message = __('Instance plugin ZIP update successfull');
 
         if ($successfulUpdates === 0) {
-            $message = 'Instance plugins update failed';
+            $message = __('Instance plugin ZIP update failed');
         } elseif ($successfulUpdates < $allUpdates) {
-            $message = 'Instance plugins update partially succeeded';
+            $message = __('Instance plugin ZIP update partially successfull');
         }
 
         return $message;

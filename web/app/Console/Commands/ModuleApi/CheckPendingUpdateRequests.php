@@ -2,10 +2,13 @@
 
 namespace App\Console\Commands\ModuleApi;
 
+use App\Jobs\ModuleApi\Sync;
 use App\Jobs\Update\CheckPendingUpdateRequestsJob;
+use App\Models\Instance;
+use App\Models\Scopes\InstanceScope;
 use App\Models\UpdateRequest;
+use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class CheckPendingUpdateRequests extends Command
 {
@@ -28,12 +31,25 @@ class CheckPendingUpdateRequests extends Command
      */
     public function handle()
     {
+        // Check pending update requests
         $pendingUpdateRequests = UpdateRequest::where('status', UpdateRequest::STATUS_PENDING)->get();
 
         foreach ($pendingUpdateRequests as $updateRequest) {
 
             CheckPendingUpdateRequestsJob::dispatch($updateRequest);
-        
+        }
+
+        // Sync instances
+        $updatedInstanceIds = $pendingUpdateRequests->map(function ($updateRequest) {
+            return $updateRequest->instance_id;
+        })->toArray();
+
+        $updatedInstances = Instance::withoutGlobalScope(InstanceScope::class)
+            ->whereIn('id', $updatedInstanceIds)
+            ->get();
+
+        foreach ($updatedInstances as $instance) {
+            Sync::dispatch($instance, PluginsSyncType::TYPE, 'Plugin sync on scheduled update check, failed!');
         }
     }
 }

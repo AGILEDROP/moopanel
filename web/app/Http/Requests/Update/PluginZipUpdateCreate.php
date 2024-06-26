@@ -7,7 +7,7 @@ use App\Models\Scopes\InstanceScope;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
 
-class PluginUpdateCreate extends FormRequest
+class PluginZipUpdateCreate extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -48,14 +48,15 @@ class PluginUpdateCreate extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => 'required|integer|exists:users,id',
-            'username' => 'nullable|string|email',
-            'moodle_job_id' => 'required|integer',
-            'updates' => 'required|array|min:1',
-            'updates.*.model_id' => 'required|integer|exists:updates,id',
-            'updates.*.status' => 'required|boolean',
-            'updates.*.component' => 'required|string',
-            'updates.*.error' => 'nullable|string',
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'moodle_job_id' => ['required', 'integer'],
+            'username' => ['nullable', 'email'],
+            'updates' => ['required', 'array'],
+            'updates.*.link' => ['required', 'string'],
+            'updates.*.status' => ['required', 'boolean'],
+            'updates.*.component' => ['required', 'string'],
+            'updates.*.version' => ['nullable', 'string'],
+            'updates.*.error' => ['nullable', 'string'],
         ];
     }
 }

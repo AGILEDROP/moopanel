@@ -123,8 +123,6 @@ class Instance extends Model implements HasAvatar
 
     /**
      * Check if there is a pending update request for the instance.
-     *
-     * @return bool
      */
     public function hasPendingUpdateRequest(): bool
     {
