@@ -24,13 +24,11 @@ class ModuleApiService
         ]));
     }
 
-    public function triggerPluginZipFileUpdates(string $baseUrl, string $apiKey, ?array $updates): PromiseInterface|Response
+    public function triggerPluginZipFileUpdates(string $baseUrl, string $apiKey, ?array $payload): PromiseInterface|Response
     {
         return Http::withHeaders([
             'X-API-KEY' => $apiKey,
-        ])->post($baseUrl.self::PLUGIN_PATH.'/plugins/installzip', wrapData([
-            'updates' => $updates,
-        ]));
+        ])->post($baseUrl.self::PLUGIN_PATH.'/plugins/installzip', wrapData($payload));
     }
 
     public function triggerPluginsUpdates(string $baseUrl, string $apiKey, ?array $payload): PromiseInterface|Response

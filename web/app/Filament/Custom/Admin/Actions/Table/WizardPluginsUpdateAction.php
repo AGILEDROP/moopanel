@@ -6,15 +6,10 @@ use App\Jobs\Update\PluginUpdateJob;
 use App\Models\Instance;
 use App\Models\Plugin;
 use App\Models\Update;
-use App\Services\ModuleApiService;
-use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
-use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\HtmlString;
 
 class WizardPluginsUpdateAction
 {
@@ -58,12 +53,11 @@ class WizardPluginsUpdateAction
                         ->whereIn('id', $updateIds)
                         ->get();
 
-
                     $payload = [
                         'user_id' => $user->id,
                         'username' => $user->email,
                         'instance_id' => $instance->id,
-                        'updates' => []
+                        'updates' => [],
                     ];
 
                     if (count($selectedUpdates) > 0) {
@@ -89,7 +83,7 @@ class WizardPluginsUpdateAction
                     ->send();
 
             })->after(function ($livewire) use ($refreshComponents) {
-                if (!empty($refreshComponents)) {
+                if (! empty($refreshComponents)) {
                     foreach ($refreshComponents as $refreshComponent) {
                         $livewire->dispatch($refreshComponent);
                     }

@@ -16,7 +16,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
-class PluginUpdateJob implements ShouldQueue
+class PluginZipUpdateJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -36,8 +36,10 @@ class PluginUpdateJob implements ShouldQueue
         $this->canSubmitRequest = ! $instance->hasPendingUpdateRequest();
 
         if ($this->canSubmitRequest) {
-            $this->createUpdateRequest($instance, $userToNotify, $payload);
+            $this->createUpdateRequest($instance, $userToNotify, $this->payload);
         }
+
+        unset($this->payload['temp_updates_data']);
     }
 
     /**
@@ -47,7 +49,7 @@ class PluginUpdateJob implements ShouldQueue
     {
         // Abort if there is already a pending request for the instance.
         if (! $this->canSubmitRequest) {
-            Log::info('Skipping plugin update request for instance: '.$this->instance->name.' as there is already a pending request.');
+            Log::info('Skipping ZIP plugin update request for instance: '.$this->instance->name.' as there is already a pending request.');
 
             Notification::make()
                 ->warning()
@@ -60,25 +62,25 @@ class PluginUpdateJob implements ShouldQueue
             return;
         }
 
-        try {
-            $moduleApiService = new ModuleApiService();
+        $moduleApi = new ModuleApiService();
 
-            $response = $moduleApiService->triggerPluginsUpdates($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
+        try {
+            $response = $moduleApi->triggerPluginZipFileUpdates($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
             if (! $response->ok()) {
 
                 // Retry job if service is temporarily unavailable
-                $maxRetries = config('queue.jobs.plugin-update.max_tries') ?? 3;
+                $maxRetries = config('queue.jobs.plugin-zip-update.max_tries') ?? 3;
                 if ($response->status() == 503 && $this->attempts() <= $maxRetries) {
-                    Log::info('Retrying plugin update request for instance: '.$this->instance->name.' as the service is temporarily unavailable.');
+                    Log::info('Retrying ZIP plugin update request for instance: '.$this->instance->name.' as the service is temporarily unavailable.');
 
-                    $retryAfter = config('queue.jobs.plugin-update.retry_after');
+                    $retryAfter = config('queue.jobs.plugin-zip-update.retry_after');
                     $this->release($retryAfter);
 
                     return;
                 }
 
-                Log::error('Plugin update for instance failed with status code and body: '.$response->status().' - '.$response->body());
+                Log::error('Plugin ZIP updates for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
                 throw new \Exception('Plugin update failed with status code: '.$response->status().'.');
             }
@@ -86,7 +88,7 @@ class PluginUpdateJob implements ShouldQueue
             $pluginUpdatesCount = isset($this->payload['updates']) ? count($this->payload['updates']) : null;
 
             if ($pluginUpdatesCount === null) {
-                throw new \Exception('No plugin updates found in payload for instance: '.$this->instance->name);
+                throw new \Exception('No ZIP plugin updates found in payload for instance: '.$this->instance->name);
             }
 
             if ($response->json() && array_key_exists('moodle_job_id', $response->json())) {
@@ -98,16 +100,15 @@ class PluginUpdateJob implements ShouldQueue
 
             Notification::make()
                 ->success()
-                ->title(__('Plugin updates in progress.'))
-                ->body(__('Plugin updates(:count) for instance :instance are in progress. We will notify you once the updates are completed.', ['count' => $pluginUpdatesCount, 'instance' => $this->instance->name]))
+                ->title(__('Plugin ZIP updates in progress.'))
+                ->body(__('Plugin ZIP updates(:count) for instance :instance are in progress. We will notify you once the updates are completed.', ['count' => $pluginUpdatesCount, 'instance' => $this->instance->name]))
                 ->icon('heroicon-o-arrow-up-circle')
                 ->iconColor('success')
                 ->sendToDatabase($this->userToNotify);
         } catch (\Exception $exception) {
-            //TODO: if service unavailable, retry after some time
-
             $errorMessage = sprintf(
-                'Exception in %s on line %s in method %s: %s',
+                'Failed to request for ZIP plugin update on instance %s . Exception in %s on line %s in method %s: %s',
+                $this->instance->name,
                 $exception->getFile(),
                 $exception->getLine(),
                 __METHOD__,
@@ -118,8 +119,8 @@ class PluginUpdateJob implements ShouldQueue
 
             Notification::make()
                 ->danger()
-                ->title(__('Plugin updates failed!'))
-                ->body(__('Failed to request for plugin updates on instance :instance. Please contact administrator for more information.', ['instance' => $this->instance->name]))
+                ->title(__('Plugin ZIP updates failed!'))
+                ->body(__('Failed to request for plugin ZIP updates on instance :instance. Please contact administrator for more information.', ['instance' => $this->instance->name]))
                 ->icon('heroicon-o-x-circle')
                 ->iconColor('danger')
                 ->sendToDatabase($this->userToNotify);
@@ -133,31 +134,28 @@ class PluginUpdateJob implements ShouldQueue
      */
     private function createUpdateRequest(Instance $instance, User $userToNotify, array $payload): void
     {
-        $name = UpdateRequest::generateName($instance->short_name, UpdateRequest::TYPE_PLUGIN);
+        $name = UpdateRequest::generateName($instance->short_name, UpdateRequest::TYPE_PLUGIN_ZIP);
 
         $this->updateRequest = UpdateRequest::create([
             'name' => $name,
-            'type' => UpdateRequest::TYPE_PLUGIN,
+            'type' => UpdateRequest::TYPE_PLUGIN_ZIP,
             'instance_id' => $instance->id,
             'user_id' => $userToNotify->id,
             'status' => UpdateRequest::STATUS_PENDING,
             'payload' => json_encode($payload),
         ]);
 
-        if (! empty($payload['updates'])) {
-            foreach ($payload['updates'] as $update) {
+        if (! empty($payload['temp_updates_data'])) {
+            foreach ($payload['temp_updates_data'] as $update) {
                 UpdateRequestItem::create([
                     'update_request_id' => $this->updateRequest->id,
                     'status' => UpdateRequest::STATUS_PENDING,
-                    'model_id' => $update['model_id'],
-                    'component' => $update['component'],
-                    'version' => $update['version'],
-                    'release' => $update['release'],
-                    'download' => $update['download'],
+                    'zip_name' => $update['zip_name'],
+                    'zip_path' => $update['zip_path'],
                 ]);
             }
         }
 
-        Log::info('Plugin update request created for instance: '.$instance->name);
+        Log::info('Plugin ZIP update request and request items created for instance: '.$instance->name);
     }
 }

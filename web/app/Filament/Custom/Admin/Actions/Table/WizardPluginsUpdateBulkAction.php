@@ -5,14 +5,10 @@ namespace App\Filament\Custom\Admin\Actions\Table;
 use App\Enums\UpdateMaturity;
 use App\Jobs\Update\PluginUpdateJob;
 use App\Models\Instance;
-use App\Services\ModuleApiService;
-use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
-use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
 
 class WizardPluginsUpdateBulkAction
 {
@@ -32,7 +28,7 @@ class WizardPluginsUpdateBulkAction
                         'user_id' => $user->id,
                         'username' => $user->email,
                         'instance_id' => $instance->id,
-                        'updates' => []
+                        'updates' => [],
                     ];
 
                     foreach ($records as $record) {

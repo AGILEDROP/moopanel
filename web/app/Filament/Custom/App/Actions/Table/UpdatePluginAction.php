@@ -3,19 +3,13 @@
 namespace App\Filament\Custom\App\Actions\Table;
 
 use App\Jobs\Update\PluginUpdateJob;
-use App\Models\Instance;
 use App\Models\InstancePlugin;
 use App\Models\Update;
-use App\Services\ModuleApiService;
-use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
-use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Log;
 
 class UpdatePluginAction
 {
@@ -23,7 +17,7 @@ class UpdatePluginAction
     {
         return Action::make($name)
             ->label(__('Update'))
-            ->hidden(fn (Model $record): bool => !$record->updates_exists)
+            ->hidden(fn (Model $record): bool => ! $record->updates_exists)
             ->iconButton()
             ->icon('heroicon-o-arrow-up-circle')
             ->modalHeading(__('Choose update'))
@@ -54,7 +48,7 @@ class UpdatePluginAction
                             'release' => $selectedUpdate->release,
                             'download' => $selectedUpdate->download,
                         ],
-                    ]
+                    ],
                 ];
 
                 PluginUpdateJob::dispatch($instance, Auth::user(), $payload);
@@ -67,7 +61,7 @@ class UpdatePluginAction
                     ->send();
             })
             ->after(function ($livewire) use ($refreshComponents) {
-                if (!empty($refreshComponents)) {
+                if (! empty($refreshComponents)) {
                     foreach ($refreshComponents as $refreshComponent) {
                         $livewire->dispatch($refreshComponent);
                     }

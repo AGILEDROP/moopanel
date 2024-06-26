@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('version')->nullable();
             $table->string('release')->nullable();
             $table->string('download')->nullable();
-            $table->string('zip_path')->nullable()->comment("Path to the downloaded zip file");
+            $table->string('zip_path')->nullable()->comment('Path to the downloaded zip file');
             $table->string('error')->nullable();
 
             $table->timestamps();
