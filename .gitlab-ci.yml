@@ -1,19 +1,27 @@
 before_script:
-  # Install ssh-agent if not already installed, it is required by Docker.
-  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+  ##
+  ## Install ssh-agent if not already installed, it is required by Docker.
+  ## (change apt-get to yum if you use an RPM-based image)
+  ##
+  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
 
-  # Run ssh-agent (inside the build environment)
+  ##
+  ## Run ssh-agent (inside the build environment)
+  ##
   - eval $(ssh-agent -s)
 
-  # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
-  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  ##
+  ## Give the right permissions, otherwise ssh-add will refuse to add files
+  ## Add the SSH key stored in SSH_PRIVATE_KEY file type CI/CD variable to the agent store
+  ##
+  - chmod 400 "$SSH_PRIVATE_KEY"
+  - ssh-add "$SSH_PRIVATE_KEY"
 
-  # Create the SSH directory and give it the right permissions
+  ##
+  ## Create the SSH directory and give it the right permissions
+  ##
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
-
-  - ssh-keyscan git.agiledrop.com >> ~/.ssh/known_hosts
-  - chmod 644 ~/.ssh/known_hosts
 
 deploy:
   stage: deploy
