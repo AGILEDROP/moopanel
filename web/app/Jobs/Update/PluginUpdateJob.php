@@ -20,6 +20,9 @@ class PluginUpdateJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    // Has to be max_tries(from config) + 1
+    public $tries = 4;
+
     private bool $canSubmitRequest;
 
     private UpdateRequest $updateRequest;
@@ -63,6 +66,18 @@ class PluginUpdateJob implements ShouldQueue
             $response = $moduleApiService->triggerPluginsUpdates($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
             if (! $response->ok()) {
+
+                // Retry job if service is temporarily unavailable
+                $maxRetries = config('queue.jobs.plugin-update.max_tries') ?? 3;
+                if ($response->status() == 503 && $this->attempts() <= $maxRetries) {
+                    Log::info('Retrying plugin update request for instance: '.$this->instance->name.' as the service is temporarily unavailable.');
+
+                    $retryAfter = config('queue.jobs.plugin-update.retry_after');
+                    $this->release($retryAfter);
+
+                    return;
+                }
+
                 Log::error('Plugin update for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
                 throw new \Exception('Plugin update failed with status code: '.$response->status().'.');

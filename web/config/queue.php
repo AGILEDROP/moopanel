@@ -107,6 +107,11 @@ return [
     ],
 
     'jobs' => [
+        'plugin-update' => [
+            // seconds
+            'retry_after' => env('PLUGIN_UPDATE_RETRY_AFTER', 15),
+            'max_tries' => env('PLUGIN_UPDATE_MAX_TRIES', 3),
+        ],
         'plugin-zip-update' => [
             // seconds
             'retry_after' => env('PLUGIN_ZIP_UPDATE_RETRY_AFTER', 15),
