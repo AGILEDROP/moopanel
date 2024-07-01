@@ -10,6 +10,7 @@
     "require": {
         "php": "^8.2",
         "arsanchez/laravel-azure-provisioning": "^1.1.8",
+        "codewithdennis/filament-select-tree": "^3.1",
         "filament/filament": "^3.0-stable",
         "flowframe/laravel-trend": "^0.2.0",
         "guzzlehttp/guzzle": "^7.2",

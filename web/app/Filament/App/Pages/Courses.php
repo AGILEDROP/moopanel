@@ -2,25 +2,29 @@
 
 namespace App\Filament\App\Pages;
 
+use App\Filament\Concerns\InteractsWithCoursesTable;
 use App\Jobs\ModuleApi\Sync;
+use App\Models\Category;
 use App\Models\Course;
 use App\UseCases\Syncs\SingleInstance\CourseSyncType;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Enums\FontWeight;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action as TableAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\Filter;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Courses extends Page implements HasTable
 {
-    use InteractsWithTable;
+    use InteractsWithCoursesTable;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
     protected static string $view = 'filament.app.pages.courses';
 
@@ -74,10 +78,6 @@ class Courses extends Page implements HasTable
             ->send();
 
         Sync::dispatch($instance, CourseSyncType::TYPE, 'Course sync failed.');
-
-        //dd('Syncing courses. call course sync job');
-        // Sync courses from Moodle
-        // $this->dispatchBrowserEvent('notify', __('Courses synced successfully'));
     }
 
     /**
@@ -118,6 +118,87 @@ class Courses extends Page implements HasTable
                 ->label(__('Last updated'))
                 ->sortable(),
         ];
+    }
+
+    /**
+     * Set table filters.
+     */
+    protected function getTableFilters(): array
+    {
+        return [
+            Filter::make('category')
+                ->form([
+                    SelectTree::make('categories')
+                        ->relationship('category', 'name', 'parent_id')
+                        ->independent(false)
+                        ->enableBranchNode(),
+                ])
+                ->query(function (Builder $query, array $data) {
+                    $query = $query->where('instance_id', filament()->getTenant()->id)
+                        ->with('category')
+                        ->when($data['categories'], function ($query, $categories) {
+
+                            if (is_int($categories)) {
+                                $categories = [$categories];
+                            }
+
+                            return $query->whereIn('category_id', $categories);
+                        });
+
+                    return $query;
+                })
+                ->indicateUsing(function (array $data): ?string {
+                    if (! isset($data['categories']) || empty($data['categories'])) {
+                        return null;
+                    }
+
+                    if (is_int($data['categories'])) {
+                        $data['categories'] = [$data['categories']];
+                    }
+
+                    return __('Categories').': '.implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
+                }),
+        ];
+    }
+
+    protected function getTableActions(): array
+    {
+        return [
+            TableAction::make('backup')
+                ->label(__('Backup'))
+                ->requiresConfirmation()
+                ->modalDescription(__('Do you want to backup selected course?'))
+                ->icon('heroicon-o-cloud-arrow-up')
+                ->action(fn () => dd('Single manual Backup TODO implement')),
+        ];
+    }
+
+    protected function getTableBulkActions(): array
+    {
+        return [
+            TableAction::make('backup')
+                ->label(__('Bulk Backup'))
+                ->requiresConfirmation()
+                ->modalDescription(__('Do you want to backup selected courses from the Moodle instance?'))
+                ->icon('heroicon-o-cloud-arrow-up')
+                ->action(fn () => dd('Bulk Backup TODO implement')),
+        ];
+    }
+
+    /**
+     * Set table filters form width.
+     */
+    protected function getTableFiltersFormWidth(): MaxWidth
+    {
+        return MaxWidth::FourExtraLarge;
+    }
+
+    /**
+     * Set table filters columns.
+     */
+    protected function getTableFilterColumns(): int
+    {
+        return 2;
     }
 
     /**
