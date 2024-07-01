@@ -45,6 +45,19 @@ class ModuleApiService
         ])->get($baseUrl.self::PLUGIN_PATH.'/tasks/check', wrapData($payload));
     }
 
+    /**
+     * Get instance courses and course categories
+     *
+     * @param  mixed  $baseUrl
+     * @param  mixed  $apiKey
+     */
+    public function getCourses(string $baseUrl, string $apiKey): PromiseInterface|Response
+    {
+        return Http::withHeaders([
+            'X-API-KEY' => $apiKey,
+        ])->get($baseUrl.self::PLUGIN_PATH.'/courses?displaycategories&displaycourses');
+    }
+
     public function getInstanceData(string $baseUrl, string $apiKey): PromiseInterface|Response
     {
         return Http::withHeader('X-API-KEY', $apiKey)
