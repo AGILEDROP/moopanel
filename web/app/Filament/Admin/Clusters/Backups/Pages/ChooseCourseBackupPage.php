@@ -1,15 +1,12 @@
 <?php
 
-namespace App\Filament\App\Pages;
+namespace App\Filament\Admin\Clusters\Backups\Pages;
 
+use App\Enums\BackupType;
 use App\Filament\Concerns\InteractsWithCoursesTable;
-use App\Jobs\ModuleApi\Sync;
 use App\Models\Category;
 use App\Models\Course;
-use App\UseCases\Syncs\SingleInstance\CourseSyncType;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
-use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action;
@@ -17,69 +14,66 @@ use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
-use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
-class Courses extends Page implements HasTable
+class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
 {
     use InteractsWithCoursesTable;
 
-    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static string $view = 'filament.admin.pages.choose-course-page';
 
-    protected static string $view = 'filament.app.pages.courses';
+    protected static ?string $title = 'Create backups';
 
-    public function getTitle(): string|Htmlable
+    protected static ?string $slug = 'create-backups';
+
+    public int $currentStep = 4;
+
+    public bool $hasHeaderAction = false;
+
+    public function getTypes(): array
     {
-        return __('Courses');
+        $types = [];
+        foreach (BackupType::cases() as $case) {
+            $types[] = [
+                'class' => 'xl:w-[340px]',
+                'type' => $case->value,
+                'text' => $case->getText(),
+                'icon' => $case->getIconComponent('h-32 w-32 mx-auto text-gray-500 dark:text-gray-300 mb-8'),
+                'count' => false,
+            ];
+        }
+
+        return $types;
     }
 
-    protected function getTableHeaderActions(): array
+    public function selectType(?string $type): void
     {
-        return [
-            Action::make('sync')
-                ->label(__('Sync'))
-                ->requiresConfirmation()
-                ->modalDescription(__('Do you want to sync courses from the Moodle instance?'))
-                ->icon('heroicon-o-arrow-path')
-                ->action(fn () => $this->sync()),
-            /* ->after(function ($livewire) use ($refreshComponents) {
-                if (! empty($refreshComponents)) {
-                    foreach ($refreshComponents as $refreshComponent) {
-                        $livewire->dispatch($refreshComponent);
-                    }
-                }
-            }) */
-        ];
+        if ($type !== $this->type) {
+            $this->type = $type;
+        } else {
+            $this->type = null;
+        }
     }
 
-    public function mount(): void
+    public function isSelected(?string $type): bool
     {
-        //
+        return $type === $this->type;
     }
 
-    public function getBreadcrumbs(): array
+    public function goToPreviousStep(): void
     {
-        $breadcrumbs = (new AppDashboard)->getBreadcrumbs();
-        $breadcrumbs[self::getUrl()] = self::getTitle();
-
-        return $breadcrumbs;
+        $this->redirect(ChooseBackupTypePage::getUrl([
+            'clusterIds' => urlencode(serialize($this->clusterIds)),
+            'instanceIds' => urlencode(serialize($this->instanceIds)),
+        ]));
     }
 
-    private function sync(): void
+    public function goToNextStep(): void
     {
-        $instance = filament()->getTenant();
-
-        Notification::make()
-            ->success()
-            ->title(__('Course sync in progress'))
-            ->body(__('This may take a few seconds. Check your notifications for updates.'))
-            ->icon('heroicon-o-arrow-path')
-            ->seconds(5)
-            ->send();
-
-        Sync::dispatch($instance, CourseSyncType::TYPE, 'Course sync failed.');
+        // todo: implement next page based on selection.
+        dd('TODO backup selected courses');
     }
 
     public function backupCourses(Collection $courses): void
@@ -89,12 +83,21 @@ class Courses extends Page implements HasTable
         dd('TODO: running backup for courses.', $courses, $moodleCourseIds);
     }
 
+    public function backupAll(): void
+    {
+        $allCourseIds = $this->getTableQuery()->get()->pluck('id')->toArray();
+
+        //TODO: be careful to send moodle_course_id-s
+        dd('TODO: running backup for all courses.', $allCourseIds);
+    }
+
     /**
      * Query the table records.
      */
     protected function getTableQuery(): Builder
     {
-        return Course::where('instance_id', filament()->getTenant()->id);
+        return Course::whereIn('instance_id', $this->instanceIds)
+            ->with('category');
     }
 
     /**
@@ -143,7 +146,7 @@ class Courses extends Page implements HasTable
                         ->enableBranchNode(),
                 ])
                 ->query(function (Builder $query, array $data) {
-                    $query = $query->where('instance_id', filament()->getTenant()->id)
+                    $query = $query->whereIn('instance_id', $this->instanceIds)
                         ->with('category')
                         ->when($data['categories'], function ($query, $categories) {
 

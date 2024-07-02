@@ -61,8 +61,22 @@ class ChooseBackupTypePage extends BaseBackupWizardPage
             return;
         }
 
-        // todo: implement next page based on selection.
-        dd('Implement next page based on selection.');
+        switch ($this->type) {
+            case BackupType::fromName('COURSE'):
+                $this->redirect(ChooseCourseBackupPage::getUrl([
+                    'clusterIds' => urlencode(serialize($this->clusterIds)),
+                    'instanceIds' => urlencode(serialize($this->instanceIds)),
+                    'type' => urlencode($this->type),
+                ]));
+                break;
+                /* case BackupType::fromName('CORE')
+                break; */
+            default:
+                Notification::make()
+                    ->danger()
+                    ->title(__('Selected backup type is currently not supported.'))
+                    ->send();
+        }
     }
 
     private function validateSelectionBeforeNextStep(): bool
