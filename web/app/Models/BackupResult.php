@@ -22,7 +22,9 @@ class BackupResult extends Model
     ];
 
     public const STATUS_PENDING = null;
+
     public const STATUS_SUCCESS = true;
+
     public const STATUS_FAILED = false;
 
     public function instance()

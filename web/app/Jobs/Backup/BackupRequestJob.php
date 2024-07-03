@@ -46,7 +46,8 @@ class BackupRequestJob implements ShouldQueue
     public function handle(): void
     {
         if (empty($this->payload['courses'])) {
-            Log::info('No courses to backup for instanceID: ' . $this->payload['instance_id'] . " Aborting backup request.");
+            Log::info('No courses to backup for instanceID: '.$this->payload['instance_id'].' Aborting backup request.');
+
             return;
         }
 
@@ -55,12 +56,12 @@ class BackupRequestJob implements ShouldQueue
 
             $response = $moduleApiService->triggerCourseBackup($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
-            if (!$response->ok()) {
+            if (! $response->ok()) {
 
                 // Retry job if service is temporarily unavailable
                 $maxRetries = config('queue.jobs.course-backup.max_tries') ?? 3;
                 if ($response->status() == 503 && $this->attempts() <= $maxRetries) {
-                    Log::info('Retrying course backup for instance: ' . $this->instance->name . ' as the service is temporarily unavailable.');
+                    Log::info('Retrying course backup for instance: '.$this->instance->name.' as the service is temporarily unavailable.');
 
                     $retryAfter = config('queue.jobs.course-backup.retry_after');
                     $this->release($retryAfter);
@@ -68,9 +69,9 @@ class BackupRequestJob implements ShouldQueue
                     return;
                 }
 
-                Log::error('Course backup request for instance failed with status code and body: ' . $response->status() . ' - ' . $response->body());
+                Log::error('Course backup request for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
-                throw new \Exception('Course backup request failed with status code: ' . $response->status() . '.');
+                throw new \Exception('Course backup request failed with status code: '.$response->status().'.');
             }
 
             $response = $response->json();
@@ -92,19 +93,18 @@ class BackupRequestJob implements ShouldQueue
                                 ->color('warning')
                                 ->button()
                                 //->url(route('filament.app.pages.app-dashboard', ['tenant' => $this->instance]), shouldOpenInNewTab: true),
-                                ->url("#"),
+                                ->url('#'),
                             Action::make('cancel')
                                 ->color('secondary')
                                 ->close(),
                         ])
                         ->sendToDatabase($this->userToNotify);
-                    
+
                     $this->markFailedBackups($response);
                 } else {
                     // Log failed backups on auto backups
-                    Log::error('Course backups failed for instance: ' . $this->instance->name . '. Check backup report to see the failed backups. Response body: ' . json_encode($response));
+                    Log::error('Course backups failed for instance: '.$this->instance->name.'. Check backup report to see the failed backups. Response body: '.json_encode($response));
                 }
-
 
                 // Run course sync to delete coureses that might be deleted on moodle instance
                 // NOTE: currently only notify user about this option
@@ -147,11 +147,8 @@ class BackupRequestJob implements ShouldQueue
         }
     }
 
-
     /**
      * Remove courses from payload if there exist pending backup request for this course(and its instance)
-     *
-     * @return void
      */
     private function removeCoursesFromPayload(): void
     {
@@ -165,7 +162,7 @@ class BackupRequestJob implements ShouldQueue
             ->toArray();
 
         // Remove those Moodle Course IDs from payload
-        $filter =  array_filter($this->payload['courses'], fn ($courseId) => !in_array($courseId, $pendingBackupResults));
+        $filter = array_filter($this->payload['courses'], fn ($courseId) => ! in_array($courseId, $pendingBackupResults));
         $nonPendingCourses = array_values($filter);
 
         // Some of the requested courses are already in progress
@@ -182,15 +179,15 @@ class BackupRequestJob implements ShouldQueue
                         Action::make('view')
                             ->color('info')
                             ->button()
-                            ->url("#"),
+                            ->url('#'),
                         Action::make('cancel')
                             ->color('secondary')
                             ->close(),
                     ])
                     ->iconColor('info')
                     ->sendToDatabase($this->userToNotify);
-            }else{
-                Log::info('Some courses are already in progress for instance: ' . $this->payload['instance_id'] . '. We will skip these courses and backup the rest. Check those in backup_results.');
+            } else {
+                Log::info('Some courses are already in progress for instance: '.$this->payload['instance_id'].'. We will skip these courses and backup the rest. Check those in backup_results.');
             }
         }
 
@@ -200,8 +197,6 @@ class BackupRequestJob implements ShouldQueue
     /**
      * Create pending backup results for each course
      * Create item in backup_result for instance:course also in case when there already exist backup request for this course
-     *
-     * @return void
      */
     private function createPendingBackupResults(): void
     {
@@ -215,13 +210,13 @@ class BackupRequestJob implements ShouldQueue
             // NOTE: duplicated pending backup course IDs are not sent to moodle on the previous step(removed from "courses" array in payload)
             $manualBackupConditions =
                 $this->isManual &&
-                !is_null($this->userToNotify) &&
+                ! is_null($this->userToNotify) &&
                 BackupResult::where('instance_id', $this->payload['instance_id'])
-                ->where('moodle_course_id', $courseIds['moodle_course_id'])
-                ->where('status', BackupResult::STATUS_PENDING)
-                ->where('manual_trigger_timestamp', '!=', null)
-                ->where('user_id', $this->userToNotify->id)
-                ->exists();
+                    ->where('moodle_course_id', $courseIds['moodle_course_id'])
+                    ->where('status', BackupResult::STATUS_PENDING)
+                    ->where('manual_trigger_timestamp', '!=', null)
+                    ->where('user_id', $this->userToNotify->id)
+                    ->exists();
 
             // There can be only one auto backup pending result for instance:course in the moment
             $autoBackupConditions = BackupResult::where('instance_id', $this->payload['instance_id'])
@@ -233,6 +228,7 @@ class BackupRequestJob implements ShouldQueue
 
             if ($manualBackupConditions || $autoBackupConditions) {
                 $this->pendingCourseBackupsExist = true;
+
                 continue;
             }
 
@@ -251,7 +247,7 @@ class BackupRequestJob implements ShouldQueue
 
         unset($this->payload['temp']);
 
-        Log::info('Created pending backup results for instanceID: ' . $this->payload['instance_id'] . ' and courses: ' . json_encode($this->payload['courses']));
+        Log::info('Created pending backup results for instanceID: '.$this->payload['instance_id'].' and courses: '.json_encode($this->payload['courses']));
     }
 
     private function markFailedBackups(array $response): void

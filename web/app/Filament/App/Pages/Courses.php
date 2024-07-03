@@ -44,7 +44,7 @@ class Courses extends Page implements HasTable
                 ->requiresConfirmation()
                 ->modalDescription(__('Do you want to sync courses from the Moodle instance?'))
                 ->icon('heroicon-o-arrow-path')
-                ->action(fn () => $this->sync())
+                ->action(fn () => $this->sync()),
         ];
     }
 
@@ -55,8 +55,6 @@ class Courses extends Page implements HasTable
 
     /**
      * Get the polling interval for the table to refresh synced courses and categories
-     *
-     * @return string
      */
     protected function getTablePollingInterval(): string
     {
@@ -88,9 +86,6 @@ class Courses extends Page implements HasTable
 
     /**
      * Backup selected courses in the table
-     *
-     * @param  Collection $courses
-     * @return void
      */
     public function backupCourses(Collection $courses): void
     {
@@ -110,8 +105,8 @@ class Courses extends Page implements HasTable
             // TODO: add dnynamic storage info - maybe from settings
             'storage' => 'local',
             'credentials' => [
-                'url' => "https://test-link-for-storage.com/folder",
-                'api-key' => "abcd1234",
+                'url' => 'https://test-link-for-storage.com/folder',
+                'api-key' => 'abcd1234',
             ],
 
             'courses' => $moodleCourseIds,
@@ -204,7 +199,7 @@ class Courses extends Page implements HasTable
                     return $query;
                 })
                 ->indicateUsing(function (array $data): ?string {
-                    if (!isset($data['categories']) || empty($data['categories'])) {
+                    if (! isset($data['categories']) || empty($data['categories'])) {
                         return null;
                     }
 
@@ -212,16 +207,13 @@ class Courses extends Page implements HasTable
                         $data['categories'] = [$data['categories']];
                     }
 
-                    return __('Categories') . ': ' . implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
+                    return __('Categories').': '.implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
                 }),
         ];
     }
 
     /**
      * Get all descendant category ids for the given category id
-     *
-     * @param  int $categoryId
-     * @return array
      */
     private function getAllDescendantCategoryIds(int $categoryId): array
     {

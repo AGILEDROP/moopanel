@@ -79,9 +79,6 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
 
     /**
      * Backup courses, selected in the table or single course triggered with row action
-     *
-     * @param  Collection $courses
-     * @return void
      */
     public function backupCourses(Collection $courses): void
     {
@@ -104,13 +101,13 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                 // TODO: add dnynamic storage info - maybe from settings
                 'storage' => 'local',
                 'credentials' => [
-                    'url' => "https://test-link-for-storage.com/folder",
-                    'api-key' => "abcd1234",
+                    'url' => 'https://test-link-for-storage.com/folder',
+                    'api-key' => 'abcd1234',
                 ],
 
                 // Request backup only for courses that belong to current instance
                 'courses' => $courses->where('instance_id', $instanceId)->pluck('moodle_course_id')->toArray(),
-                'temp' => $additionalTempCourseData
+                'temp' => $additionalTempCourseData,
             ];
 
             BackupRequestJob::dispatch(auth()->user(), $payload, true);
@@ -205,7 +202,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                     return $query;
                 })
                 ->indicateUsing(function (array $data): ?string {
-                    if (!isset($data['categories']) || empty($data['categories'])) {
+                    if (! isset($data['categories']) || empty($data['categories'])) {
                         return null;
                     }
 
@@ -213,16 +210,13 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                         $data['categories'] = [$data['categories']];
                     }
 
-                    return __('Categories') . ': ' . implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
+                    return __('Categories').': '.implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
                 }),
         ];
     }
 
     /**
      * Get all descendant category ids for the given category id
-     *
-     * @param  int $categoryId
-     * @return array
      */
     private function getAllDescendantCategoryIds(int $categoryId): array
     {
