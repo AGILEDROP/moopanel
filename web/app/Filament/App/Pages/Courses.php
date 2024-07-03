@@ -3,6 +3,7 @@
 namespace App\Filament\App\Pages;
 
 use App\Filament\Concerns\InteractsWithCoursesTable;
+use App\Jobs\Backup\BackupRequestJob;
 use App\Jobs\ModuleApi\Sync;
 use App\Models\Category;
 use App\Models\Course;
@@ -43,20 +44,23 @@ class Courses extends Page implements HasTable
                 ->requiresConfirmation()
                 ->modalDescription(__('Do you want to sync courses from the Moodle instance?'))
                 ->icon('heroicon-o-arrow-path')
-                ->action(fn () => $this->sync()),
-            /* ->after(function ($livewire) use ($refreshComponents) {
-                if (! empty($refreshComponents)) {
-                    foreach ($refreshComponents as $refreshComponent) {
-                        $livewire->dispatch($refreshComponent);
-                    }
-                }
-            }) */
+                ->action(fn () => $this->sync())
         ];
     }
 
     public function mount(): void
     {
         //
+    }
+
+    /**
+     * Get the polling interval for the table to refresh synced courses and categories
+     *
+     * @return string
+     */
+    protected function getTablePollingInterval(): string
+    {
+        return '7s';
     }
 
     public function getBreadcrumbs(): array
@@ -79,14 +83,49 @@ class Courses extends Page implements HasTable
             ->seconds(5)
             ->send();
 
-        Sync::dispatch($instance, CourseSyncType::TYPE, 'Course sync failed.');
+        Sync::dispatchSync($instance, CourseSyncType::TYPE, 'Course sync failed.');
     }
 
+    /**
+     * Backup selected courses in the table
+     *
+     * @param  Collection $courses
+     * @return void
+     */
     public function backupCourses(Collection $courses): void
     {
-        //
         $moodleCourseIds = $courses->pluck('moodle_course_id')->toArray();
-        dd('TODO: running backup for courses.', $courses, $moodleCourseIds);
+
+        $additionalTempCourseData = [];
+        foreach ($courses as $course) {
+            $additionalTempCourseData[] = [
+                'moodle_course_id' => $course->moodle_course_id,
+                'course_id' => $course->id,
+            ];
+        }
+
+        $payload = [
+            'instance_id' => filament()->getTenant()->id,
+
+            // TODO: add dnynamic storage info - maybe from settings
+            'storage' => 'local',
+            'credentials' => [
+                'url' => "https://test-link-for-storage.com/folder",
+                'api-key' => "abcd1234",
+            ],
+
+            'courses' => $moodleCourseIds,
+            'temp' => $additionalTempCourseData,
+        ];
+
+        BackupRequestJob::dispatch(auth()->user(), $payload, true);
+
+        Notification::make()
+            ->success()
+            ->title(__('Backup request sent'))
+            ->body(__('Backup request for selected courses has been sent.'))
+            ->icon('heroicon-o-circle-stack')
+            ->send();
     }
 
     /**
@@ -151,13 +190,21 @@ class Courses extends Page implements HasTable
                                 $categories = [$categories];
                             }
 
-                            return $query->whereIn('category_id', $categories);
+                            // Retrieve all category IDs of the subtree
+                            $allCategoryIds = [];
+                            foreach ($categories as $categoryId) {
+                                $allCategoryIds[] = $categoryId;
+                                $descendantIds = $this->getAllDescendantCategoryIds((int) $categoryId);
+                                $allCategoryIds = array_merge($allCategoryIds, $descendantIds);
+                            }
+
+                            return $query->whereIn('category_id', $allCategoryIds);
                         });
 
                     return $query;
                 })
                 ->indicateUsing(function (array $data): ?string {
-                    if (! isset($data['categories']) || empty($data['categories'])) {
+                    if (!isset($data['categories']) || empty($data['categories'])) {
                         return null;
                     }
 
@@ -165,9 +212,28 @@ class Courses extends Page implements HasTable
                         $data['categories'] = [$data['categories']];
                     }
 
-                    return __('Categories').': '.implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
+                    return __('Categories') . ': ' . implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
                 }),
         ];
+    }
+
+    /**
+     * Get all descendant category ids for the given category id
+     *
+     * @param  int $categoryId
+     * @return array
+     */
+    private function getAllDescendantCategoryIds(int $categoryId): array
+    {
+        $descendantIds = [];
+        $childCategories = Category::where('parent_id', $categoryId)->get();
+
+        foreach ($childCategories as $childCategory) {
+            $descendantIds[] = $childCategory->id;
+            $descendantIds = array_merge($descendantIds, $this->getAllDescendantCategoryIds($childCategory->id));
+        }
+
+        return $descendantIds;
     }
 
     protected function getTableActions(): array

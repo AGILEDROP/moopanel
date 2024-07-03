@@ -4,9 +4,11 @@ namespace App\Filament\Admin\Clusters\Backups\Pages;
 
 use App\Enums\BackupType;
 use App\Filament\Concerns\InteractsWithCoursesTable;
+use App\Jobs\Backup\BackupRequestJob;
 use App\Models\Category;
 use App\Models\Course;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action;
@@ -72,23 +74,54 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
 
     public function goToNextStep(): void
     {
-        // todo: implement next page based on selection.
-        dd('TODO backup selected courses');
+        dd('Final step reached');
     }
 
+    /**
+     * Backup courses, selected in the table or single course triggered with row action
+     *
+     * @param  Collection $courses
+     * @return void
+     */
     public function backupCourses(Collection $courses): void
     {
-        //
-        $moodleCourseIds = $courses->pluck('moodle_course_id')->toArray();
-        dd('TODO: running backup for courses.', $courses, $moodleCourseIds);
-    }
+        // Request backup only on instances that have selected courses
+        $instanceIds = $courses->pluck('instance_id')->unique();
 
-    public function backupAll(): void
-    {
-        $allCourseIds = $this->getTableQuery()->get()->pluck('id')->toArray();
+        foreach ($instanceIds as $instanceId) {
 
-        //TODO: be careful to send moodle_course_id-s
-        dd('TODO: running backup for all courses.', $allCourseIds);
+            $additionalTempCourseData = [];
+            foreach ($courses->where('instance_id', $instanceId) as $course) {
+                $additionalTempCourseData[] = [
+                    'moodle_course_id' => $course->moodle_course_id,
+                    'course_id' => $course->id,
+                ];
+            }
+
+            $payload = [
+                'instance_id' => $instanceId,
+
+                // TODO: add dnynamic storage info - maybe from settings
+                'storage' => 'local',
+                'credentials' => [
+                    'url' => "https://test-link-for-storage.com/folder",
+                    'api-key' => "abcd1234",
+                ],
+
+                // Request backup only for courses that belong to current instance
+                'courses' => $courses->where('instance_id', $instanceId)->pluck('moodle_course_id')->toArray(),
+                'temp' => $additionalTempCourseData
+            ];
+
+            BackupRequestJob::dispatch(auth()->user(), $payload, true);
+        }
+
+        Notification::make()
+            ->success()
+            ->title(__('Backup request sent'))
+            ->body(__('Backup request for selected courses has been sent.'))
+            ->icon('heroicon-o-circle-stack')
+            ->send();
     }
 
     /**
@@ -120,6 +153,10 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                 ->label(__('Course name'))
                 ->weight(FontWeight::SemiBold)
                 ->description(fn (Model $record) => $record->category->name)
+                ->searchable()
+                ->sortable(),
+            TextColumn::make('instance.name')
+                ->label(__('Instance'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('category.name')
@@ -154,13 +191,21 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                                 $categories = [$categories];
                             }
 
-                            return $query->whereIn('category_id', $categories);
+                            // Retrieve all category IDs of the subtree
+                            $allCategoryIds = [];
+                            foreach ($categories as $categoryId) {
+                                $allCategoryIds[] = $categoryId;
+                                $descendantIds = $this->getAllDescendantCategoryIds((int) $categoryId);
+                                $allCategoryIds = array_merge($allCategoryIds, $descendantIds);
+                            }
+
+                            return $query->whereIn('category_id', $allCategoryIds);
                         });
 
                     return $query;
                 })
                 ->indicateUsing(function (array $data): ?string {
-                    if (! isset($data['categories']) || empty($data['categories'])) {
+                    if (!isset($data['categories']) || empty($data['categories'])) {
                         return null;
                     }
 
@@ -168,9 +213,28 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                         $data['categories'] = [$data['categories']];
                     }
 
-                    return __('Categories').': '.implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
+                    return __('Categories') . ': ' . implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
                 }),
         ];
+    }
+
+    /**
+     * Get all descendant category ids for the given category id
+     *
+     * @param  int $categoryId
+     * @return array
+     */
+    private function getAllDescendantCategoryIds(int $categoryId): array
+    {
+        $descendantIds = [];
+        $childCategories = Category::where('parent_id', $categoryId)->get();
+
+        foreach ($childCategories as $childCategory) {
+            $descendantIds[] = $childCategory->id;
+            $descendantIds = array_merge($descendantIds, $this->getAllDescendantCategoryIds($childCategory->id));
+        }
+
+        return $descendantIds;
     }
 
     protected function getTableActions(): array

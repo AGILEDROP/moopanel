@@ -38,6 +38,13 @@ class ModuleApiService
         ])->post($baseUrl.self::PLUGIN_PATH.'/plugins/updates', wrapData($payload));
     }
 
+    public function triggerCourseBackup(string $baseUrl, string $apiKey, ?array $payload): PromiseInterface|Response
+    {
+        return Http::withHeaders([
+            'X-API-KEY' => $apiKey,
+        ])->post($baseUrl.self::PLUGIN_PATH.'/backups', wrapData($payload));
+    }
+
     public function triggerUpdateRequestCheck(string $baseUrl, string $apiKey, ?array $payload): PromiseInterface|Response
     {
         return Http::withHeaders([

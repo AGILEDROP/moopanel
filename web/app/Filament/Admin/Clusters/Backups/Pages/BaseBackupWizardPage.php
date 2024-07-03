@@ -24,9 +24,6 @@ class BaseBackupWizardPage extends Page
 
     public ?string $type = null;
 
-    // TODO: edit according to needs
-    public bool $hasBackupAllAction = true;
-
     public function getBreadcrumbs(): array
     {
         return [

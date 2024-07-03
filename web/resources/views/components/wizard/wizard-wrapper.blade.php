@@ -79,16 +79,6 @@
                     {{ __('Update all') }}
                 </x-filament::button>
             @endif
-            @if(isset($this->hasBackupAllAction) && $this->hasBackupAllAction)
-                <x-filament::button
-                    color="primary"
-                    class="ml-auto"
-                    wire:click="backupAll"
-                    size="xl"
-                >
-                    {{ __('Backup all') }}
-                </x-filament::button>
-            @endif
         @endif
     </div>
 </div>
