@@ -174,6 +174,7 @@ class Courses extends Page implements HasTable
                     SelectTree::make('categories')
                         ->relationship('category', 'name', 'parent_id')
                         ->independent(false)
+                        ->withCount()
                         ->enableBranchNode(),
                 ])
                 ->query(function (Builder $query, array $data) {

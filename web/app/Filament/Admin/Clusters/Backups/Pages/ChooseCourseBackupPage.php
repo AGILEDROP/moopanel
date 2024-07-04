@@ -176,6 +176,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                 ->form([
                     SelectTree::make('categories')
                         ->relationship('category', 'name', 'parent_id')
+                        ->withCount()
                         ->independent(false)
                         ->enableBranchNode(),
                 ])
