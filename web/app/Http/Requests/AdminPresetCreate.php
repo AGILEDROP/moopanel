@@ -2,14 +2,15 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Instance;
-use App\Models\Scopes\InstanceScope;
+use App\Traits\ValidatesInstanceId;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
 use SimpleXMLElement;
 
 class AdminPresetCreate extends FormRequest
 {
+    use ValidatesInstanceId;
+
     protected function validateXml()
     {
         if (empty($this->getContent())) {
@@ -35,26 +36,6 @@ class AdminPresetCreate extends FormRequest
             /* $xml = new SimpleXMLElement($this->getContent());
             $data = json_decode(json_encode((array)$xml), true);
             $this->merge($data); */
-        }
-    }
-
-    /**
-     * Validate instance_id
-     */
-    private function validateInstanceId(): void
-    {
-        $instanceId = $this->route('instance_id');
-
-        if ($instanceId === null) {
-            throw ValidationException::withMessages([
-                'instance_id' => 'Missing instance_id',
-            ]);
-        }
-
-        if (! Instance::withoutGlobalScope(InstanceScope::class)->where('id', (int) $instanceId)->exists()) {
-            throw ValidationException::withMessages([
-                'instance_id' => 'Invalid instance_id',
-            ]);
         }
     }
 
