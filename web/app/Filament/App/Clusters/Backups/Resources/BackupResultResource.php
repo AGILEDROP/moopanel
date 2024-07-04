@@ -4,23 +4,15 @@ namespace App\Filament\App\Clusters\Backups\Resources;
 
 use App\Filament\App\Clusters\Backups;
 use App\Filament\App\Clusters\Backups\Resources\BackupResultResource\Pages;
-use App\Filament\App\Clusters\Backups\Resources\BackupResultResource\Pages\ViewBackupResult;
-use App\Filament\App\Clusters\Backups\Resources\BackupResultResource\RelationManagers;
 use App\Models\BackupResult;
 use Carbon\Carbon;
-use Filament\Forms;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Resources\Components\Tab;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
-use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class BackupResultResource extends Resource
 {
@@ -72,11 +64,11 @@ class BackupResultResource extends Resource
                             $prefix = __('At ');
 
                             if ($record->manual_trigger_timestamp) {
-                                return $prefix . Carbon::createFromTimestamp($record->manual_trigger_timestamp)
+                                return $prefix.Carbon::createFromTimestamp($record->manual_trigger_timestamp)
                                     ->format('Y-m-d H:i:s');
                             }
 
-                            return $prefix . '-';
+                            return $prefix.'-';
                         }
                     )
                     ->default('Automatic')
@@ -101,10 +93,10 @@ class BackupResultResource extends Resource
             ])
             ->actions([
                 Action::make('download')
-                    ->url(fn (BackupResult $record): string => $record->url ?? "#")
+                    ->url(fn (BackupResult $record): string => $record->url ?? '#')
                     ->openUrlInNewTab()
                     ->color(function (BackupResult $record): string {
-                        if (is_null($record->status) || !$record->status || is_null($record->url)) {
+                        if (is_null($record->status) || ! $record->status || is_null($record->url)) {
                             return 'grey';
                         }
 
@@ -112,13 +104,13 @@ class BackupResultResource extends Resource
                     })
                     ->iconButton()
                     ->disabled(function (BackupResult $record): bool {
-                        if (is_null($record->status) || !$record->status || is_null($record->url)) {
+                        if (is_null($record->status) || ! $record->status || is_null($record->url)) {
                             return true;
                         }
 
                         return false;
                     })
-                    ->icon('heroicon-m-arrow-down-tray')
+                    ->icon('heroicon-m-arrow-down-tray'),
             ]);
     }
 

@@ -18,13 +18,10 @@ use Illuminate\Support\Facades\Log;
 
 class CourseBackupController extends Controller
 {
-
     /**
      * Handle incoming course backup status
      *
-     * @param  CourseBackupCreate $request
-     * @param  mixed $instance_id
-     * @return JsonResponse
+     * @param  mixed  $instance_id
      */
     public function store(CourseBackupCreate $request, $instance_id): JsonResponse
     {
@@ -37,7 +34,7 @@ class CourseBackupController extends Controller
             $isSuccessfull = $isSuccessfull && $this->statusUpdate($instance, $validatedData);
         }
 
-        if (!$isSuccessfull) {
+        if (! $isSuccessfull) {
             return response()->json([
                 'message' => 'There was and error while receiving and updating course backup results. Please try again or contact support.',
                 'status' => false,
@@ -50,13 +47,8 @@ class CourseBackupController extends Controller
         ]);
     }
 
-
     /**
      * Check if there still exists backup result for instance:course that has pending status
-     *
-     * @param  Instance $instance
-     * @param  int $courseId
-     * @return bool
      */
     private function hasPendingBackupRequest(Instance $instance, int $courseId): bool
     {
@@ -69,10 +61,6 @@ class CourseBackupController extends Controller
 
     /**
      * Update the status of all the backups results for instance:course pair
-     *
-     * @param  Instance $instance
-     * @param  array $data
-     * @return bool
      */
     private function statusUpdate(Instance $instance, array $data): bool
     {
@@ -99,7 +87,7 @@ class CourseBackupController extends Controller
             foreach ($updatedBackupResults as $backupResult) {
 
                 // Check if this backup request was manually triggered and if all backup results for this timestamp are resolved
-                if (!is_null($backupResult->manual_trigger_timestamp)) {
+                if (! is_null($backupResult->manual_trigger_timestamp)) {
 
                     $allBackupResultsForTimestamp = BackupResult::where('manual_trigger_timestamp', $backupResult->manual_trigger_timestamp)
                         ->get();
@@ -108,19 +96,20 @@ class CourseBackupController extends Controller
 
                         // Check if all backup results with this timestamp have non-pending status
                         $allBackupResultsForTimestampResolved = $allBackupResultsForTimestamp->reduce(function (?bool $carry, BackupResult $item) {
-                            $isStatusSet = !is_null($item->status);
+                            $isStatusSet = ! is_null($item->status);
+
                             return $carry && $isStatusSet;
                         }, true);
 
                         // Notify user if all backups requests in his batch are resolved
-                        if ($allBackupResultsForTimestampResolved && !is_null($backupResult->user_id)) {
+                        if ($allBackupResultsForTimestampResolved && ! is_null($backupResult->user_id)) {
                             $this->notifyUser($backupResult->user, $allBackupResultsForTimestamp);
                         }
                     }
                 }
             }
         } catch (Exception $e) {
-            Log::error(__FILE__ . ':' . __LINE__ . ' - ' . " Failed to update backup result statuses for instance {$instance->id} and course {$data['courseid']}." . " Message: " . $e->getMessage());
+            Log::error(__FILE__.':'.__LINE__.' - '." Failed to update backup result statuses for instance {$instance->id} and course {$data['courseid']}.".' Message: '.$e->getMessage());
 
             $status = false;
         }
@@ -131,9 +120,8 @@ class CourseBackupController extends Controller
     /**
      * Notify the user about the status of the backup results
      *
-     * @param  Instance $instance
-     * @param  array $validatedData
-     * @return void
+     * @param  Instance  $instance
+     * @param  array  $validatedData
      */
     private function notifyUser(User $user, Collection $backupResults): void
     {
@@ -149,7 +137,7 @@ class CourseBackupController extends Controller
         Notification::make()
             ->status($status)
             ->title(__($message))
-            ->body(__(':count course backups on instances :instances have been created. Go to backup results for more details', ['instances' => implode(',', $instanceShortNames), 'count' => $successfullBackups . '/' . $allBackups]))
+            ->body(__(':count course backups on instances :instances have been created. Go to backup results for more details', ['instances' => implode(',', $instanceShortNames), 'count' => $successfullBackups.'/'.$allBackups]))
             ->actions([
                 Action::make('view')
                     ->color($status)
@@ -172,8 +160,6 @@ class CourseBackupController extends Controller
 
     /**
      * Returns the number of successful backups
-     *
-     * @param  Collection  $backupResults
      */
     private function getSuccessfullBackupsCount(Collection $backupResults): int
     {

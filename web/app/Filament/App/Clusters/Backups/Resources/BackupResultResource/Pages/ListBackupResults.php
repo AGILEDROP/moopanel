@@ -3,7 +3,6 @@
 namespace App\Filament\App\Clusters\Backups\Resources\BackupResultResource\Pages;
 
 use App\Filament\App\Clusters\Backups\Resources\BackupResultResource;
-use Filament\Actions;
 use Filament\Pages\Concerns\HasSubNavigation;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Components\Tab;
@@ -19,7 +18,7 @@ class ListBackupResults extends ListRecords
     public function getTabs(): array
     {
         return [
-            'all' => Tab::make("All backups"),
+            'all' => Tab::make('All backups'),
             'manual' => Tab::make('Manual backups')
                 ->modifyQueryUsing(fn (Builder $query) => $query->whereNotNull('user_id')),
             'automatic' => Tab::make('Automatic backups')
