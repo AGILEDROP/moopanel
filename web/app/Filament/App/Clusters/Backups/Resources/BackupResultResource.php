@@ -41,6 +41,7 @@ class BackupResultResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(fn () => BackupResult::orderBy('updated_at', 'desc'))
             ->columns([
                 TextColumn::make('statusName')
                     ->label(__('Status'))
