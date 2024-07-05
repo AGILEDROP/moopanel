@@ -14,6 +14,7 @@ class Course extends Model
         'instance_id',
         'category_id',
         'name',
+        'is_scheduled',
     ];
 
     public function instance()

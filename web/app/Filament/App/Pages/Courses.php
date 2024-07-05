@@ -15,6 +15,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
@@ -147,6 +148,8 @@ class Courses extends Page implements HasTable
     protected function getTableColumns(): array
     {
         return [
+            CheckboxColumn::make('is_scheduled')
+                ->label(__('Scheduled')),
             TextColumn::make('name')
                 ->label(__('Course name'))
                 ->weight(FontWeight::SemiBold)
@@ -253,6 +256,42 @@ class Courses extends Page implements HasTable
                 ->icon('heroicon-o-circle-stack')
                 ->action(function (Collection $selectedRecords) {
                     $this->backupCourses($selectedRecords);
+                }),
+            BulkAction::make('bulk_schedule_backup')
+                ->label(__('Enable auto-backup'))
+                ->requiresConfirmation()
+                ->modalDescription(__('Do you want enable auto-backup for selected courses?'))
+                ->modalIcon('heroicon-o-arrow-path')
+                ->icon('heroicon-o-arrow-path')
+                ->action(function (Collection $selectedRecords) {
+                    $courseIds = $selectedRecords->pluck('id')->toArray();
+
+                    Course::whereIn('id', $courseIds)->update(['is_scheduled' => true]);
+
+                    Notification::make()
+                        ->success()
+                        ->title(__('Courses scheduled for auto-backup'))
+                        ->body(__('Selected courses have been scheduled for auto-backup.'))
+                        ->icon('heroicon-o-arrow-path')
+                        ->send();
+                }),
+            BulkAction::make('bulk_cancel_schedule_backup')
+                ->label(__('Disable auto-backup'))
+                ->requiresConfirmation()
+                ->modalDescription(__('Do you want disable auto-backup for selected courses?'))
+                ->modalIcon('heroicon-o-x-circle')
+                ->icon('heroicon-o-x-circle')
+                ->action(function (Collection $selectedRecords) {
+                    $courseIds = $selectedRecords->pluck('id')->toArray();
+
+                    Course::whereIn('id', $courseIds)->update(['is_scheduled' => false]);
+
+                    Notification::make()
+                        ->success()
+                        ->title(__('Auto-backup canceled'))
+                        ->body(__('Auto-backup has been canceled for selected courses.'))
+                        ->icon('heroicon-o-x-circle')
+                        ->send();
                 }),
         ];
     }
