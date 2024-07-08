@@ -33,7 +33,7 @@ class BackupRequestJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(private User $userToNotify, private array $payload, private bool $isManual = true)
+    public function __construct(private ?User $userToNotify, private array $payload, private bool $isManual = true)
     {
         $this->instance = Instance::withoutGlobalScope(InstanceScope::class)->find($this->payload['instance_id']);
         $this->removeCoursesFromPayload();
@@ -80,7 +80,7 @@ class BackupRequestJob implements ShouldQueue
             if (isset($response['backups']) && (count($response['backups']) != count($this->payload['courses']))) {
 
                 // Notify user about failed backups
-                if ($this->isManual && $this->userToNotify) {
+                if ($this->isManual && ! is_null($this->userToNotify)) {
                     Notification::make()
                         ->warning()
                         ->title(__('Some course backups failed!'))
@@ -111,7 +111,7 @@ class BackupRequestJob implements ShouldQueue
                 // Sync::dispatch($this->instance, CourseSyncType::TYPE, 'Course sync failed.');
             }
 
-            if ($this->isManual && $this->userToNotify) {
+            if ($this->isManual && ! is_null($this->userToNotify)) {
                 Notification::make()
                     ->success()
                     ->title(__('Course backups in progress.'))
@@ -133,7 +133,7 @@ class BackupRequestJob implements ShouldQueue
 
             Log::error($errorMessage);
 
-            if ($this->isManual && $this->userToNotify) {
+            if ($this->isManual && ! is_null($this->userToNotify)) {
                 Notification::make()
                     ->danger()
                     ->title(__('Course backups failed!'))
@@ -167,7 +167,7 @@ class BackupRequestJob implements ShouldQueue
 
         // Some of the requested courses are already in progress
         if (count($nonPendingCourses) != count($this->payload['courses'])) {
-            if ($this->isManual && $this->userToNotify) {
+            if ($this->isManual && ! is_null($this->userToNotify)) {
 
                 Notification::make()
                     ->info()
@@ -237,7 +237,7 @@ class BackupRequestJob implements ShouldQueue
                 'course_id' => $courseIds['course_id'],
                 'moodle_course_id' => $courseIds['moodle_course_id'],
                 'manual_trigger_timestamp' => $this->isManual ? $currentTimestamp : null,
-                'user_id' => $this->userToNotify->id,
+                'user_id' => $this->userToNotify?->id,
                 'status' => BackupResult::STATUS_PENDING,
                 'url' => null,
                 'password' => null,

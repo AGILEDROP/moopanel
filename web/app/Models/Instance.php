@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[ScopedBy([InstanceScope::class])]
 class Instance extends Model implements HasAvatar
@@ -124,6 +125,16 @@ class Instance extends Model implements HasAvatar
     public function backup_results(): HasMany
     {
         return $this->hasMany(BackupResult::class);
+    }
+
+    public function backup_settings(): HasOne
+    {
+        return $this->hasOne(BackupSetting::class);
+    }
+
+    public function courses(): HasMany
+    {
+        return $this->hasMany(Course::class);
     }
 
     /**

@@ -20,6 +20,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('module-api:sync-data')->everyTwoHours();
         $schedule->command('module-api:get-active-moodle-users-count')->hourly();
         $schedule->command('module-api:check-pending-update-requests')->everyThreeMinutes();
+
+        $schedule->command('backup:automatic-backup-command')->hourly();
     }
 
     /**

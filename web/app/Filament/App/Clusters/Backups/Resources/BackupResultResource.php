@@ -33,7 +33,10 @@ class BackupResultResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->query(fn () => BackupResult::orderBy('updated_at', 'desc'))
+            ->query(
+                fn () => BackupResult::where('instance_id', filament()->getTenant()->id)
+                    ->orderBy('updated_at', 'desc')
+            )
             ->columns([
                 TextColumn::make('statusName')
                     ->label(__('Status'))
@@ -68,7 +71,8 @@ class BackupResultResource extends Resource
                                     ->format('Y-m-d H:i:s');
                             }
 
-                            return $prefix.'-';
+                            // General timestamp when backup result was created
+                            return $prefix.$record->created_at->format('Y-m-d H:i:s');
                         }
                     )
                     ->default('Automatic')

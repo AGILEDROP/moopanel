@@ -20,6 +20,8 @@ class BackupResult extends Model
         'status',
         'password',
         'message',
+        'created_at',
+        'updated_at',
     ];
 
     public const STATUS_PENDING = null;
