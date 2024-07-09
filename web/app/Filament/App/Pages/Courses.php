@@ -15,8 +15,8 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
-use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Contracts\Support\Htmlable;
@@ -148,14 +148,27 @@ class Courses extends Page implements HasTable
     protected function getTableColumns(): array
     {
         return [
-            CheckboxColumn::make('is_scheduled')
-                ->label(__('Scheduled')),
             TextColumn::make('name')
                 ->label(__('Course name'))
                 ->weight(FontWeight::SemiBold)
                 ->description(fn (Model $record) => $record->category->name)
                 ->searchable()
                 ->sortable(),
+            ToggleColumn::make('is_scheduled')
+                ->label(__('Scheduled'))
+                ->onColor('success')
+                ->offColor('danger'),
+            /* ->beforeStateUpdated(function ($record, $state) {
+                    \Log::info("before state");
+                    $this->dispatch('toggle-scheduled-course', courseId: $record->id, isScheduled: !$record->is_scheduled);
+                    return Action::make('schedule_course')
+                        ->requiresConfirmation()
+                        ->action(function (Course $record): void {
+
+                            \Log::info("in action trigger");
+                            $this->dispatch('toggle-scheduled-course', courseId: $record->id, isScheduled: !$record->is_scheduled);
+                        });
+                }), */
             TextColumn::make('category.name')
                 ->label(__('Category'))
                 ->searchable()
@@ -165,6 +178,12 @@ class Courses extends Page implements HasTable
                 ->sortable(),
         ];
     }
+
+    /* #[On('toggle-scheduled-course')]
+    public function updateCourseScheduledProp($courseId, $isScheduled)
+    {
+        \Log::info('Course ID: ' . $courseId . ' is scheduled: ' . $isScheduled);
+    } */
 
     /**
      * Set table filters.
