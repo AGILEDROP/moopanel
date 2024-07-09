@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             InstanceBackupSettingsSeeder::class,
+            DefaultBackupStorageSeeder::class,
         ]);
 
         // \App\Models\User::factory(10)->create();

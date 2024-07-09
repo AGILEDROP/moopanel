@@ -137,6 +137,11 @@ class Instance extends Model implements HasAvatar
         return $this->hasMany(Course::class);
     }
 
+    public function backupStorages(): HasMany
+    {
+        return $this->hasMany(BackupStorage::class);
+    }
+
     /**
      * Check if there is a pending update request for the instance.
      */
