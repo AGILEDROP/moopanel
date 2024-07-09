@@ -5,8 +5,11 @@ namespace App\Filament\Admin\Clusters\Backups\Pages;
 use App\Enums\BackupType;
 use App\Filament\Concerns\InteractsWithCoursesTable;
 use App\Jobs\Backup\BackupRequestJob;
+use App\Models\BackupStorage;
 use App\Models\Category;
 use App\Models\Course;
+use App\Models\Instance;
+use App\Models\Scopes\InstanceScope;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
@@ -85,6 +88,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
         // Request backup only on instances that have selected courses
         $instanceIds = $courses->pluck('instance_id')->unique();
 
+        $instanceBackupCount = 0;
         foreach ($instanceIds as $instanceId) {
 
             $additionalTempCourseData = [];
@@ -95,15 +99,32 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                 ];
             }
 
+            $instanceBackupStorage = BackupStorage::where('instance_id', $instanceId)
+                ->where('active', true)
+                ->first();
+
+            if (!$instanceBackupStorage) {
+                Notification::make()
+                    ->danger()
+                    ->title(__('No active backup storage'))
+                    ->body(__('There is no active backup storage for instance :instance. Skipping backup requests for this instance. Set storage in the settings.', ['instance' => Instance::withoutGlobalScope(InstanceScope::class)->find($instanceId)->name]))
+                    ->seconds(15)
+                    ->send();
+
+                continue;
+            }
+
+            // Backup storage settings
+            $storage = $instanceBackupStorage->storage_key;
+            $credentials = [
+                'url' => $instanceBackupStorage->url,
+                'api-key' => $instanceBackupStorage->key,
+            ];
+
             $payload = [
                 'instance_id' => $instanceId,
-
-                // TODO: add dnynamic storage info - maybe from settings
-                'storage' => 'local',
-                'credentials' => [
-                    'url' => 'https://test-link-for-storage.com/folder',
-                    'api-key' => 'abcd1234',
-                ],
+                'storage' => $storage,
+                'credentials' => $credentials,
 
                 // Request backup only for courses that belong to current instance
                 'courses' => $courses->where('instance_id', $instanceId)->pluck('moodle_course_id')->toArray(),
@@ -111,14 +132,25 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
             ];
 
             BackupRequestJob::dispatch(auth()->user(), $payload, true);
+            
+            $instanceBackupCount++;
         }
 
-        Notification::make()
-            ->success()
-            ->title(__('Backup request sent'))
-            ->body(__('Backup request for selected courses has been sent.'))
-            ->icon('heroicon-o-circle-stack')
-            ->send();
+        if ($instanceBackupCount > 0) {
+            Notification::make()
+                ->success()
+                ->title(__('Backup request sent'))
+                ->body(__('Backup request for selected courses has been sent.'))
+                ->icon('heroicon-o-circle-stack')
+                ->send();
+        } else {
+            Notification::make()
+                ->warning()
+                ->title(__('No backup requests sent'))
+                ->body(__('There were no backup requests sent. Please check if there is an active backup storage for the selected instances.'))
+                ->icon('heroicon-o-circle-stack')
+                ->send();
+        }
     }
 
     /**
@@ -203,7 +235,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                     return $query;
                 })
                 ->indicateUsing(function (array $data): ?string {
-                    if (! isset($data['categories']) || empty($data['categories'])) {
+                    if (!isset($data['categories']) || empty($data['categories'])) {
                         return null;
                     }
 
@@ -211,7 +243,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                         $data['categories'] = [$data['categories']];
                     }
 
-                    return __('Categories').': '.implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
+                    return __('Categories') . ': ' . implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
                 }),
         ];
     }

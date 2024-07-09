@@ -3,6 +3,7 @@
 namespace App\Jobs\Backup;
 
 use App\Models\BackupSetting;
+use App\Models\BackupStorage;
 use App\Models\Course;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
@@ -54,15 +55,27 @@ class ScheduledBackupRequestJob implements ShouldQueue
                 ];
             }
 
+            $instanceBackupStorage = BackupStorage::where('instance_id', $instance->id)
+                ->where('active', true)
+                ->first();
+
+            if (!$instanceBackupStorage) {
+                Log::error("Aborting auto backup for instance {$instance->name} - no active backup storage found.");
+
+                continue;
+            }
+
+            // Backup storage settings
+            $storage = $instanceBackupStorage->storage_key;
+            $credentials = [
+                'url' => $instanceBackupStorage->url,
+                'api-key' => $instanceBackupStorage->key,
+            ];
+
             $payload = [
                 'instance_id' => $instance->id,
-
-                // TODO: add dnynamic storage info - maybe from settings
-                'storage' => 'local',
-                'credentials' => [
-                    'url' => 'https://test-link-for-storage.com/folder',
-                    'api-key' => 'abcd1234',
-                ],
+                'storage' => $storage,
+                'credentials' => $credentials,
 
                 // Request backup only for courses that belong to current instance
                 'courses' => $coursesToBackup->pluck('moodle_course_id')->toArray(),
@@ -76,5 +89,7 @@ class ScheduledBackupRequestJob implements ShouldQueue
 
             Log::info('Scheduled backup request for instance '.$instance->name.' for moodle_job_id-s: '.implode(', ', $coursesToBackup->pluck('moodle_course_id')->toArray()).'.');
         }
+
+        Log::info('Scheduled backup request job finished.');
     }
 }

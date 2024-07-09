@@ -5,6 +5,7 @@ namespace App\Filament\App\Pages;
 use App\Filament\Concerns\InteractsWithCoursesTable;
 use App\Jobs\Backup\BackupRequestJob;
 use App\Jobs\ModuleApi\Sync;
+use App\Models\BackupStorage;
 use App\Models\Category;
 use App\Models\Course;
 use App\UseCases\Syncs\SingleInstance\CourseSyncType;
@@ -100,16 +101,32 @@ class Courses extends Page implements HasTable
             ];
         }
 
+        $instanceId = filament()->getTenant()->id;
+        $instanceBackupStorage = BackupStorage::where('instance_id', $instanceId)
+            ->where('active', true)
+            ->first();
+        
+        if (!$instanceBackupStorage) {
+            Notification::make()
+                ->danger()
+                ->title(__('No active backup storage'))
+                ->body(__('Please configure active backup storage in the settings.'))
+                ->send();
+
+            return;
+        }
+
+        // Backup storage settings
+        $storage = $instanceBackupStorage->storage_key;
+        $credentials = [
+            'url' => $instanceBackupStorage->url,
+            'api-key' => $instanceBackupStorage->key,
+        ];
+
         $payload = [
-            'instance_id' => filament()->getTenant()->id,
-
-            // TODO: add dnynamic storage info - maybe from settings
-            'storage' => 'local',
-            'credentials' => [
-                'url' => 'https://test-link-for-storage.com/folder',
-                'api-key' => 'abcd1234',
-            ],
-
+            'instance_id' => $instanceId,
+            'storage' => $storage,
+            'credentials' => $credentials,
             'courses' => $moodleCourseIds,
             'temp' => $additionalTempCourseData,
         ];
@@ -222,7 +239,7 @@ class Courses extends Page implements HasTable
                     return $query;
                 })
                 ->indicateUsing(function (array $data): ?string {
-                    if (! isset($data['categories']) || empty($data['categories'])) {
+                    if (!isset($data['categories']) || empty($data['categories'])) {
                         return null;
                     }
 
@@ -230,7 +247,7 @@ class Courses extends Page implements HasTable
                         $data['categories'] = [$data['categories']];
                     }
 
-                    return __('Categories').': '.implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
+                    return __('Categories') . ': ' . implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
                 }),
         ];
     }
