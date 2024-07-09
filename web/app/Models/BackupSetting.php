@@ -12,6 +12,7 @@ class BackupSetting extends Model
     protected $fillable = [
         'instance_id',
         'auto_backups_enabled',
+        'auto_deletion_enabled',
         'backup_interval',
         'backup_deletion_interval',
         'backup_last_run',

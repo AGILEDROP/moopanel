@@ -5,12 +5,12 @@ namespace App\Filament\App\Clusters\Backups\Resources;
 use App\Filament\App\Clusters\Backups;
 use App\Filament\App\Clusters\Backups\Resources\BackupSettingResource\Pages;
 use App\Models\BackupSetting;
-use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -38,12 +38,13 @@ class BackupSettingResource extends Resource
                 ])->schema([
                     Section::make()
                         ->schema([
-                            Checkbox::make('auto_backups_enabled')->label('Auto Backups Enabled'),
-                        ]),
-                    Section::make()
-                        ->schema([
-                            Fieldset::make(__('Timers'))
+                            Fieldset::make(__('Backup Auto Generation'))
                                 ->schema([
+                                    Toggle::make('auto_backups_enabled')
+                                        ->onColor('success')
+                                        ->offColor('danger')
+                                        ->inline(false)
+                                        ->label('Auto Backups Enabled'),
                                     TextInput::make('backup_interval')
                                         ->label('Backup Interval (in hours)')
                                         ->prefixIcon('heroicon-o-circle-stack')
@@ -52,6 +53,18 @@ class BackupSettingResource extends Resource
                                         ->rules('min:1|max:18000')
                                         ->required()
                                         ->numeric(),
+                                ])
+                                ->columns(2),
+                        ]),
+                    Section::make()
+                        ->schema([
+                            Fieldset::make(__('Backup Auto Deletion'))
+                                ->schema([
+                                    Toggle::make('auto_deletion_enabled')
+                                        ->onColor('success')
+                                        ->offColor('danger')
+                                        ->inline(false)
+                                        ->label('Auto Deletions Enabled'),
                                     TextInput::make('backup_deletion_interval')
                                         ->numeric()
                                         ->prefixIcon('heroicon-o-x-circle')
