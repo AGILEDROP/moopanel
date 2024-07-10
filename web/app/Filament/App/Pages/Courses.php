@@ -105,8 +105,8 @@ class Courses extends Page implements HasTable
         $instanceBackupStorage = BackupStorage::where('instance_id', $instanceId)
             ->where('active', true)
             ->first();
-        
-        if (!$instanceBackupStorage) {
+
+        if (! $instanceBackupStorage) {
             Notification::make()
                 ->danger()
                 ->title(__('No active backup storage'))
@@ -239,7 +239,7 @@ class Courses extends Page implements HasTable
                     return $query;
                 })
                 ->indicateUsing(function (array $data): ?string {
-                    if (!isset($data['categories']) || empty($data['categories'])) {
+                    if (! isset($data['categories']) || empty($data['categories'])) {
                         return null;
                     }
 
@@ -247,7 +247,7 @@ class Courses extends Page implements HasTable
                         $data['categories'] = [$data['categories']];
                     }
 
-                    return __('Categories') . ': ' . implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
+                    return __('Categories').': '.implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
                 }),
         ];
     }

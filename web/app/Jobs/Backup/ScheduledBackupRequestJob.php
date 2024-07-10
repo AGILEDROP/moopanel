@@ -59,7 +59,7 @@ class ScheduledBackupRequestJob implements ShouldQueue
                 ->where('active', true)
                 ->first();
 
-            if (!$instanceBackupStorage) {
+            if (! $instanceBackupStorage) {
                 Log::error("Aborting auto backup for instance {$instance->name} - no active backup storage found.");
 
                 continue;
