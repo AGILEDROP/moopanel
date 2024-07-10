@@ -35,6 +35,13 @@ class BackupResultResource extends Resource
         return $table
             ->query(
                 fn () => BackupResult::where('instance_id', filament()->getTenant()->id)
+
+                    // TBD: You can only show backups of current user
+                    // makes sense to show also other backups since user can then download id directly withou creating another request
+                    /* ->where(function ($query) {
+                        return $query->whereNull('user_id')
+                            ->orWhere('user_id', auth()->user()->id);
+                    }) */
                     ->orderBy('updated_at', 'desc')
             )
             ->columns([
@@ -51,7 +58,6 @@ class BackupResultResource extends Resource
                 TextColumn::make('type')
                     ->color('info')
                     ->badge(),
-                // TODO: ali se na instanic prikaže samo sprožene backupe tega uporabnika, ali vseh uporabnikov
                 TextColumn::make('user.name')
                     ->label(__('Triggered by'))
                     ->weight(FontWeight::SemiBold)
@@ -67,12 +73,12 @@ class BackupResultResource extends Resource
                             $prefix = __('At ');
 
                             if ($record->manual_trigger_timestamp) {
-                                return $prefix.Carbon::createFromTimestamp($record->manual_trigger_timestamp)
+                                return $prefix . Carbon::createFromTimestamp($record->manual_trigger_timestamp)
                                     ->format('Y-m-d H:i:s');
                             }
 
                             // General timestamp when backup result was created
-                            return $prefix.$record->created_at->format('Y-m-d H:i:s');
+                            return $prefix . $record->created_at->format('Y-m-d H:i:s');
                         }
                     )
                     ->default('Automatic')
@@ -100,7 +106,7 @@ class BackupResultResource extends Resource
                     ->url(fn (BackupResult $record): string => $record->url ?? '#')
                     ->openUrlInNewTab()
                     ->color(function (BackupResult $record): string {
-                        if (is_null($record->status) || ! $record->status || is_null($record->url)) {
+                        if (is_null($record->status) || !$record->status || is_null($record->url)) {
                             return 'grey';
                         }
 
@@ -108,7 +114,7 @@ class BackupResultResource extends Resource
                     })
                     ->iconButton()
                     ->disabled(function (BackupResult $record): bool {
-                        if (is_null($record->status) || ! $record->status || is_null($record->url)) {
+                        if (is_null($record->status) || !$record->status || is_null($record->url)) {
                             return true;
                         }
 

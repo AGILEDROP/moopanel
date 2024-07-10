@@ -104,7 +104,6 @@ class PluginUpdateJob implements ShouldQueue
                 ->iconColor('success')
                 ->sendToDatabase($this->userToNotify);
         } catch (\Exception $exception) {
-            //TODO: if service unavailable, retry after some time
 
             $errorMessage = sprintf(
                 'Exception in %s on line %s in method %s: %s',
