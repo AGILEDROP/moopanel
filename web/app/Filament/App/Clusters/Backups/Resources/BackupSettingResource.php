@@ -46,9 +46,10 @@ class BackupSettingResource extends Resource
                                         ->inline(false)
                                         ->label('Auto Backups Enabled'),
                                     TextInput::make('backup_interval')
-                                        ->label('Backup Interval (in hours)')
+                                        ->label('Backup Interval')
                                         ->prefixIcon('heroicon-o-circle-stack')
                                         ->prefixIconColor('success')
+                                        ->suffix(__('Hours'))
                                         // up to years 17530hrs = 2years
                                         ->rules('min:1|max:18000')
                                         ->required()
@@ -71,7 +72,8 @@ class BackupSettingResource extends Resource
                                         ->rules('min:1|max:365')
                                         ->prefixIconColor('danger')
                                         ->required()
-                                        ->label('Backup Deletion Interval (in days)'),
+                                        ->suffix(__('Days'))
+                                        ->label('Delete auto backups older than'),
                                 ])
                                 ->columns(2),
                         ]),
