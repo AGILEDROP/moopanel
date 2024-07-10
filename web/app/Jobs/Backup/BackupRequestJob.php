@@ -90,13 +90,11 @@ class BackupRequestJob implements ShouldQueue
                         ->body(__('Some course backups for instance :instance failed. Check backup report to see the failed backups.', ['instance' => $this->instance->name]))
                         ->icon('heroicon-o-circle-stack')
                         ->iconColor('warning')
-                        // TODO: redirect to backup report
                         ->actions([
                             Action::make('view')
                                 ->color('warning')
                                 ->button()
-                                //->url(route('filament.app.pages.app-dashboard', ['tenant' => $this->instance]), shouldOpenInNewTab: true),
-                                ->url('#'),
+                                ->url(route('filament.app.backups.resources.backup-results.index', ['tenant' => $this->instance])),
                             Action::make('cancel')
                                 ->color('secondary')
                                 ->close(),
@@ -177,12 +175,11 @@ class BackupRequestJob implements ShouldQueue
                     ->title(__('Course backups already in progress.'))
                     ->body(__('Some course backups from current request are already in progress for instance :instance. Please wait for backups to resolve. We will notify you, once the backups are complete. You can see the the pending backups on the backup results list.', ['instance' => $this->instance->name]))
                     ->icon('heroicon-o-circle-stack')
-                    // TODO: add link to "backup restults" page
                     ->actions([
                         Action::make('view')
                             ->color('info')
                             ->button()
-                            ->url('#'),
+                            ->url(route('filament.app.backups.resources.backup-results.index', ['tenant' => $this->instance])),
                         Action::make('cancel')
                             ->color('secondary')
                             ->close(),
