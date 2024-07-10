@@ -28,6 +28,9 @@ class BackupRequestJob implements ShouldQueue
      */
     private bool $pendingCourseBackupsExist = false;
 
+    // Has to be max_tries(from config) + 1
+    public $tries = 4;
+
     private Instance $instance;
 
     /**
