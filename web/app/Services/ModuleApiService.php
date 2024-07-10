@@ -45,6 +45,27 @@ class ModuleApiService
         ])->post($baseUrl.self::PLUGIN_PATH.'/backups', wrapData($payload));
     }
 
+    public function triggerCourseBackupDeletion(string $baseUrl, string $apiKey, ?array $payload): PromiseInterface|Response
+    {
+        // TODO: add real endpoint and determine response
+        Http::fake([
+            'github.com/*' => Http::response([
+                'status' => true,
+                'message' => 'Backup deletion successful!',
+            ], 200),
+        ]);
+
+        // Then, make an actual request, which will be intercepted by the fake.
+        // For demonstration, let's assume you're making a GET request to "https://github.com/api/data"
+        $response = Http::get('https://github.com/api/data');
+
+        return $response;
+
+        /* return Http::withHeaders([
+            'X-API-KEY' => $apiKey,
+        ])->post($baseUrl.self::PLUGIN_PATH.'/backups/delete', wrapData($payload)); */
+    }
+
     public function triggerUpdateRequestCheck(string $baseUrl, string $apiKey, ?array $payload): PromiseInterface|Response
     {
         return Http::withHeaders([
