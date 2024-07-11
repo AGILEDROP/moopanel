@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Pages;
 
+use App\Enums\BackupStorageType;
 use App\Filament\Concerns\InteractsWithCoursesTable;
 use App\Jobs\Backup\BackupRequestJob;
 use App\Jobs\ModuleApi\Sync;
@@ -116,12 +117,25 @@ class Courses extends Page implements HasTable
             return;
         }
 
+        // TODO: remove in version 2.0, when other storage types are supported
+        if ($instanceBackupStorage->storage_key !== BackupStorageType::Local->value) {
+            Notification::make()
+                ->danger()
+                ->title(__('Unsupported local storage'))
+                ->body(__('Please switch to local backup storage to perform backup. Other storage types are not supported yet.'))
+                ->send();
+
+            return;
+        }
+
         // Backup storage settings
         $storage = $instanceBackupStorage->storage_key;
-        $credentials = [
+        // TODO: add credenitals in version 2.0, when other storage types are supported
+        /* $credentials = [
             'url' => $instanceBackupStorage->url,
             'api-key' => $instanceBackupStorage->key,
-        ];
+        ]; */
+        $credentials = [];
 
         $payload = [
             'instance_id' => $instanceId,

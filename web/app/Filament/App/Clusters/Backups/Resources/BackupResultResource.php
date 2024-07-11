@@ -87,6 +87,9 @@ class BackupResultResource extends Resource
                 TextColumn::make('backupStorage.name')
                     ->label(__('Storage'))
                     ->limit(15)
+                    ->badge()
+                    ->icon('heroicon-o-circle-stack')
+                    ->color('gray')
                     ->url(
                         function (BackupResult $record): ?string {
                             $record = $record->backupStorage;
@@ -104,7 +107,6 @@ class BackupResultResource extends Resource
                             );
                         }
                     )
-                    ->default('-')
                     ->openUrlInNewTab(),
                 TextColumn::make('filesize')
                     ->label(__('File size'))

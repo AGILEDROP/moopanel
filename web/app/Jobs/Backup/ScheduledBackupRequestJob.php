@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Backup;
 
+use App\Enums\BackupStorageType;
 use App\Models\BackupSetting;
 use App\Models\BackupStorage;
 use App\Models\Course;
@@ -65,12 +66,21 @@ class ScheduledBackupRequestJob implements ShouldQueue
                 continue;
             }
 
+            // TODO: remove in version 2.0, when other storage types are supported
+            if ($instanceBackupStorage->storage_key !== BackupStorageType::Local->value) {
+                Log::error("Aborting auto backup for instance {$instance->name} - only local storage is supported for now. ({$instanceBackupStorage->storage_key} found)");
+
+                continue;
+            }
+
             // Backup storage settings
             $storage = $instanceBackupStorage->storage_key;
-            $credentials = [
+            // TODO: add credenitals in version 2.0, when other storage types are supported
+            /* $credentials = [
                 'url' => $instanceBackupStorage->url,
                 'api-key' => $instanceBackupStorage->key,
-            ];
+            ]; */
+            $credentials = [];
 
             $payload = [
                 'instance_id' => $instance->id,

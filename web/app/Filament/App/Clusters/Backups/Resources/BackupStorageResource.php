@@ -2,10 +2,12 @@
 
 namespace App\Filament\App\Clusters\Backups\Resources;
 
+use App\Enums\BackupStorageType;
 use App\Filament\App\Clusters\Backups;
 use App\Filament\App\Clusters\Backups\Resources\BackupStorageResource\Pages;
 use App\Models\BackupStorage;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
@@ -45,14 +47,19 @@ class BackupStorageResource extends Resource
                             ->minLength(2)
                             ->maxLength(30)
                             ->label('Name'),
-                    ]),
-                Section::make('Storage Details')
-                    ->schema([
-                        TextInput::make('storage_key')
+                        Select::make('storage_key')
+                            ->label('Storage type')
                             ->required()
-                            ->minLength(2)
-                            ->maxLength(100)
-                            ->label('Storage Key'),
+                            ->reactive()
+                            ->disabled(fn (string $operation): bool => $operation !== 'create')
+                            // Instance can have only one local storage
+                            // if the only one local storage is somehow deleted, we can add one
+                            ->disableOptionWhen(fn (string $value): bool => $value === BackupStorageType::Local->value && filament()->getTenant()->backupStorages()->where('storage_key', BackupStorageType::Local->value)->exists())
+                            ->options(fn (): array => BackupStorageType::toSelectOptions()),
+                    ]),
+                Section::make('AWS S3 storage details')
+                    ->visible(fn (callable $get) => $get('storage_key') !== null && $get('storage_key') === BackupStorageType::S3->value)
+                    ->schema([
                         TextInput::make('url')
                             //->url()
                             ->minLength(4)
@@ -78,6 +85,27 @@ class BackupStorageResource extends Resource
                             ->minLength(2)
                             ->maxLength(30)
                             ->label('Region'),
+                    ]),
+                Section::make('Dropbox storage details')
+                    ->visible(fn (callable $get) => $get('storage_key') !== null && $get('storage_key') === BackupStorageType::Dropbox->value)
+                    ->schema([
+                        TextInput::make('url')
+                            //->url()
+                            ->minLength(4)
+                            ->maxLength(250)
+                            ->label('URL'),
+                        TextInput::make('key')
+                            ->password()
+                            ->minLength(2)
+                            ->maxLength(250)
+                            ->revealable()
+                            ->label('Key'),
+                        TextInput::make('secret')
+                            ->password()
+                            ->minLength(8)
+                            ->maxLength(250)
+                            ->revealable()
+                            ->label('Secret'),
                     ]),
             ]);
     }
@@ -111,14 +139,12 @@ class BackupStorageResource extends Resource
                     ->label('Active'),
                 TextColumn::make('name')
                     ->label('Name'),
-                /* TextColumn::make('storage_key')
-                    ->label('Storage Key'), */
-                TextColumn::make('url')
-                    ->label('URL'),
-                TextColumn::make('bucket_name')
-                    ->label('Bucket Name'),
-                TextColumn::make('region')
-                    ->label('Region'),
+                TextColumn::make('storage_key')
+                    ->badge()
+                    ->icon('heroicon-o-circle-stack')
+                    ->color(fn (string $state): string => BackupStorageType::keyToColor($state))
+                    ->formatStateUsing(fn (string $state): string => BackupStorageType::keyToReadableString($state))
+                    ->label('Type'),
             ])
             ->filters([
                 //

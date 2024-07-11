@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Clusters\Backups\Resources\BackupStorageResource\Pages;
 
+use App\Enums\BackupStorageType;
 use App\Filament\App\Clusters\Backups\Resources\BackupStorageResource;
 use App\Models\BackupStorage;
 use Filament\Actions;
@@ -18,6 +19,8 @@ class EditBackupStorage extends EditRecord
     {
         return [
             Actions\DeleteAction::make()
+                // Disable deleting default local backup storage
+                ->hidden(fn () => $this->record->storage_key === BackupStorageType::Local->value)
                 ->before(function (Action $action) {
                     $storageCount = BackupStorage::where('instance_id', filament()->getTenant()->id)->count();
 

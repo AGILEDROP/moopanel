@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Clusters\Backups\Pages;
 
+use App\Enums\BackupStorageType;
 use App\Enums\BackupType;
 use App\Filament\Concerns\InteractsWithCoursesTable;
 use App\Jobs\Backup\BackupRequestJob;
@@ -114,12 +115,26 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                 continue;
             }
 
+            // TODO: remove in version 2.0, when other storage types are supported
+            if ($instanceBackupStorage->storage_key !== BackupStorageType::Local->value) {
+                Notification::make()
+                    ->danger()
+                    ->title(__('Unsupported local storage'))
+                    ->body(__('Backup storage type on instance :instance is not supported yet. Skipping backup requests for this instance. Please switch to local backup storage to perform backup.', ['instance' => Instance::withoutGlobalScope(InstanceScope::class)->find($instanceId)->name]))
+                    ->seconds(15)
+                    ->send();
+
+                continue;
+            }
+
             // Backup storage settings
             $storage = $instanceBackupStorage->storage_key;
-            $credentials = [
+            // TODO: add credenitals in version 2.0, when other storage types are supported
+            /* $credentials = [
                 'url' => $instanceBackupStorage->url,
                 'api-key' => $instanceBackupStorage->key,
-            ];
+            ]; */
+            $credentials = [];
 
             $payload = [
                 'instance_id' => $instanceId,
