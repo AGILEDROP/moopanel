@@ -25,4 +25,9 @@ class BackupStorage extends Model
     {
         return $this->belongsTo(Instance::class);
     }
+
+    public function backupResults()
+    {
+        return $this->hasMany(BackupResult::class);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BackupResult extends Model
@@ -22,6 +23,10 @@ class BackupResult extends Model
         'status',
         'password',
         'message',
+        'filesize',
+        'backup_storage_id',
+        'password',
+
         'created_at',
         'updated_at',
         'deleted_at',
@@ -76,5 +81,10 @@ class BackupResult extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function backupStorage(): BelongsTo
+    {
+        return $this->belongsTo(BackupStorage::class);
     }
 }

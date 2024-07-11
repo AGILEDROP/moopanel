@@ -232,6 +232,8 @@ class BackupRequestJob implements ShouldQueue
                 continue;
             }
 
+            $currentActiveBackupStorage = $this->instance->backupStorages()->where('active', 1)->first();
+
             BackupResult::create([
                 'instance_id' => $this->payload['instance_id'],
                 'course_id' => $courseIds['course_id'],
@@ -242,6 +244,7 @@ class BackupRequestJob implements ShouldQueue
                 'url' => null,
                 'password' => null,
                 'message' => null,
+                'backup_storage_id' => $currentActiveBackupStorage?->id,
             ]);
         }
 

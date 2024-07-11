@@ -73,20 +73,47 @@ class BackupResultResource extends Resource
                             $prefix = __('At ');
 
                             if ($record->manual_trigger_timestamp) {
-                                return $prefix . Carbon::createFromTimestamp($record->manual_trigger_timestamp)
+                                return $prefix.Carbon::createFromTimestamp($record->manual_trigger_timestamp)
                                     ->format('Y-m-d H:i:s');
                             }
 
                             // General timestamp when backup result was created
-                            return $prefix . $record->created_at->format('Y-m-d H:i:s');
+                            return $prefix.$record->created_at->format('Y-m-d H:i:s');
                         }
                     )
                     ->default('Automatic')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('backupStorage.name')
+                    ->label(__('Storage'))
+                    ->limit(15)
+                    ->url(
+                        function (BackupResult $record): ?string {
+                            $record = $record->backupStorage;
+
+                            if (! $record) {
+                                return null;
+                            }
+
+                            return route(
+                                'filament.app.backups.resources.backup-storages.edit',
+                                [
+                                    'tenant' => filament()->getTenant(),
+                                    'record' => $record,
+                                ]
+                            );
+                        }
+                    )
+                    ->default('-')
+                    ->openUrlInNewTab(),
+                TextColumn::make('filesize')
+                    ->label(__('File size'))
+                    ->color('gray')
+                    ->badge(),
                 TextColumn::make('message')
                     ->lineClamp(3)
                     ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->default('-'),
                 TextColumn::make('password')
                     ->copyable()
@@ -106,7 +133,7 @@ class BackupResultResource extends Resource
                     ->url(fn (BackupResult $record): string => $record->url ?? '#')
                     ->openUrlInNewTab()
                     ->color(function (BackupResult $record): string {
-                        if (is_null($record->status) || !$record->status || is_null($record->url)) {
+                        if (is_null($record->status) || ! $record->status || is_null($record->url)) {
                             return 'grey';
                         }
 
@@ -114,7 +141,7 @@ class BackupResultResource extends Resource
                     })
                     ->iconButton()
                     ->disabled(function (BackupResult $record): bool {
-                        if (is_null($record->status) || !$record->status || is_null($record->url)) {
+                        if (is_null($record->status) || ! $record->status || is_null($record->url)) {
                             return true;
                         }
 

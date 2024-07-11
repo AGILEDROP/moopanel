@@ -14,6 +14,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
 class CourseBackupController extends Controller
@@ -79,7 +80,8 @@ class CourseBackupController extends Controller
                     'status' => $data['status'] ? BackupResult::STATUS_SUCCESS : BackupResult::STATUS_FAILED,
                     'message' => $data['status'] ? __('Backup created successfully') : __('Backup creation failed'),
                     'url' => $data['link'],
-                    'password' => $data['password'],
+                    'password' => Crypt::encrypt($data['password']),
+                    'filesize' => isset($data['filesize']) ? $data['filesize'] : __('Unknown'),
                 ]);
 
             $updatedBackupResults = BackupResult::whereIn('id', $updatedBackupResultIds)->get();
