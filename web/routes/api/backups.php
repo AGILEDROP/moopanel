@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Backup\CourseBackupRestoreController;
 use App\Http\Controllers\Backups\CourseBackupController;
 use App\Models\Instance;
 use Illuminate\Support\Facades\Route;
@@ -18,5 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('backups')->group(function () {
 
     Route::middleware(['checkInstanceToken'])->post('courses/{instance_id}', [CourseBackupController::class, 'store']);
+
+    Route::middleware(['checkInstanceToken'])->post('restore/instance/{instance_id}', [CourseBackupRestoreController::class, 'restore']);
 
 });

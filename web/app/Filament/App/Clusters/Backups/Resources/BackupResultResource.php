@@ -112,6 +112,10 @@ class BackupResultResource extends Resource
                         }
                     )
                     ->openUrlInNewTab(),
+                TextColumn::make('url')
+                    ->label(__('File path'))
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
                 TextColumn::make('filesize')
                     ->label(__('File size'))
                     ->color('gray')

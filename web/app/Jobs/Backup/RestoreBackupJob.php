@@ -47,6 +47,9 @@ class RestoreBackupJob implements ShouldQueue
             'moodle_course_id' => $this->backupResult->moodle_course_id,
             'link' => $this->backupResult->url,
             'password' => $this->password,
+
+            'user_id' => $this->userToNotify->id,
+            'backup_result_id' => $this->backupResult->id,
         ];
 
         $response = $moduleApiService->triggerCourseBackupRestore($this->instance->url, Crypt::decrypt($this->instance->api_key), $payload);
