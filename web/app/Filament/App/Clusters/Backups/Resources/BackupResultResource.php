@@ -4,15 +4,19 @@ namespace App\Filament\App\Clusters\Backups\Resources;
 
 use App\Filament\App\Clusters\Backups;
 use App\Filament\App\Clusters\Backups\Resources\BackupResultResource\Pages;
+use App\Jobs\Backup\RestoreBackupJob;
 use App\Models\BackupResult;
 use Carbon\Carbon;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
 
 class BackupResultResource extends Resource
 {
@@ -131,18 +135,62 @@ class BackupResultResource extends Resource
                 //
             ])
             ->actions([
+                Action::make('restore')
+                    ->requiresConfirmation()
+                    ->color('danger')
+                    ->hidden(function (BackupResult $record): bool {
+                        if (is_null($record->status) || ! $record->status || is_null($record->url)) {
+                            return true;
+                        }
+
+                        return false;
+                    })
+                    ->form([
+                        TextInput::make('password')
+                            ->label('File password')
+                            ->required(),
+                    ])
+                    ->action(function (array $data, BackupResult $record): void {
+                        if (! isset($data['password'])) {
+                            Notification::make()
+                                ->title(__('Backup restore error'))
+                                ->body(__('Password is required'))
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        if ($data['password'] !== Crypt::decrypt($record->password)) {
+                            Notification::make()
+                                ->title(__('Backup restore error'))
+                                ->body(__('Password is incorrect'))
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        RestoreBackupJob::dispatch($record, $data['password'], auth()->user());
+
+                        Notification::make()
+                            ->title(__('Backup restore in progress'))
+                            ->body(__('Backup restore for course :course is in progress.', ['course' => $record->course->name]))
+                            ->success()
+                            ->send();
+                    })
+                    ->icon('heroicon-m-arrow-path')
+                    ->button()
+                    ->modalIcon('heroicon-m-arrow-path')
+                    ->modalHeading('Restore course')
+                    ->modalDescription('This action will OVERRIDE the selected course with selected backup. Are you sure you\'d like to restore the selected course? Please provide the password for the backup file.')
+                    ->modalSubmitActionLabel('Restore course'),
                 Action::make('download')
                     ->url(fn (BackupResult $record): string => $record->url ?? '#')
                     ->openUrlInNewTab()
-                    ->color(function (BackupResult $record): string {
-                        if (is_null($record->status) || ! $record->status || is_null($record->url)) {
-                            return 'grey';
-                        }
-
-                        return 'success';
-                    })
+                    ->color('gray')
                     ->iconButton()
-                    ->disabled(function (BackupResult $record): bool {
+                    ->hidden(function (BackupResult $record): bool {
                         if (is_null($record->status) || ! $record->status || is_null($record->url)) {
                             return true;
                         }
