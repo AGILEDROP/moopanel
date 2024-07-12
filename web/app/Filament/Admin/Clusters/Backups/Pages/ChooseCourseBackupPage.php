@@ -144,6 +144,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                 // Request backup only for courses that belong to current instance
                 'courses' => $courses->where('instance_id', $instanceId)->pluck('moodle_course_id')->toArray(),
                 'temp' => $additionalTempCourseData,
+                'mode' => 'manual',
             ];
 
             BackupRequestJob::dispatch(auth()->user(), $payload, true);

@@ -90,6 +90,7 @@ class ScheduledBackupRequestJob implements ShouldQueue
                 // Request backup only for courses that belong to current instance
                 'courses' => $coursesToBackup->pluck('moodle_course_id')->toArray(),
                 'temp' => $additionalTempCourseData,
+                'mode' => 'auto',
             ];
 
             BackupSetting::where('instance_id', $instance->id)

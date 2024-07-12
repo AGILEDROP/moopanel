@@ -143,6 +143,7 @@ class Courses extends Page implements HasTable
             'credentials' => $credentials,
             'courses' => $moodleCourseIds,
             'temp' => $additionalTempCourseData,
+            'mode' => 'manual',
         ];
 
         BackupRequestJob::dispatch(auth()->user(), $payload, true);
