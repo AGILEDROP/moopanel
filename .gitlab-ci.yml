@@ -45,7 +45,7 @@ deploy:
     - docker-compose -f production.yml exec -T map-php php artisan event:cache
     - docker-compose -f production.yml exec -T map-php php artisan route:cache
     - docker-compose -f production.yml exec -T map-php php artisan view:cache
-    - docker-compose -f production.yml exec -T map-php php artisan db:seed
+    - docker-compose -f production.yml exec -T map-php php artisan db:seed --force
     - docker-compose -f production.yml exec -T map-php php artisan queue:restart
     # Filament
     - docker-compose -f production.yml exec -T map-php php artisan icons:cache
