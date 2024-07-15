@@ -58,12 +58,22 @@ class ScheduledBackupPruneJob implements ShouldQueue
         foreach ($instanceBackupGroups as $instanceId => $backupResults) {
             $payload = [
                 'instance_id' => $instanceId,
-                'backup_result_ids' => array_map(fn ($backupResult) => $backupResult['id'], $backupResults),
-                'backup_urls' => array_map(fn ($backupResult) => $backupResult['url'], $backupResults),
+                // TODO: add instances current storage in V2.0
+                'storage' => 'local',
+                'mode' => 'auto',
+                'credentials' => [],
+                'backups' => array_reduce($backupResults, function ($carry, $backupResult) {
+                    $carry[] = [
+                        'backup_result_id' => $backupResult['id'],
+                        'link' => (isset($backupResult['url']) && ! is_null($backupResult['url'])) ? $backupResult['url'] : '',
+                    ];
+
+                    return $carry;
+                }, []),
             ];
 
             Log::info(__('Scheduling to delete :count backups for instance :instanceId.', [
-                'count' => count($payload['backup_result_ids']),
+                'count' => count($payload['backups']),
                 'instanceId' => $instanceId,
             ]));
 
