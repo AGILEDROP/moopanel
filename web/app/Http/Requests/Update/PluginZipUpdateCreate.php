@@ -2,13 +2,13 @@
 
 namespace App\Http\Requests\Update;
 
-use App\Models\Instance;
-use App\Models\Scopes\InstanceScope;
+use App\Traits\ValidatesInstanceId;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\ValidationException;
 
 class PluginZipUpdateCreate extends FormRequest
 {
+    use ValidatesInstanceId;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -18,26 +18,6 @@ class PluginZipUpdateCreate extends FormRequest
 
         // Authentication is performed in the middleware
         return true;
-    }
-
-    /**
-     * Validate instance_id
-     */
-    private function validateInstanceId(): void
-    {
-        $instanceId = $this->route('instance_id');
-
-        if ($instanceId === null) {
-            throw ValidationException::withMessages([
-                'instance_id' => 'Missing instance_id',
-            ]);
-        }
-
-        if (! Instance::withoutGlobalScope(InstanceScope::class)->where('id', (int) $instanceId)->exists()) {
-            throw ValidationException::withMessages([
-                'instance_id' => 'Invalid instance_id',
-            ]);
-        }
     }
 
     /**

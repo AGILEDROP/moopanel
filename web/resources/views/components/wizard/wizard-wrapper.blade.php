@@ -69,7 +69,7 @@
                 {{ __('Next step') }}
             </x-filament::button>
         @else
-            @if($this->hasUpdateAllAction)
+            @if(isset($this->hasUpdateAllAction) && $this->hasUpdateAllAction)
                 <x-filament::button
                     color="primary"
                     class="ml-auto"

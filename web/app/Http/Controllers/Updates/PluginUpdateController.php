@@ -159,12 +159,12 @@ class PluginUpdateController extends Controller
      */
     private function getResponseMessage(int $successfulUpdates, int $allUpdates): string
     {
-        $message = 'Instance plugins updated successfully';
+        $message = __('Instance plugins updated successfully');
 
         if ($successfulUpdates === 0) {
-            $message = 'Instance plugins update failed';
+            $message = __('Instance plugins update failed');
         } elseif ($successfulUpdates < $allUpdates) {
-            $message = 'Instance plugins update partially succeeded';
+            $message = __('Instance plugins update partially succeeded');
         }
 
         return $message;

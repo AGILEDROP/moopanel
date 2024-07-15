@@ -117,6 +117,21 @@ return [
             'retry_after' => env('PLUGIN_ZIP_UPDATE_RETRY_AFTER', 15),
             'max_tries' => env('PLUGIN_ZIP_UPDATE_MAX_TRIES', 3),
         ],
+        'course-backup' => [
+            // seconds
+            'retry_after' => env('COURSE_BACKUP_RETRY_AFTER', 15),
+            'max_tries' => env('COURSE_BACKUP_MAX_TRIES', 3),
+        ],
+        'course-backup-deletion' => [
+            // seconds
+            'retry_after' => env('COURSE_BACKUP_DELETION_RETRY_AFTER', 15),
+            'max_tries' => env('COURSE_BACKUP_DELETION_MAX_TRIES', 3),
+        ],
+        'course-backup-restore' => [
+            // seconds
+            'retry_after' => env('COURSE_BACKUP_RESTORE_RETRY_AFTER', 15),
+            'max_tries' => env('COURSE_BACKUP_RESTORE_MAX_TRIES', 3),
+        ],
     ],
 
 ];

@@ -28,12 +28,12 @@ class UpdateRequests extends Page implements HasTable
 
     protected static bool $shouldRegisterNavigation = false;
 
-    public function getTitle(): string | Htmlable
+    public function getTitle(): string|Htmlable
     {
         $title = __('Update Request items');
 
-        if ($this->updateRequest && !empty($this->updateRequest->name)) {
-            $title = $this->updateRequest->name . __(' - update request items');
+        if ($this->updateRequest && ! empty($this->updateRequest->name)) {
+            $title = $this->updateRequest->name.__(' - update request items');
         }
 
         return $title;
@@ -42,7 +42,7 @@ class UpdateRequests extends Page implements HasTable
     public function mount(): void
     {
         // Render update request items
-        if (!empty(request()->query('id', ''))) {
+        if (! empty(request()->query('id', ''))) {
             $updateRequestId = (int) request()->query('id', '');
             $this->updateRequest = UpdateRequest::find($updateRequestId);
 
