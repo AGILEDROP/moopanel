@@ -10,7 +10,13 @@ class DashboardActions extends Widget
 {
     protected static string $view = 'filament.app.widgets.dashboard-actions';
 
-    protected int|string|array $columnSpan = 2;
+    protected static ?int $sort = 2;
+
+    protected int|string|array $columnSpan = [
+        'sm' => 'full',
+        'md' => 'full',
+        'lg' => 2,
+    ];
 
     public function getLinks(): array
     {

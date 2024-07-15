@@ -5,6 +5,7 @@ namespace App\Filament\App\Widgets;
 use App\Filament\App\Pages\UpdateRequests as PagesUpdateRequests;
 use App\Models\UpdateRequest;
 use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
@@ -16,7 +17,11 @@ class UpdateRequests extends BaseWidget
 {
     protected static ?int $sort = 4;
 
-    protected int|string|array $columnSpan = 3;
+    protected int|string|array $columnSpan = [
+        'sm' => 'full',
+        'md' => 'full',
+        'lg' => 4,
+    ];
 
     public string $type = 'core';
 
@@ -48,24 +53,24 @@ class UpdateRequests extends BaseWidget
                 fn (Model $record): string => PagesUpdateRequests::getUrl().'?id='.((string) $record->id),
                 true
             )
-            ->actions([
-
-            ])
+            ->actions([])
             ->columns([
-                TextColumn::make('statusName')
-                    ->label(__('Status'))
-                    ->color(fn (Model $model) => is_null($model->status) ? 'warning' : ($model->status ? 'success' : 'danger'))
-                    ->badge(),
-                TextColumn::make('type')
-                    ->label(__('Type'))
-                    ->color('gray')
-                    ->badge(),
-                TextColumn::make('name')
-                    ->label(__('Name'))
-                    ->weight(FontWeight::Bold)
-                    ->description(fn (Model $model): string => 'Short description of the update request'),
-                TextColumn::make('created_at')
-                    ->since(),
+                Split::make([
+                    TextColumn::make('statusName')
+                        ->label(__('Status'))
+                        ->color(fn (Model $model) => is_null($model->status) ? 'warning' : ($model->status ? 'success' : 'danger'))
+                        ->badge(),
+                    TextColumn::make('type')
+                        ->label(__('Type'))
+                        ->color('gray')
+                        ->badge(),
+                    TextColumn::make('name')
+                        ->label(__('Name'))
+                        ->weight(FontWeight::Bold)
+                        ->description(fn (Model $model): string => 'Short description of the update request'),
+                    TextColumn::make('created_at')
+                        ->since(),
+                ])->from('sm'),
             ]);
     }
 }
