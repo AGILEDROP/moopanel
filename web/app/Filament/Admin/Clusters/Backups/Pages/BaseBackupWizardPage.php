@@ -83,7 +83,12 @@ class BaseBackupWizardPage extends Page
                     'clusterIds' => urlencode(serialize($this->clusterIds)),
                     'instanceIds' => urlencode(serialize($this->instanceIds)),
                 ]),
-                3, 4 => '#',
+                3 => '#',
+                4 => ChooseCourseBackupPage::getUrl([
+                    'clusterIds' => urlencode(serialize($this->clusterIds)),
+                    'instanceIds' => urlencode(serialize($this->records)),
+                    'type' => urlencode(serialize($this->type)),
+                ])
             },
             4 => match ($step) {
                 1 => ChooseClusterPage::getUrl([
@@ -96,7 +101,7 @@ class BaseBackupWizardPage extends Page
                 3 => ChooseBackupTypePage::getUrl([
                     'clusterIds' => urlencode(serialize($this->clusterIds)),
                     'instanceIds' => urlencode(serialize($this->instanceIds)),
-                    'updateType' => $this->type,
+                    'type' => $this->type,
                 ]),
                 4 => '#',
             }

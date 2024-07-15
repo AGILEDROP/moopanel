@@ -33,7 +33,7 @@ class Sync implements ShouldQueue
 
     public function handle(): void
     {
-        $success = $this->moduleApiService->sync($this->instance, $this->syncType, true);
+        $success = $this->moduleApiService->sync($this->instance, $this->syncType, false);
         if (! $success) {
             $this->fail($this->failMsg);
         }
