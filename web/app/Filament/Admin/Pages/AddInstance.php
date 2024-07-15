@@ -66,7 +66,7 @@ class AddInstance extends Page implements HasForms
                     ->schema([
                         Forms\Components\Wizard\Step::make('connection_details')
                             ->label(__('Connection details'))
-                            ->columns()
+                            ->columns(['sm' => 1, 'md' => 2, 'lg' => 2])
                             ->schema([
                                 Forms\Components\TextInput::make('url')
                                     ->label(__('Base URL'))
@@ -75,7 +75,7 @@ class AddInstance extends Page implements HasForms
                                     ->url()
                                     ->live()
                                     ->suffix(ModuleApiService::PLUGIN_PATH)
-                                    ->columnSpan(2)
+                                    ->columnSpan('full')
                                     ->afterStateUpdated(fn () => $this->resetConnection()),
                                 Forms\Components\TextInput::make('api_key')
                                     ->label(__('API Key'))
