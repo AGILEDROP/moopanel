@@ -28,6 +28,7 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('instance')
             ->sidebarCollapsibleOnDesktop()
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::rgb('rgb(225, 42, 38)'),
             ])

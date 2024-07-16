@@ -9,7 +9,6 @@ use App\Filament\Admin\Clusters\UserManagement\Resources\UserResource\RelationMa
 use App\Filament\Custom;
 use App\Models\User;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
@@ -42,8 +41,6 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('employee_id')
                     ->label(__('Employee ID'))
                     ->copyable()
-                    ->icon('heroicon-m-document-duplicate')
-                    ->iconPosition(IconPosition::After)
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('app_role_id')
                     ->label(__('Role'))

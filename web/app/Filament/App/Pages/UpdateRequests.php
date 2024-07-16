@@ -95,6 +95,12 @@ class UpdateRequests extends Page implements HasTable
         $columns[] = TextColumn::make('error')
             ->label(__('Message'));
 
+        $columns[] = TextColumn::make('created_at')
+            ->label(__('Requested at'));
+
+        $columns[] = TextColumn::make('updated_at')
+            ->label(__('Last change'));
+
         return $columns;
     }
 }
