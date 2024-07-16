@@ -15,7 +15,7 @@ class UpdatesList extends Widget
     protected int|string|array $columnSpan = [
         'sm' => 'full',
         'md' => 'full',
-        'lg' => 4,
+        'lg' => 3,
     ];
 
     public string $type = 'core';
