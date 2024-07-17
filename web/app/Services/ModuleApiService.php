@@ -103,6 +103,24 @@ class ModuleApiService
             ->get($instance->url.self::PLUGIN_PATH.'/moodle_core');
     }
 
+    public function triggerCoreUpdate(Model|Instance $instance, ?array $payload): PromiseInterface|Response
+    {
+        /* Http::fake([
+            'github.com/*' => Http::response([
+                'status' => true,
+                'message' => 'Core update in progress',
+            ], 200),
+        ]);
+
+        // Then, make an actual request, which will be intercepted by the fake.
+        // For demonstration, let's assume you're making a GET request to "https://github.com/api/data"
+        $response = Http::get('https://github.com/api/data');
+
+        return $response; */
+        return Http::withHeader('X-API-KEY', Crypt::decrypt($instance->api_key))
+            ->post($instance->url.self::PLUGIN_PATH.'/moodle_core', wrapData($payload));
+    }
+
     public function getPlugins(string $baseUrl, string $apiKey): PromiseInterface|Response
     {
         // create function for both (with updates and without)

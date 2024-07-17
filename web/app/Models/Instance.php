@@ -145,8 +145,15 @@ class Instance extends Model implements HasAvatar
     /**
      * Check if there is a pending update request for the instance.
      */
-    public function hasPendingUpdateRequest(): bool
+    public function hasPendingUpdateRequest(?string $type = null): bool
     {
+        if (! is_null($type)) {
+            return UpdateRequest::where('instance_id', $this->id)
+                ->where('status', UpdateRequest::STATUS_PENDING)
+                ->where('type', $type)
+                ->exists();
+        }
+
         return UpdateRequest::where('instance_id', $this->id)
             ->where('status', UpdateRequest::STATUS_PENDING)
             ->exists();
