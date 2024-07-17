@@ -75,6 +75,7 @@ class AvailableUpdatesTable extends Component implements HasForms, HasTable
                         $payload = [
                             'user_id' => $user->id,
                             'instance_id' => $update->instance_id,
+                            'update_id' => $update->id,
                             'type' => 'core',
                             'version' => $update->version,
                             'release' => $update->release,
