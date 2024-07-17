@@ -87,6 +87,20 @@ class CoreUpdateRequestJob implements ShouldQueue
 
             $response = $response->json();
 
+            // Write moodle job id to be able to track the job
+            if (array_key_exists('moodle_job_id', $response)) {
+                if (is_null($this->updateRequest)) {
+                    $this->updateRequest = UpdateRequest::where('instance_id', $this->instance->id)
+                        ->where('status', UpdateRequest::STATUS_PENDING)
+                        ->where('type', 'core')
+                        ->firstOrFail();
+                }
+
+                $this->updateRequest->update([
+                    'moodle_job_id' => $response['moodle_job_id'],
+                ]);
+            }
+
             if (isset($response['status']) && $response['status']) {
                 Notification::make()
                     ->success()
