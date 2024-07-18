@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Backup\CourseBackupRestoreController;
 use App\Http\Controllers\Backups\CourseBackupController;
+use App\Http\Controllers\Backups\CourseBackupRestoreController;
 use App\Models\Instance;
 use Illuminate\Support\Facades\Route;
 
