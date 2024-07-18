@@ -54,6 +54,7 @@ class RestoreBackupJob implements ShouldQueue
         ];
 
         Log::info('payload: '.json_encode($payload));
+
         return;
 
         $response = $moduleApiService->triggerCourseBackupRestore($this->instance->url, Crypt::decrypt($this->instance->api_key), $payload);

@@ -49,10 +49,7 @@ class DeleteOldBackupsJob implements ShouldQueue
 
             $moduleApiService = new ModuleApiService();
 
-            $prunedPaylod = $this->payload;
-            unset($prunedPaylod['backup_result_ids']);
-
-            $response = $moduleApiService->triggerCourseBackupDeletion($this->instance->url, Crypt::decrypt($this->instance->api_key), $prunedPaylod);
+            $response = $moduleApiService->triggerCourseBackupDeletion($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
             if (! $response->ok()) {
 
@@ -100,8 +97,6 @@ class DeleteOldBackupsJob implements ShouldQueue
                         'response' => json_encode($response),
                     ]
                 ));
-
-                //Log::info('Course backup deletion request for instance: '.$this->instance->name.' was successful. Deleted '.count($this->payload['backup_result_ids']).' backups with backup_result ids: '.implode(', ', $this->payload['backup_result_ids']));
             } else {
                 Log::error('Course backup deletion request for instance: '.$this->instance->name.' failed. Response: '.json_encode($response));
             }
