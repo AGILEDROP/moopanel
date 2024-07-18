@@ -92,7 +92,7 @@ class CoreUpdateRequestJob implements ShouldQueue
                 if (is_null($this->updateRequest)) {
                     $this->updateRequest = UpdateRequest::where('instance_id', $this->instance->id)
                         ->where('status', UpdateRequest::STATUS_PENDING)
-                        ->where('type', 'core')
+                        ->where('type', UpdateRequest::TYPE_CORE)
                         ->firstOrFail();
                 }
 
@@ -198,7 +198,7 @@ class CoreUpdateRequestJob implements ShouldQueue
         if (is_null($this->updateRequest)) {
             $this->updateRequest = UpdateRequest::where('instance_id', $this->instance->id)
                 ->where('status', UpdateRequest::STATUS_PENDING)
-                ->where('type', 'core')
+                ->where('type', UpdateRequest::TYPE_CORE)
                 ->firstOrFail();
         }
 
