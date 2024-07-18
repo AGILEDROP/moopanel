@@ -40,10 +40,11 @@ class RestoreBackupJob implements ShouldQueue
         $moduleApiService = new ModuleApiService();
 
         $payload = [
-            'storage' => $this->backupResult->storage_key,
+            'storage' => $this->backupResult->backupStorage->storage_key,
             // TODO: version 2.0, external storage credentials
             'credentials' => [],
 
+            'instance_id' => $this->instance->id,
             'moodle_course_id' => $this->backupResult->moodle_course_id,
             'link' => $this->backupResult->url,
             'password' => $this->password,
@@ -51,6 +52,9 @@ class RestoreBackupJob implements ShouldQueue
             'user_id' => $this->userToNotify->id,
             'backup_result_id' => $this->backupResult->id,
         ];
+
+        Log::info('payload: '.json_encode($payload));
+        return;
 
         $response = $moduleApiService->triggerCourseBackupRestore($this->instance->url, Crypt::decrypt($this->instance->api_key), $payload);
 
