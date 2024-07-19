@@ -139,11 +139,28 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
      */
     private function getNotificationTitle(?bool $status): string
     {
-        return match ($status) {
-            true => __('Instance plugin updates successful!'),
-            false => __('Plugin updates failed!'),
-            default => __('Plugin updates in progress.'),
-        };
+        switch ($this->updateRequest->type) {
+            case UpdateRequest::TYPE_CORE:
+                return match ($status) {
+                    true => __('Core update successful!'),
+                    false => __('Core update failed!'),
+                    default => __('Core update in progress.'),
+                };
+            case UpdateRequest::TYPE_PLUGIN:
+                return match ($status) {
+                    true => __('Instance plugin update successful!'),
+                    false => __('Plugin update failed!'),
+                    default => __('Plugin update in progress.'),
+                };
+            case UpdateRequest::TYPE_PLUGIN_ZIP:
+                return match ($status) {
+                    true => __('Instance plugin ZIP update successful!'),
+                    false => __('Plugin ZIP update failed!'),
+                    default => __('Plugin ZIP update in progress.'),
+                };
+            default:
+                return __('Update in progress.');
+        }
     }
 
     /**
@@ -153,11 +170,28 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
      */
     private function getNotificationBody(Instance $instance, ?bool $status, string $error): string
     {
-        return match ($status) {
-            true => __('Plugin updates for instance :instance have been successful.', ['instance' => $instance->name]),
-            false => __('Plugin updates for instance :instance have failed with error-> :error.', ['instance' => $instance->name, 'error' => $error]),
-            default => __('Plugin updates for instance :instance are still in progress.', ['instance' => $instance->name]),
-        };
+        switch ($this->updateRequest->type) {
+            case UpdateRequest::TYPE_CORE:
+                return match ($status) {
+                    true => __('Core update for :instance was successful.', ['instance' => $instance->name]),
+                    false => __('Core update for :instance failed with error: :error', ['instance' => $instance->name, 'error' => $error]),
+                    default => __('Core update for :instance is in progress.', ['instance' => $instance->name]),
+                };
+            case UpdateRequest::TYPE_PLUGIN:
+                return match ($status) {
+                    true => __('Plugin update for :instance was successful.', ['instance' => $instance->name]),
+                    false => __('Plugin update for :instance failed with error: :error', ['instance' => $instance->name, 'error' => $error]),
+                    default => __('Plugin update for :instance is in progress.', ['instance' => $instance->name]),
+                };
+            case UpdateRequest::TYPE_PLUGIN_ZIP:
+                return match ($status) {
+                    true => __('Plugin ZIP update for :instance was successful.', ['instance' => $instance->name]),
+                    false => __('Plugin ZIP update for :instance failed with error: :error', ['instance' => $instance->name, 'error' => $error]),
+                    default => __('Plugin ZIP update for :instance is in progress.', ['instance' => $instance->name]),
+                };
+            default:
+                return __('Update for :instance is in progress.', ['instance' => $instance->name]);
+        }
     }
 
     /**
