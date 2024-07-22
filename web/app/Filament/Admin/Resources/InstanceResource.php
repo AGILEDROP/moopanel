@@ -18,6 +18,7 @@ use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class InstanceResource extends Resource
@@ -93,9 +94,14 @@ class InstanceResource extends Resource
                                         $set('api_key', Str::password(60));
                                     }),
                             ])
-                            ->helperText(__('The API Key must include characters from a minimum of three out of the
-                                following five categories: uppercase letters, lowercase letters, digits, non-alphanumeric
-                                characters, and Unicode characters.'))
+                            ->helperText(new HtmlString(__(
+                                ':start The API Key must include characters from a minimum of three out of the following five categories: 
+                                uppercase letters, lowercase letters, digits, non-alphanumeric characters, and Unicode characters. :end',
+                                [
+                                    'start' => '<p class="text-dark dark:text-white">',
+                                    'end' => '</p>',
+                                ]
+                            )))
                             ->required()
                             ->minValue(40)
                             ->regex("/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/")
@@ -112,7 +118,13 @@ class InstanceResource extends Resource
                                         $set('key_expiration_date', null);
                                     }),
                             )
-                            ->helperText(__('If this field is empty, the API key will be considered valid indefinitely.'))
+                            ->helperText(new HtmlString(__(
+                                ':start If this field is empty, the API key will be considered valid indefinitely. :end',
+                                [
+                                    'start' => '<p class="text-dark dark:text-white">',
+                                    'end' => '</p>',
+                                ]
+                            )))
                             ->minDate(now())
                             ->maxDate(now()->addYear()),
                     ])
@@ -126,14 +138,16 @@ class InstanceResource extends Resource
 
         return $table
             ->query(fn () => Instance::query()->with('cluster'))
-            ->columns($gridLayout
+            ->columns(
+                $gridLayout
                     ? static::getGridTableColumns()
                     : static::getTableColumns(),
             )
-            ->contentGrid(fn (): ?array => $gridLayout ? [
-                'md' => 2,
-                '2xl' => 3,
-            ] : null
+            ->contentGrid(
+                fn (): ?array => $gridLayout ? [
+                    'md' => 2,
+                    '2xl' => 3,
+                ] : null
             )
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
