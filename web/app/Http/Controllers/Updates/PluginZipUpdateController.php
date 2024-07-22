@@ -100,6 +100,7 @@ class PluginZipUpdateController extends Controller
             // update parent UpdateRequest status
             $updateRequest = UpdateRequest::where('instance_id', $instance->id)
                 ->where('status', UpdateRequest::STATUS_PENDING)
+                ->where('type', UpdateRequest::TYPE_PLUGIN_ZIP)
                 ->first();
 
             $updateRequest->update([

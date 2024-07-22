@@ -107,6 +107,8 @@ return [
     ],
 
     'jobs' => [
+
+        // Updates
         'plugin-update' => [
             // seconds
             'retry_after' => env('PLUGIN_UPDATE_RETRY_AFTER', 15),
@@ -117,6 +119,13 @@ return [
             'retry_after' => env('PLUGIN_ZIP_UPDATE_RETRY_AFTER', 15),
             'max_tries' => env('PLUGIN_ZIP_UPDATE_MAX_TRIES', 3),
         ],
+        'core-update' => [
+            // seconds
+            'retry_after' => env('CORE_UPDATE_RETRY_AFTER', 15),
+            'max_tries' => env('CORE_UPDATE_MAX_TRIES', 3),
+        ],
+
+        // Backups
         'course-backup' => [
             // seconds
             'retry_after' => env('COURSE_BACKUP_RETRY_AFTER', 15),

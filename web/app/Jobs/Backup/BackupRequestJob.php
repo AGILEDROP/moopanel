@@ -134,7 +134,7 @@ class BackupRequestJob implements ShouldQueue
 
             Log::error($errorMessage);
 
-            if ($this->isManual && ! is_null($this->userToNotify)) {
+            if ($this->attempts() >= ($this->tries) && $this->isManual && ! is_null($this->userToNotify)) {
                 Notification::make()
                     ->danger()
                     ->title(__('Course backups failed!'))

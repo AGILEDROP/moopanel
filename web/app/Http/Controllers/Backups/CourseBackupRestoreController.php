@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Backup;
+namespace App\Http\Controllers\Backups;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Backup\BackupRestoreCreate;

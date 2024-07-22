@@ -115,13 +115,15 @@ class PluginUpdateJob implements ShouldQueue
 
             Log::error($errorMessage);
 
-            Notification::make()
-                ->danger()
-                ->title(__('Plugin updates failed!'))
-                ->body(__('Failed to request for plugin updates on instance :instance. Please contact administrator for more information.', ['instance' => $this->instance->name]))
-                ->icon('heroicon-o-x-circle')
-                ->iconColor('danger')
-                ->sendToDatabase($this->userToNotify);
+            if ($this->attempts() >= ($this->tries)) {
+                Notification::make()
+                    ->danger()
+                    ->title(__('Plugin updates failed!'))
+                    ->body(__('Failed to request for plugin updates on instance :instance. Please contact administrator for more information.', ['instance' => $this->instance->name]))
+                    ->icon('heroicon-o-x-circle')
+                    ->iconColor('danger')
+                    ->sendToDatabase($this->userToNotify);
+            }
 
             throw $exception;
         }

@@ -117,13 +117,15 @@ class PluginZipUpdateJob implements ShouldQueue
 
             Log::error($errorMessage);
 
-            Notification::make()
-                ->danger()
-                ->title(__('Plugin ZIP updates failed!'))
-                ->body(__('Failed to request for plugin ZIP updates on instance :instance. Please contact administrator for more information.', ['instance' => $this->instance->name]))
-                ->icon('heroicon-o-x-circle')
-                ->iconColor('danger')
-                ->sendToDatabase($this->userToNotify);
+            if ($this->attempts() >= ($this->tries)) {
+                Notification::make()
+                    ->danger()
+                    ->title(__('Plugin ZIP updates failed!'))
+                    ->body(__('Failed to request for plugin ZIP updates on instance :instance. Please contact administrator for more information.', ['instance' => $this->instance->name]))
+                    ->icon('heroicon-o-x-circle')
+                    ->iconColor('danger')
+                    ->sendToDatabase($this->userToNotify);
+            }
 
             throw $exception;
         }

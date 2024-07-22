@@ -105,6 +105,7 @@ class PluginUpdateController extends Controller
             // update parent UpdateRequest status
             $updateRequest = UpdateRequest::where('instance_id', $instance->id)
                 ->where('status', UpdateRequest::STATUS_PENDING)
+                ->where('type', UpdateRequest::TYPE_PLUGIN)
                 ->first();
 
             $updateRequest->update([
