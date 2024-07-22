@@ -81,7 +81,7 @@ class CourseBackupController extends Controller
                     'message' => $data['status'] ? __('Backup created successfully') : __('Backup creation failed'),
                     'url' => $data['link'],
                     'password' => Crypt::encrypt($data['password']),
-                    'filesize' => isset($data['filesize']) ? $data['filesize'] : __('Unknown'),
+                    'filesize' => isset($data['filesize']) ? $data['filesize'] : 0,
                 ]);
 
             $updatedBackupResults = BackupResult::whereIn('id', $updatedBackupResultIds)->get();

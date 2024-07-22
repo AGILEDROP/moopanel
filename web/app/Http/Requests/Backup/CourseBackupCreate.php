@@ -44,7 +44,7 @@ class CourseBackupCreate extends FormRequest
             'link' => 'required|url',
             'password' => 'required|string',
             'status' => 'required|boolean',
-            'filesize' => 'nullable|string',
+            'filesize' => 'nullable|integer',
         ];
     }
 }

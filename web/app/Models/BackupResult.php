@@ -34,6 +34,7 @@ class BackupResult extends Model
 
     protected $casts = [
         'status' => 'boolean',
+        'filesize' => 'integer',
     ];
 
     public const STATUS_PENDING = null;
