@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -37,11 +38,18 @@ class BackupResult extends Model
         'filesize' => 'integer',
     ];
 
+    protected $appends = ['updated_at_timestamp'];
+
     public const STATUS_PENDING = null;
 
     public const STATUS_SUCCESS = true;
 
     public const STATUS_FAILED = false;
+
+    public function getUpdatedAtTimestampAttribute()
+    {
+        return Carbon::parse($this->attributes['updated_at'])->timestamp;
+    }
 
     protected function statusName(): Attribute
     {

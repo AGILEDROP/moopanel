@@ -22,4 +22,5 @@ Route::prefix('backups')->group(function () {
 
     Route::middleware(['checkInstanceToken'])->post('restore/instance/{instance_id}', [CourseBackupRestoreController::class, 'restore']);
 
+    Route::middleware(['checkRefererToken'])->get('course/{moodle_course_id}', [CourseBackupController::class, 'index']);
 });
