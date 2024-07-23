@@ -49,13 +49,34 @@ class ScheduledBackupPruneJob implements ShouldQueue
             ->get()
             ->groupBy('instance_id')
             ->map(function (Collection $instanceBackupResults) {
-                return $instanceBackupResults->select('id', 'url')->toArray();
+                return $instanceBackupResults->select('id', 'url', 'updated_at')->toArray();
             })
             ->toArray();
 
         Log::info('Scheduled backup prune job. Found '.count($instanceBackupGroups).' instances with backups to prune.');
 
         foreach ($instanceBackupGroups as $instanceId => $backupResults) {
+
+            // Do not perform backup deletion if there is only one auto-backup left for the instance
+            if (count($backupResults) <= 1) {
+                Log::info(__('Skipping backup prune for instance :instanceId, only one auto backup left.', [
+                    'instanceId' => $instanceId,
+                ]));
+
+                continue;
+            }
+
+            // sort backups by updated_at ascending
+            usort($backupResults, function ($a, $b) {
+                return $a['updated_at'] <=> $b['updated_at'];
+            });
+
+            // do not delete latest auto-backup
+            // Note: We wont delete only the latest of auto-backup that are older than days in settings
+            // there might also be even more recent auto backups that are not yet old enough to be deleted
+            // for that, we will need another query, so we are avoiding this in current version
+            array_pop($backupResults);
+
             $payload = [
                 'instance_id' => $instanceId,
                 // TODO: add instances current storage in V2.0

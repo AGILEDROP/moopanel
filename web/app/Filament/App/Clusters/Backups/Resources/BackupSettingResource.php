@@ -17,6 +17,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 class BackupSettingResource extends Resource
 {
@@ -73,7 +74,14 @@ class BackupSettingResource extends Resource
                                         ->prefixIconColor('danger')
                                         ->required()
                                         ->suffix(__('Days'))
-                                        ->label('Delete auto backups older than'),
+                                        ->label('Delete auto backups older than')
+                                        ->helperText(new HtmlString(__(
+                                            ':start Note: System will always keep the most recent auto-backup, despite it might be suitable to delete :end',
+                                            [
+                                                'start' => '<p class="text-dark dark:text-white">',
+                                                'end' => '</p>',
+                                            ]
+                                        ))),
                                 ])
                                 ->columns(2),
                         ]),

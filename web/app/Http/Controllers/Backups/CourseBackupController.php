@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Backups;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Backup\CourseBackupCreate;
 use App\Models\BackupResult;
+use App\Models\Course;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use App\Models\User;
@@ -19,6 +20,75 @@ use Illuminate\Support\Facades\Log;
 
 class CourseBackupController extends Controller
 {
+    public function index(Request $request, $moodle_course_id): JsonResponse
+    {
+        $refererUrl = $request->schemeAndHttpHost();
+
+        if (! isset($moodle_course_id) || is_null($moodle_course_id)) {
+            return response()->json([
+                'message' => 'Missing course id',
+            ], 422);
+        }
+
+        try {
+            $moodle_course_id = intval($moodle_course_id);
+
+            if ($moodle_course_id < 1) {
+                throw new Exception();
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Invalid course id',
+            ], 422);
+        }
+
+        $instance = Instance::withoutGlobalScope(InstanceScope::class)->where('url', $refererUrl)->first();
+
+        if (! Course::where('instance_id', $instance->id)->where('moodle_course_id', $moodle_course_id)->exists()) {
+            return response()->json([
+                'message' => "No course found for instance {$instance->short_name} and course id {$moodle_course_id}",
+            ], 422);
+        }
+
+        $backupResults = $instance->backup_results()
+            ->where('moodle_course_id', $moodle_course_id)
+            ->whereNull('deleted_at')
+            ->where('status', 1)
+            ->get();
+
+        if (count($backupResults) < 1) {
+            return response()->json([
+                'message' => "No backups found for instance {$instance->short_name}",
+                'status' => true, // Keeping status true as the request was successful, but no data was found
+                'backup_count' => 0,
+                'auto_backup_count' => 0,
+                'manual_backup_count' => 0,
+                'auto' => [],
+                'manual' => [],
+            ]);
+        }
+
+        $autoBackups = $backupResults->filter(fn (BackupResult $backupResult) => is_null($backupResult->manual_trigger_timestamp))
+            ->select(['id', 'url', 'filesize', 'updated_at_timestamp'])
+            ->values()
+            ->all();
+
+        $manualBackups = $backupResults->filter(fn (BackupResult $backupResult) => ! is_null($backupResult->manual_trigger_timestamp))
+            ->select(['id', 'url', 'filesize', 'updated_at_timestamp'])
+            ->values()
+            ->all();
+
+        return response()->json([
+            'message' => "Backups for instance {$instance->short_name} fetched successfully",
+            'status' => true,
+            'backup_count' => count($backupResults),
+            'auto_backup_count' => count($autoBackups),
+            'manual_backup_count' => count($manualBackups),
+            'auto' => $autoBackups,
+            'manual' => $manualBackups,
+        ]);
+    }
+
     /**
      * Handle incoming course backup status
      *
@@ -81,7 +151,7 @@ class CourseBackupController extends Controller
                     'message' => $data['status'] ? __('Backup created successfully') : __('Backup creation failed'),
                     'url' => $data['link'],
                     'password' => Crypt::encrypt($data['password']),
-                    'filesize' => isset($data['filesize']) ? $data['filesize'] : __('Unknown'),
+                    'filesize' => isset($data['filesize']) ? $data['filesize'] : 0,
                 ]);
 
             $updatedBackupResults = BackupResult::whereIn('id', $updatedBackupResultIds)->get();

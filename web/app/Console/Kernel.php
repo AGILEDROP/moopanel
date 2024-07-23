@@ -23,6 +23,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('backup:automatic-backup-command')->hourly();
         $schedule->command('backup:auto-prune')->daily();
+        $schedule->command('backup:clean')->weekly();
     }
 
     /**
