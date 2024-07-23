@@ -18,7 +18,6 @@ use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Contracts\Support\Htmlable;
@@ -49,11 +48,6 @@ class Courses extends Page implements HasTable
                 ->icon('heroicon-o-arrow-path')
                 ->action(fn () => $this->sync()),
         ];
-    }
-
-    public function mount(): void
-    {
-        //
     }
 
     /**
@@ -186,21 +180,38 @@ class Courses extends Page implements HasTable
                 ->description(fn (Model $record) => $record->category->name)
                 ->searchable()
                 ->sortable(),
-            ToggleColumn::make('is_scheduled')
-                ->label(__('Scheduled'))
-                ->onColor('success')
-                ->offColor('danger'),
-            /* ->beforeStateUpdated(function ($record, $state) {
-                    \Log::info("before state");
-                    $this->dispatch('toggle-scheduled-course', courseId: $record->id, isScheduled: !$record->is_scheduled);
-                    return Action::make('schedule_course')
+            TextColumn::make('is_scheduled')
+                ->numeric()
+                ->state(fn (Course $course): string => $course->is_scheduled ? __('Enabled') : __('Disabled'))
+                ->badge()
+                ->icon(fn (Course $course): string => $course->is_scheduled ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                ->color(fn (Course $course): string => $course->is_scheduled ? 'success' : 'danger')
+                ->tooltip(fn (Course $course): string => $course->is_scheduled ? __('Click to disable auto-backup') : __('Click to enable auto-backup'))
+                ->action(
+                    Action::make('is_scheduled')
                         ->requiresConfirmation()
-                        ->action(function (Course $record): void {
+                        ->modalHeading(function (Course $course): string {
+                            return $course->is_scheduled ? __('Disable auto-backup') : __('Enable auto-backup');
+                        })
+                        ->modalDescription(function (Course $course): string {
+                            return $course->is_scheduled ? __('Do you want to disable auto-backup for course :course?', ['course' => $course->name]) : __('Do you want to enable auto-backup for course :course?', ['course' => $course->name]);
+                        })
+                        ->color(function (Course $course): string {
+                            return $course->is_scheduled ? 'danger' : 'success';
+                        })
+                        ->modalIcon('heroicon-o-circle-stack')
+                        ->action(function (Course $course): void {
+                            $course->update(['is_scheduled' => ! $course->is_scheduled]);
 
-                            \Log::info("in action trigger");
-                            $this->dispatch('toggle-scheduled-course', courseId: $record->id, isScheduled: !$record->is_scheduled);
-                        });
-                }), */
+                            $state = $course->is_scheduled ? __('enabled') : __('disabled');
+                            Notification::make()
+                                ->success()
+                                ->title(__('Auto-backup state updated'))
+                                ->body(__('Auto-backup has been :state for course :course.', ['state' => $state, 'course' => $course->name]))
+                                ->icon('heroicon-o-arrow-path')
+                                ->send();
+                        }),
+                ),
             TextColumn::make('category.name')
                 ->label(__('Category'))
                 ->searchable()
@@ -210,12 +221,6 @@ class Courses extends Page implements HasTable
                 ->sortable(),
         ];
     }
-
-    /* #[On('toggle-scheduled-course')]
-    public function updateCourseScheduledProp($courseId, $isScheduled)
-    {
-        \Log::info('Course ID: ' . $courseId . ' is scheduled: ' . $isScheduled);
-    } */
 
     /**
      * Set table filters.

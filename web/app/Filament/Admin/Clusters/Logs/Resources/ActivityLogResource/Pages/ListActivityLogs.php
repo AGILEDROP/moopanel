@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Clusters\Logs\Resources\ActivityLogResource\Pages;
 use App\Filament\Admin\Clusters\Logs;
 use App\Filament\Admin\Clusters\Logs\Resources\ActivityLogResource;
 use App\Filament\Admin\Resources\InstanceResource;
+use Filament\Pages\SubNavigationPosition;
 use Illuminate\Support\HtmlString;
 use Z3d0X\FilamentLogger\Resources\ActivityResource\Pages\ListActivities;
 
@@ -23,5 +24,10 @@ class ListActivityLogs extends ListActivities
             </svg>'),
             Logs::getUrl() => Logs::getClusterBreadcrumb(),
         ];
+    }
+
+    public function getSubNavigationPosition(): SubNavigationPosition
+    {
+        return SubNavigationPosition::Top;
     }
 }

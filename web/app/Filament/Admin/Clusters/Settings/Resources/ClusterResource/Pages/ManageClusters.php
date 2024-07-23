@@ -6,6 +6,7 @@ use App\Filament\Admin\Clusters\Settings;
 use App\Filament\Admin\Clusters\Settings\Resources\ClusterResource;
 use App\Filament\Admin\Resources\InstanceResource;
 use Filament\Actions;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Pages\ManageRecords;
 use Illuminate\Support\HtmlString;
 
@@ -28,5 +29,10 @@ class ManageClusters extends ManageRecords
         return [
             Actions\CreateAction::make(),
         ];
+    }
+
+    public function getSubNavigationPosition(): SubNavigationPosition
+    {
+        return SubNavigationPosition::Top;
     }
 }

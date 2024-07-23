@@ -93,7 +93,8 @@ class ClusterResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->checkIfRecordIsSelectableUsing(fn (Model $record): bool => $record->default !== true);
+            ->checkIfRecordIsSelectableUsing(fn (Model $record): bool => $record->default !== true)
+            ->recordAction(null);
     }
 
     public static function getPages(): array

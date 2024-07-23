@@ -12,7 +12,11 @@ class ActiveMoodleUsersLineChart extends ChartWidget
 {
     protected static ?string $heading = 'Number of active users';
 
-    protected int|string|array $columnSpan = 6;
+    protected int|string|array $columnSpan = [
+        'sm' => 'full',
+        'md' => 'full',
+        'lg' => 6,
+    ];
 
     protected static ?string $maxHeight = '350px';
 

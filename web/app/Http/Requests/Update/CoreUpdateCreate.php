@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Requests\Backup;
+namespace App\Http\Requests\Update;
 
-use App\Models\Course;
+use App\Models\Update;
 use App\Traits\ValidatesInstanceId;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CourseBackupCreate extends FormRequest
+class CoreUpdateCreate extends FormRequest
 {
     use ValidatesInstanceId;
 
@@ -18,7 +18,7 @@ class CourseBackupCreate extends FormRequest
     {
         $this->validateInstanceId();
 
-        // request is already authorized by middleware
+        // Authentication is performed in the middleware
         return true;
     }
 
@@ -30,21 +30,21 @@ class CourseBackupCreate extends FormRequest
     public function rules(): array
     {
         return [
-            'courseid' => [
+            'user_id' => 'required|integer|exists:users,id',
+            'moodle_job_id' => 'required|integer',
+            'status' => 'required|boolean',
+            'message' => 'required|string',
+            'update_id' => [
                 'required',
                 'integer',
-                'exists:courses,moodle_course_id',
-                // Check if the course belongs to the instance
+                'exists:updates,id',
+                // Check if the updateId is connected to instance
                 function (string $attribute, mixed $value, Closure $fail) {
-                    if (! Course::where('moodle_course_id', $value)->where('instance_id', $this->route('instance_id'))->exists()) {
-                        $fail('The course does not belong to the instance.');
+                    if (! Update::where('id', $value)->where('instance_id', $this->route('instance_id'))->exists()) {
+                        $fail('Core update ID does not belong to the instance.');
                     }
                 },
             ],
-            'link' => 'required|url',
-            'password' => 'required|string',
-            'status' => 'required|boolean',
-            'filesize' => 'nullable|integer',
         ];
     }
 }

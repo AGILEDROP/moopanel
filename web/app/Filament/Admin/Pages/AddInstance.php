@@ -66,7 +66,7 @@ class AddInstance extends Page implements HasForms
                     ->schema([
                         Forms\Components\Wizard\Step::make('connection_details')
                             ->label(__('Connection details'))
-                            ->columns()
+                            ->columns(['sm' => 1, 'md' => 2, 'lg' => 2])
                             ->schema([
                                 Forms\Components\TextInput::make('url')
                                     ->label(__('Base URL'))
@@ -75,7 +75,7 @@ class AddInstance extends Page implements HasForms
                                     ->url()
                                     ->live()
                                     ->suffix(ModuleApiService::PLUGIN_PATH)
-                                    ->columnSpan(2)
+                                    ->columnSpan('full')
                                     ->afterStateUpdated(fn () => $this->resetConnection()),
                                 Forms\Components\TextInput::make('api_key')
                                     ->label(__('API Key'))
@@ -91,9 +91,14 @@ class AddInstance extends Page implements HasForms
                                                 $this->resetConnection();
                                             }),
                                     ])
-                                    ->helperText(__('The API Key must include characters from a minimum of three out of the
-                                    following five categories: uppercase letters, lowercase letters, digits, non-alphanumeric
-                                    characters, and Unicode characters.'))
+                                    ->helperText(new HtmlString(__(
+                                        ':start The API Key must include characters from a minimum of three out of the following five categories: 
+                                        uppercase letters, lowercase letters, digits, non-alphanumeric characters, and Unicode characters. :end',
+                                        [
+                                            'start' => '<p class="text-dark dark:text-white">',
+                                            'end' => '</p>',
+                                        ]
+                                    )))
                                     ->required()
                                     ->minValue(40)
                                     ->regex("/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/")
@@ -112,7 +117,13 @@ class AddInstance extends Page implements HasForms
                                                 $this->resetConnection();
                                             }),
                                     )
-                                    ->helperText(__('If this field is empty, the API key will be considered valid indefinitely.'))
+                                    ->helperText(new HtmlString(__(
+                                        ':start If this field is empty, the API key will be considered valid indefinitely. :end',
+                                        [
+                                            'start' => '<p class="text-dark dark:text-white">',
+                                            'end' => '</p>',
+                                        ]
+                                    )))
                                     ->minDate(now())
                                     ->maxDate(now()->addYear())
                                     ->live()

@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Backup\CourseBackupRestoreController;
 use App\Http\Controllers\Backups\CourseBackupController;
+use App\Http\Controllers\Backups\CourseBackupRestoreController;
 use App\Models\Instance;
 use Illuminate\Support\Facades\Route;
 
@@ -22,4 +22,5 @@ Route::prefix('backups')->group(function () {
 
     Route::middleware(['checkInstanceToken'])->post('restore/instance/{instance_id}', [CourseBackupRestoreController::class, 'restore']);
 
+    Route::middleware(['checkRefererToken'])->get('course/{moodle_course_id}', [CourseBackupController::class, 'index']);
 });

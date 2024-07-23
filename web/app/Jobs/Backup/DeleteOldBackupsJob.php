@@ -38,7 +38,7 @@ class DeleteOldBackupsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        if (! isset($this->payload['backup_urls']) || empty($this->payload['backup_urls'])) {
+        if (! isset($this->payload['backups']) || empty($this->payload['backups'])) {
             Log::info('No course-backups for instanceID: '.$this->payload['instance_id'].' specified. Aborting backup deletion request.');
 
             return;
@@ -49,10 +49,7 @@ class DeleteOldBackupsJob implements ShouldQueue
 
             $moduleApiService = new ModuleApiService();
 
-            $prunedPaylod = $this->payload;
-            unset($prunedPaylod['backup_result_ids']);
-
-            $response = $moduleApiService->triggerCourseBackupDeletion($this->instance->url, Crypt::decrypt($this->instance->api_key), $prunedPaylod);
+            $response = $moduleApiService->triggerCourseBackupDeletion($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
             if (! $response->ok()) {
 
@@ -74,16 +71,32 @@ class DeleteOldBackupsJob implements ShouldQueue
 
             $response = $response->json();
 
-            if (isset($response['status']) && $response['status']) {
+            if (isset($response['backups']) && $response['backups']) {
+
+                $successfullyDeletedBackupResultIds = array_reduce($response['backups'], function ($carry, $backup) {
+                    if ($backup['status']) {
+                        $carry[] = $backup['backup_result_id'];
+                    }
+
+                    return $carry;
+                }, []);
 
                 // Soft delete backup results in mooPanel
-                BackupResult::whereIn('id', $this->payload['backup_result_ids'])->delete();
+                BackupResult::whereIn('id', $successfullyDeletedBackupResultIds)->delete();
 
                 // Update deletion_last_run in backup settings - mark last run
                 BackupSetting::where('instance_id', $this->instance->id)
                     ->update(['deletion_last_run' => now()]);
 
-                Log::info('Course backup deletion request for instance: '.$this->instance->name.' was successful. Deleted '.count($this->payload['backup_result_ids']).' backups with backup_result ids: '.implode(', ', $this->payload['backup_result_ids']));
+                Log::info(__(
+                    'Backup auto-deletion for instance :instance completed. Deleted :countSuccess out of :all requested backups deletion. Response body: :response',
+                    [
+                        'instance' => $this->instance->name,
+                        'countSuccess' => count($successfullyDeletedBackupResultIds),
+                        'all' => count($response['backups']),
+                        'response' => json_encode($response),
+                    ]
+                ));
             } else {
                 Log::error('Course backup deletion request for instance: '.$this->instance->name.' failed. Response: '.json_encode($response));
             }

@@ -10,7 +10,13 @@ class UpdatesList extends Widget
 {
     protected static string $view = 'filament.app.widgets.updates-list';
 
-    protected int|string|array $columnSpan = 3;
+    protected static ?int $sort = 3;
+
+    protected int|string|array $columnSpan = [
+        'sm' => 'full',
+        'md' => 'full',
+        'lg' => 3,
+    ];
 
     public string $type = 'core';
 
@@ -52,8 +58,7 @@ class UpdatesList extends Widget
                             $update->plugin->display_name,
                         'date' => $update->timemodified->format('d M Y'),
                         'item_type' => ($this->type == 'core') ?
-                            (($availableUpdatesCount == $itemsCount) ? 'current' : 'past') :
-                            (($update->plugin->display_name == $update->version) ? 'current' : 'past'),
+                            (($availableUpdatesCount == $itemsCount) ? 'current' : 'past') : (($update->plugin->display_name == $update->version) ? 'current' : 'past'),
                     ];
 
                     $itemsCount++;

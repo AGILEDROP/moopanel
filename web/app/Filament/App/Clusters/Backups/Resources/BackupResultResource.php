@@ -4,6 +4,7 @@ namespace App\Filament\App\Clusters\Backups\Resources;
 
 use App\Filament\App\Clusters\Backups;
 use App\Filament\App\Clusters\Backups\Resources\BackupResultResource\Pages;
+use App\Helpers\StringHelper;
 use App\Jobs\Backup\RestoreBackupJob;
 use App\Models\BackupResult;
 use Carbon\Carbon;
@@ -15,6 +16,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 
@@ -40,13 +42,12 @@ class BackupResultResource extends Resource
             ->query(
                 fn () => BackupResult::where('instance_id', filament()->getTenant()->id)
 
-                    // TBD: You can only show backups of current user
-                    // makes sense to show also other backups since user can then download id directly withou creating another request
-                    /* ->where(function ($query) {
+                // TBD: You can only show backups of current user
+                // makes sense to show also other backups since user can then download id directly withou creating another request
+                /* ->where(function ($query) {
                         return $query->whereNull('user_id')
                             ->orWhere('user_id', auth()->user()->id);
                     }) */
-                    ->orderBy('updated_at', 'desc')
             )
             ->columns([
                 TextColumn::make('statusName')
@@ -118,6 +119,12 @@ class BackupResultResource extends Resource
                     ->searchable(),
                 TextColumn::make('filesize')
                     ->label(__('File size'))
+                    ->numeric()
+                    ->formatStateUsing(fn (int $state): string => StringHelper::fileSizeConvert($state))
+                    ->sortable(query: function (Builder $query, string $direction): Builder {
+                        return $query
+                            ->orderBy('filesize', $direction);
+                    })
                     ->color('gray')
                     ->badge(),
                 TextColumn::make('message')
@@ -135,6 +142,7 @@ class BackupResultResource extends Resource
                     ->label(__('Last updated'))
                     ->sortable(),
             ])
+            ->defaultSort('updated_at', 'desc')
             ->filters([
                 //
             ])

@@ -46,6 +46,13 @@ class DeltaReports extends Page implements HasForms
             $this->renderDiffComparison($deltaReportId);
         }
 
+        // Preset first instance with data from URL
+        if (! empty(request()->query('first_instance_id', ''))) {
+            $firstInstanceId = request()->query('first_instance_id', '');
+            $this->data['first_instance_id'] = $firstInstanceId;
+            $this->data['first_cluster_id'] = Instance::withoutGlobalScope(InstanceScope::class)->find((int) $firstInstanceId)->cluster_id;
+        }
+
         $this->form->fill($this->data);
     }
 
