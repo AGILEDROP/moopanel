@@ -36,11 +36,11 @@ class DashboardActions extends Widget
                 'iconComponent' => '<x-fas-code-compare class="h-6 w-6 text-gray-700 dark:text-gray-500"></x-fas-code-compare>',
                 'url' => route('filament.admin.pages.delta-reports').'?first_instance_id='.filament()->getTenant()->id,
             ],
-            [
+            /* [
                 'label' => __('Update core'),
                 'iconComponent' => '<x-fas-cube class="h-6 w-6 text-gray-700 dark:text-gray-500"></x-fas-cube>',
                 'url' => Core::getUrl(),
-            ],
+            ], */
             [
                 'label' => __('Update plugins'),
                 'iconComponent' => '<x-fas-plug class="h-6 w-6 text-gray-700 dark:text-gray-500"></x-fas-plug>',

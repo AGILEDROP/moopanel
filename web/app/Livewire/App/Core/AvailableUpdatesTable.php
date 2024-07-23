@@ -53,7 +53,7 @@ class AvailableUpdatesTable extends Component implements HasForms, HasTable
             ])
             ->defaultSort('release', 'desc')
             ->actions([
-                Action::make('update')
+                /* Action::make('update')
                     ->label(__('Update'))
                     ->requiresConfirmation()
                     ->modalDescription(__('Are you sure you want to perform the core update of the selected instance?'))
@@ -91,7 +91,7 @@ class AvailableUpdatesTable extends Component implements HasForms, HasTable
                             ->icon('fas-cube')
                             ->iconColor('success')
                             ->send();
-                    }),
+                    }), */
             ]);
     }
 

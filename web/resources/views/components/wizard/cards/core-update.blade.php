@@ -37,7 +37,8 @@
                 <div
                     class="flex mt-8 mt-6 flex shrink-0 items-center flex-wrap sm:flex-nowrap justify-start md:mt-0 md:absolute md:bottom-[2.5rem] md:right-8">
 
-                    {{ ($this->updateAction)(['updateid' => $record->id]) }}
+                    {{-- Uncomment "Update" button --}}
+                    {{-- {{ ($this->updateAction)(['updateid' => $record->id]) }} --}}
 
                     
                     <x-filament::link tag="a" :href="$record->url" target="_blank" class="md:hidden ml-3 md:ml-0">
