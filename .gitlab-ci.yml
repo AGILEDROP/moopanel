@@ -1,3 +1,6 @@
+
+image: lorisleiva/laravel-docker:8.2
+
 before_script:
   ##
   ## Install ssh-agent if not already installed, it is required by Docker.
@@ -22,8 +25,7 @@ before_script:
   ##
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
-
-image: lorisleiva/laravel-docker:8.2
+  - echo "Successfuly connected to server via SSH"
 
 stages:
   - build
@@ -34,6 +36,7 @@ composer:
   stage: build
 
   script:
+    - composer -v
     - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
     # TODO: check where are .env variables
     #- cp .env.example .env
