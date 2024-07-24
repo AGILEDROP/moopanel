@@ -35,7 +35,7 @@ composer:
   image: composer:2.7.7
 
   script:
-    - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+    - install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
     # TODO: check where are .env variables
     #- cp .env.example .env
     #- php artisan key:generate
