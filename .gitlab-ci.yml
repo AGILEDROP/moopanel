@@ -1,7 +1,7 @@
 before_script:
   ##
   ## Install ssh-agent if not already installed, it is required by Docker.
-  ## (change apt-get to yum if you use an RPM-based image)
+  ## (change apt-get to yum if you use an RPM-based image) 
   ##
   - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
 
