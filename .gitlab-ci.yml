@@ -34,9 +34,10 @@ stages:
 
 composer:
   stage: build
-  image: lorisleiva/laravel-docker:8.2
 
   script:
+    - pwd
+    - whoami
     - composer -v
     - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
     # TODO: check where are .env variables
@@ -69,7 +70,6 @@ composer:
 npm:
   # Same stage as `composer` so that they run in parallel.
   stage: build
-  image: lorisleiva/laravel-docker:8.2
 
   # Cache the `node_modules` folder
   # using the `npm` suffix on the key.
@@ -96,7 +96,6 @@ npm:
 filament:
   # Same stage as `composer` so that they run in parallel.
   stage: build
-  image: lorisleiva/laravel-docker:8.2
 
   # Install and compile.
   script:
@@ -112,7 +111,6 @@ filament:
 
 phpunit:
   stage: test
-  image: lorisleiva/laravel-docker:8.2
 
   # List of jobs from which it will download the artifacts.
   dependencies:
