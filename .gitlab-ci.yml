@@ -38,8 +38,8 @@ composer:
   script:
     - pwd
     - whoami
-    - composer -v
     - curl ifconfig.me
+    - composer -v
     - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
     # TODO: check where are .env variables
     #- cp .env.example .env
