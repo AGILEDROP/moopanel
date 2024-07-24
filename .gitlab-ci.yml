@@ -23,35 +23,130 @@ before_script:
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
 
-deploy:
+image: lorisleiva/laravel-docker:8.2
+
+stages:
+  - build
+  - test
+  - deploy
+
+composer:
+  stage: build
+  image: composer:2.7.7
+
+  script:
+    - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+    # TODO: check where are .env variables
+    #- cp .env.example .env
+    #- php artisan key:generate
+
+  artifacts:
+
+    # (Optional) Give it an expiration date,
+    # after that period you won't be able to
+    # download them via the UI anymore.
+    expire_in: 1 month
+
+    # Define what to output from the job.
+    paths:
+      - vendor/
+
+  cache:
+    # The variable CI_COMMIT_REF_SLUG
+    # refers to the slug of the branch.
+    # For example: `master` for the master branch.
+    # We use the `composer` suffix to avoid conflicts with
+    # the `npm` cache that we'll define next.
+    key: ${CI_COMMIT_REF_SLUG}-composer
+
+    # Define what to cache.
+    paths:
+      - vendor/
+
+npm:
+  # Same stage as `composer` so that they run in parallel.
+  stage: build
+  image: node:22.5.1-slim
+
+  # Cache the `node_modules` folder
+  # using the `npm` suffix on the key.
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-npm
+    paths:
+      - node_modules/
+
+  # Install and compile.
+  script:
+    - npm install # node_modules
+    - npm run build # public/build
+
+  # Provide the other jobs of the pipeline with
+  # the node dependencies and the compiled assets.
+  artifacts:
+    expire_in: 1 month
+    paths:
+      - node_modules/
+      - public/build
+      #- public/css/
+      #- public/js/
+
+filament:
+  # Same stage as `composer` so that they run in parallel.
+  stage: build
+
+  # Install and compile.
+  script:
+    - php artisan filament:assets
+
+  # Provide the other jobs of the pipeline with
+  # the node dependencies and the compiled assets.
+  artifacts:
+    expire_in: 1 month
+    paths:
+      - public/css/
+      - public/js/
+
+phpunit:
+  stage: test
+
+  # List of jobs from which it will download the artifacts.
+  dependencies:
+    - composer
+
+  script:
+    - echo "Running PHPUnit tests"
+    #- phpunit --coverage-text --colors=never
+
+codestyle:
+  stage: test
+  dependencies: []
+  script:
+    - echo "Running PHP Code Sniffer"
+    #- phpcs --standard=PSR2 --extensions=php --ignore=app/Support/helpers.php app
+
+# Add a `.` in front of a job to make it hidden.
+# Add a `&reference` to make it a reusable template.
+# Note that we don't have dashes anymore.
+.init_ssh: &init_ssh |
+  command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )
+  eval $(ssh-agent -s)
+  chmod 400 "$SSH_PRIVATE_KEY"
+  ssh-add "$SSH_PRIVATE_KEY"
+  mkdir -p ~/.ssh
+  chmod 700 ~/.ssh
+
+production:
   stage: deploy
   script:
-    # Git
-    #- rsync -av --exclude=.git --no-perms -O . /var/www/;
-    - cd /var/www
-    - git checkout master
-    - git pull origin master
-    # Docker
-    - docker image prune -f
-    - docker-compose -f production.yml pull && docker-compose -f production.yml up -d --build --no-deps
-    - docker-compose -f production.yml exec -T map-php composer install --optimize-autoloader --no-dev
-    # Laravel
-    - docker-compose -f production.yml exec -T map-php php artisan down
-    - docker-compose -f production.yml exec -T map-php php artisan migrate --force
-    - docker-compose -f production.yml exec -T map-php php artisan storage:link
-    - docker-compose -f production.yml exec -T map-php php artisan cache:clear
-    - docker-compose -f production.yml exec -T map-php php artisan config:clear
-    - docker-compose -f production.yml exec -T map-php php artisan config:cache
-    - docker-compose -f production.yml exec -T map-php php artisan event:cache
-    - docker-compose -f production.yml exec -T map-php php artisan route:cache
-    - docker-compose -f production.yml exec -T map-php php artisan view:cache
-    - docker-compose -f production.yml exec -T map-php php artisan db:seed --force
-    - docker-compose -f production.yml exec -T map-php php artisan queue:restart
-    # Filament
-    - docker-compose -f production.yml exec -T map-php php artisan icons:cache
-    - docker-compose -f production.yml exec -T map-php php artisan filament:cache-components
-    # Up
-    - docker-compose -f production.yml exec -T map-php php artisan up
-    #- rm /var/www/web/storage/logs/laravel.log
+    - *init_ssh # This is pretty convenient now.
+    - php artisan deploy yourdomain.com -s upload
+  environment:
+    name: production
+    url: http://yourdomain.com
+
+  # Do not run automatically.
+  # Wait for a human to click on play.
+  when: manual
+
   only:
     - master
