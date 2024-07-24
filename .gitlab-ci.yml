@@ -32,10 +32,9 @@ stages:
 
 composer:
   stage: build
-  image: composer:2.7.7
 
   script:
-    - install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+    - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
     # TODO: check where are .env variables
     #- cp .env.example .env
     #- php artisan key:generate
@@ -66,7 +65,6 @@ composer:
 npm:
   # Same stage as `composer` so that they run in parallel.
   stage: build
-  image: node:22.5.1-slim
 
   # Cache the `node_modules` folder
   # using the `npm` suffix on the key.
