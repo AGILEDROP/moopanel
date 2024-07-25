@@ -14,22 +14,15 @@ composer:
 
   script:
     - composer -v
-    - - composer install --prefer-dist --no-ansi --no-interaction --no-scripts --ignore-platform-reqs --no-progress
+    - composer install --prefer-dist --no-ansi --no-interaction --no-scripts --ignore-platform-reqs --no-progress
     # TODO: check where are .env variables
     #- cp .env.example .env
     #- php artisan key:generate
 
   artifacts:
-    # (Optional) Give it an expiration date,
-    # after that period you won't be able to
-    # download them via the UI anymore.
     expire_in: 1 month
-    name: "vendor"
-
-    # Define what to output from the job.
     paths:
       - web/vendor/
-      #- .env
 
   cache:
     # The variable CI_COMMIT_REF_SLUG
@@ -54,13 +47,6 @@ npm:
   before_script:
     - cd $CI_PROJECT_DIR/web # Navigate to the project directory
 
-  # Cache the `node_modules` folder
-  # using the `npm` suffix on the key.
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}-npm
-    paths:
-      - web/node_modules/
-
   # Install and compile.
   script:
     - ls -la
@@ -69,6 +55,13 @@ npm:
     - npm -v
     - npm install # node_modules
     - npm run build # public/build
+
+  # Cache the `node_modules` folder
+  # using the `npm` suffix on the key.
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-npm
+    paths:
+      - web/node_modules/
 
   # Provide the other jobs of the pipeline with
   # the node dependencies and the compiled assets.
