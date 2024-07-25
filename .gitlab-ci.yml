@@ -27,17 +27,20 @@ composer:
     paths:
       - web/vendor/
 
-  #cache:
+  cache:
     # The variable CI_COMMIT_REF_SLUG
     # refers to the slug of the branch.
     # For example: `master` for the master branch.
     # We use the `composer` suffix to avoid conflicts with
     # the `npm` cache that we'll define next.
-   # key: ${CI_COMMIT_REF_SLUG}-composer
+    key: ${CI_COMMIT_REF_SLUG}-composer
 
     # Define what to cache.
-    #paths:
-     # - web/vendor/
+    paths:
+     - web/vendor/
+
+  only:
+    - master
 
 npm:
   # Same stage as `composer` so that they run in parallel.
@@ -69,10 +72,14 @@ npm:
     paths:
       - web/node_modules/
       - web/public/build
+    
+  only:
+    - master
 
 filament:
   # Same stage as `composer` so that they run in parallel.
   stage: js_build
+  image: php:8.2-alpine3.17
 
   dependencies:
     - composer #to be able to have filament tailwind style presets
@@ -89,18 +96,21 @@ filament:
   artifacts:
     expire_in: 1 month
     paths:
-      - public/css/
-      - public/js/
+      - web/public/css/
+      - web/public/js/
+
+  only:
+    - master
 
 phpunit:
   stage: test
 
   # List of jobs from which it will download the artifacts.
-  dependencies:
-    - composer
+  #dependencies:
+  #  - composer
 
   script:
-    - echo "Running PHPUnit tests"
+    - echo "TODO Running PHPUnit tests"
     #- phpunit --coverage-text --colors=never
 
 codestyle:
@@ -125,12 +135,16 @@ production:
   stage: deploy
   script:
     - *init_ssh # This is pretty convenient now.
-    - echo "connected to server"
-    - pwd
+    - echo "connecting to server"
+    - ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY root@10.31.10.11 "
+      whoami &&
+      docker ps"
 
   # Do not run automatically.
   # Wait for a human to click on play.
-  when: manual
+  #when: manual
 
-  only:
-    - master
+  #only:
+  #  - master
+
+  
