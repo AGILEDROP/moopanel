@@ -63,6 +63,7 @@ npm:
   # Install and compile.
   script:
     - ls -la
+    - ls -la ..
     - node -v
     - npm -v
     - npm install # node_modules
