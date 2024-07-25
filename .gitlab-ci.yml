@@ -1,8 +1,13 @@
 image: lorisleiva/laravel-docker:8.2
 
+default:
+  tags:
+    - docker
 
 stages:
   - build
+  - test
+  - deploy
 
 composer:
   stage: build
@@ -10,8 +15,7 @@ composer:
 
   script:
     - composer -v
-    - echo "test new"
-    #- composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+    - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
     # TODO: check where are .env variables
     #- cp .env.example .env
     #- php artisan key:generate
@@ -38,3 +42,89 @@ composer:
     # Define what to cache.
     paths:
       - vendor/
+
+npm:
+  # Same stage as `composer` so that they run in parallel.
+  stage: build
+  image: node:22.5.1-slim
+
+  # Cache the `node_modules` folder
+  # using the `npm` suffix on the key.
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-npm
+    paths:
+      - node_modules/
+
+  # Install and compile.
+  script:
+    - npm install # node_modules
+    - npm run build # public/build
+
+  # Provide the other jobs of the pipeline with
+  # the node dependencies and the compiled assets.
+  artifacts:
+    expire_in: 1 month
+    paths:
+      - node_modules/
+      - public/build
+      #- public/css/
+      #- public/js/
+
+filament:
+  # Same stage as `composer` so that they run in parallel.
+  stage: build
+
+  # Install and compile.
+  script:
+    - php artisan filament:assets
+
+  # Provide the other jobs of the pipeline with
+  # the node dependencies and the compiled assets.
+  artifacts:
+    expire_in: 1 month
+    paths:
+      - public/css/
+      - public/js/
+
+phpunit:
+  stage: test
+
+  # List of jobs from which it will download the artifacts.
+  dependencies:
+    - composer
+
+  script:
+    - echo "Running PHPUnit tests"
+    #- phpunit --coverage-text --colors=never
+
+codestyle:
+  stage: test
+  dependencies: []
+  script:
+    - echo "Running PHP Code Sniffer"
+    #- phpcs --standard=PSR2 --extensions=php --ignore=app/Support/helpers.php app
+
+# Add a `.` in front of a job to make it hidden.
+# Add a `&reference` to make it a reusable template.
+# Note that we don't have dashes anymore.
+.init_ssh: &init_ssh |
+  command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )
+  eval $(ssh-agent -s)
+  chmod 400 "$SSH_PRIVATE_KEY"
+  ssh-add "$SSH_PRIVATE_KEY"
+  mkdir -p ~/.ssh
+  chmod 700 ~/.ssh
+
+production:
+  stage: deploy
+  script:
+    - *init_ssh # This is pretty convenient now.
+    - echo "connected to server"
+    - pwd
+
+  # Do not run automatically.
+  # Wait for a human to click on play.
+  when: manual
+
+  only:
+    - master
