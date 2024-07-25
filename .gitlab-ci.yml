@@ -27,7 +27,7 @@ composer:
 
     # Define what to output from the job.
     paths:
-      - vendor/
+      - web/vendor/
       #- .env
 
   cache:
@@ -40,7 +40,7 @@ composer:
 
     # Define what to cache.
     paths:
-      - vendor/
+      - web/vendor/
 
 npm:
   # Same stage as `composer` so that they run in parallel.
