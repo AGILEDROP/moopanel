@@ -145,14 +145,16 @@ production:
     - echo "$SSH_PUBLIC_KEY" >> ~/.ssh/id_rsa.pub
     - ls -la ~/.ssh
     - cat ~/.ssh/id_rsa.pub
-    - ssh-keyscan 10.31.10.11
-    - cat ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
+    - ping -c 1 mdcenter.uni-lj.si
+    #- ssh-keyscan 10.31.10.11
+    #- cat ~/.ssh/known_hosts
+    #- chmod 644 ~/.ssh/known_hosts
   script:
     - echo "connecting to server"
-    - ssh -vvv -o StrictHostKeyChecking=no -i "$SSH_PRIVATE_KEY" root@10.31.10.11 "
-      whoami &&
-      docker ps"
+    - echo "run gitlab runner on mdcenter to be able to connect to server"
+    #- ssh -vvv -o StrictHostKeyChecking=no -i "$SSH_PRIVATE_KEY" root@10.31.10.11 "
+    #  whoami &&
+    #  docker ps"
 
   # Do not run automatically.
   # Wait for a human to click on play.
