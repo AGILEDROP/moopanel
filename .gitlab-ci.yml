@@ -50,6 +50,9 @@ npm:
   stage: build
   image: node:22.5.1-slim
 
+  dependencies:
+    - composer #to be able to have filament tailwind style presets
+
   before_script:
     - cd $CI_PROJECT_DIR/web # Navigate to the project directory
 
