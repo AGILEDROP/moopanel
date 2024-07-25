@@ -14,7 +14,7 @@ composer:
 
   script:
     - composer -v
-    - - composer install --prefer-dist --no-ansi --no-interaction --no-scripts --ignore-platform-reqs  # --no-progress
+    - - composer install --prefer-dist --no-ansi --no-interaction --no-scripts --ignore-platform-reqs --no-progress
     # TODO: check where are .env variables
     #- cp .env.example .env
     #- php artisan key:generate
@@ -41,21 +41,29 @@ composer:
     # Define what to cache.
     paths:
       - web/vendor/
+  
+  only:
+    - master
 
 npm:
   # Same stage as `composer` so that they run in parallel.
   stage: build
   image: node:22.5.1-slim
 
+  before_script:
+    - cd $CI_PROJECT_DIR/web # Navigate to the project directory
+
   # Cache the `node_modules` folder
   # using the `npm` suffix on the key.
   cache:
     key: ${CI_COMMIT_REF_SLUG}-npm
     paths:
-      - node_modules/
+      - web/node_modules/
 
   # Install and compile.
   script:
+    - node -v
+    - npm -v
     - npm install # node_modules
     - npm run build # public/build
 
@@ -64,8 +72,8 @@ npm:
   artifacts:
     expire_in: 1 month
     paths:
-      - node_modules/
-      - public/build
+      - web/node_modules/
+      - web/public/build
       #- public/css/
       #- public/js/
 
