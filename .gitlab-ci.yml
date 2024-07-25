@@ -50,7 +50,7 @@ npm:
 
   # Install and compile.
   script:
-    - mv -R ../vendor .
+    - mv ../vendor .
     - ls -la
     - ls -la ..
     - node -v
