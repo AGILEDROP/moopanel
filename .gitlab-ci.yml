@@ -41,9 +41,6 @@ composer:
     # Define what to cache.
     paths:
       - web/vendor/
-  
-  only:
-    - master
 
 npm:
   # Same stage as `composer` so that they run in parallel.
@@ -65,6 +62,7 @@ npm:
 
   # Install and compile.
   script:
+    - ls -la
     - node -v
     - npm -v
     - npm install # node_modules
