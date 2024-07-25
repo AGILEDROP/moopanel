@@ -59,26 +59,26 @@ npm:
     - npm install # node_modules
     - npm run build # public/build
 
-  # Cache the `node_modules` folder
-  # using the `npm` suffix on the key.
   cache:
     key: ${CI_COMMIT_REF_SLUG}-npm
     paths:
       - web/node_modules/
 
-  # Provide the other jobs of the pipeline with
-  # the node dependencies and the compiled assets.
   artifacts:
     expire_in: 1 month
     paths:
       - web/node_modules/
       - web/public/build
-      #- public/css/
-      #- public/js/
 
 filament:
   # Same stage as `composer` so that they run in parallel.
   stage: js_build
+
+  dependencies:
+    - composer #to be able to have filament tailwind style presets
+
+  before_script:
+    - cd $CI_PROJECT_DIR/web # Navigate to the project directory
 
   # Install and compile.
   script:
