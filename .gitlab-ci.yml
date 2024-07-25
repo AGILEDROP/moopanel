@@ -1,12 +1,13 @@
 image: lorisleiva/laravel-docker:8.2
 
 stages:
-  - build
+  - php_build
+  - js_build
   - test
   - deploy
 
 composer:
-  stage: build
+  stage: php_build
   image: composer:2.7.7
 
   before_script:
@@ -45,7 +46,7 @@ composer:
 
 npm:
   # Same stage as `composer` so that they run in parallel.
-  stage: build
+  stage: js_build
   image: node:22.5.1-slim
 
   dependencies:
@@ -84,7 +85,7 @@ npm:
 
 filament:
   # Same stage as `composer` so that they run in parallel.
-  stage: build
+  stage: js_build
 
   # Install and compile.
   script:
