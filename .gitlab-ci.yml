@@ -16,9 +16,6 @@ composer:
   script:
     - composer -v
     - composer install --prefer-dist --no-ansi --no-interaction --no-scripts --ignore-platform-reqs --no-progress
-    - cp -R vendor/ ..
-    - echo "building..." >> ./web_build_result.txt
-    - echo "building..." >> ../root_build_result.txt
     - ls -la
     - ls -la ..
     # TODO: check where are .env variables
@@ -28,9 +25,7 @@ composer:
   artifacts:
     expire_in: 1 month
     paths:
-      - vendor/
-      - web/web_build_result.txt
-      - root_build_result.txt
+      - web/vendor/
 
   #cache:
     # The variable CI_COMMIT_REF_SLUG
@@ -42,7 +37,7 @@ composer:
 
     # Define what to cache.
     #paths:
-     # - vendor/
+     # - web/vendor/
 
 npm:
   # Same stage as `composer` so that they run in parallel.
@@ -59,8 +54,6 @@ npm:
   script:
     - ls -la
     - ls -la ..
-    - cat web_build_result.txt
-    - cat ../root_build_result.txt
     - node -v
     - npm -v
     - npm install # node_modules
