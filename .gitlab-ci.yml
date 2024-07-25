@@ -147,7 +147,7 @@ production:
     - cat ~/.ssh/id_rsa.pub
   script:
     - echo "connecting to server"
-    - ssh -o StrictHostKeyChecking=no root@10.31.10.11 "
+    - ssh -o StrictHostKeyChecking=no -i "$SSH_PRIVATE_KEY" root@10.31.10.11 "
       whoami &&
       docker ps"
 
