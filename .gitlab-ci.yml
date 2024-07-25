@@ -143,9 +143,13 @@ production:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - echo $SSH_PUBLIC_KEY >> ~/.ssh/id_rsa.pub
+    - echo $SSH_PRIVATE_KEY >> ~/.ssh/id_rsa
+    - ls -la ~/.ssh
+    - cat ~/.ssh/id_rsa.pub
+    - cat ~/.ssh/id_rsa
   script:
     - echo "connecting to server"
-    - ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY root@10.31.10.11 "
+    - ssh -o StrictHostKeyChecking=no root@10.31.10.11 "
       whoami &&
       docker ps"
 
