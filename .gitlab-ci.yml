@@ -145,7 +145,8 @@ production:
     - echo "$SSH_PUBLIC_KEY" >> ~/.ssh/id_rsa.pub
     - ls -la ~/.ssh
     - cat ~/.ssh/id_rsa.pub
-    - ssh-keyscan -H 10.31.10.11 >> ~/.ssh/known_hosts
+    - ssh-keyscan 10.31.10.11 >> ~/.ssh/known_hosts
+    - cat ~/.ssh/known_hosts
   script:
     - echo "connecting to server"
     - ssh -vvv -o StrictHostKeyChecking=no -i "$SSH_PRIVATE_KEY" root@10.31.10.11 "
