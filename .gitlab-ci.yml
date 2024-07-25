@@ -9,6 +9,9 @@ composer:
   stage: build
   image: composer:2.7.7
 
+  before_script:
+    - cd $CI_PROJECT_DIR/web # Navigate to the project directory
+
   script:
     - composer -v
     - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
