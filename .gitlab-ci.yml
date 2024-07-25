@@ -130,6 +130,7 @@ codestyle:
   ssh-add "$SSH_PRIVATE_KEY"
   mkdir -p ~/.ssh
   chmod 700 ~/.ssh
+  ssh-keyscan -H 10.31.10.11 >> ~/.ssh/known_hosts
 
 production:
   stage: deploy
