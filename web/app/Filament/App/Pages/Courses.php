@@ -231,8 +231,14 @@ class Courses extends Page implements HasTable
             Filter::make('category')
                 ->form([
                     SelectTree::make('categories')
-                        ->relationship('category', 'name', 'parent_id')
+                        ->relationship(
+                            relationship: 'category',
+                            titleAttribute: 'name',
+                            parentAttribute: 'parent_id',
+                            modifyQueryUsing: fn ($query) => $query->where('instance_id', filament()->getTenant()->id)->orderBy('name')
+                        )
                         ->independent(false)
+                        ->searchable()
                         ->withCount()
                         ->enableBranchNode(),
                 ])

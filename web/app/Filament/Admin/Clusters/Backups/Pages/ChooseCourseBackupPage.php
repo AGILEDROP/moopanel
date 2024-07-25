@@ -223,9 +223,16 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
             Filter::make('category')
                 ->form([
                     SelectTree::make('categories')
-                        ->relationship('category', 'name', 'parent_id')
+                        ->relationship(
+                            relationship: 'category',
+                            titleAttribute: 'name',
+                            parentAttribute: 'parent_id',
+                            modifyQueryUsing: fn ($query) => $query->whereIn('instance_id', $this->instanceIds)->orderBy('name')
+
+                        )
                         ->withCount()
                         ->independent(false)
+                        ->searchable()
                         ->enableBranchNode(),
                 ])
                 ->query(function (Builder $query, array $data) {
