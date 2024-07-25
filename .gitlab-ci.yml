@@ -142,6 +142,7 @@ production:
     - ssh-add "$SSH_PRIVATE_KEY"
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
+    - echo $SSH_PUBLIC_KEY >> ~/.ssh/id_rsa.pub
   script:
     - echo "connecting to server"
     - ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY root@10.31.10.11 "
