@@ -1,9 +1,5 @@
 image: lorisleiva/laravel-docker:8.2
 
-default:
-  tags:
-    - docker
-
 stages:
   - build
   - test
