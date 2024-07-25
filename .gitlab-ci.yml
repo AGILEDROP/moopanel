@@ -16,6 +16,8 @@ composer:
     - composer -v
     - composer install --prefer-dist --no-ansi --no-interaction --no-scripts --ignore-platform-reqs --no-progress
     - cp -R vendor/ ..
+    - ls -la
+    - ls -la ..
     # TODO: check where are .env variables
     #- cp .env.example .env
     #- php artisan key:generate
@@ -25,17 +27,17 @@ composer:
     paths:
       - vendor/
 
-  cache:
+  #cache:
     # The variable CI_COMMIT_REF_SLUG
     # refers to the slug of the branch.
     # For example: `master` for the master branch.
     # We use the `composer` suffix to avoid conflicts with
     # the `npm` cache that we'll define next.
-    key: ${CI_COMMIT_REF_SLUG}-composer
+   # key: ${CI_COMMIT_REF_SLUG}-composer
 
     # Define what to cache.
-    paths:
-      - web/vendor/
+    #paths:
+     # - vendor/
 
 npm:
   # Same stage as `composer` so that they run in parallel.
@@ -50,9 +52,9 @@ npm:
 
   # Install and compile.
   script:
-    - mv ../vendor .
     - ls -la
     - ls -la ..
+    - mv ../vendor .
     - node -v
     - npm -v
     - npm install # node_modules
