@@ -4,6 +4,7 @@ namespace App\Console\Commands\Backup;
 
 use App\Jobs\Backup\ScheduledBackupRequestJob;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class AutomaticBackupCommand extends Command
 {
@@ -27,5 +28,7 @@ class AutomaticBackupCommand extends Command
     public function handle()
     {
         ScheduledBackupRequestJob::dispatch();
+
+        Log::info('Scheduled auto-backup job dispatched.');
     }
 }
