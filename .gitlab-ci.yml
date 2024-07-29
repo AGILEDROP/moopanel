@@ -1,8 +1,8 @@
 image: lorisleiva/laravel-docker:8.2
 
 variables:
-  IMAGE_NAME: git.agiledrop.com/clients/moodle-admin-panel
-  IMAGE_TAG: 1.0.0
+  IMAGE_NAME: git.agiledrop.com:5050/clients/moodle-admin-panel
+  IMAGE_TAG: $CI_COMMIT_TIMESTAMP
 
 
 stages:
@@ -112,8 +112,8 @@ image_build:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
   script:
     #- docker build -t $IMAGE_NAME:$IMAGE_TAG .
-    - docker build -t git.agiledrop.com:5050/clients/moodle-admin-panel:1.0 .
-    - docker push git.agiledrop.com:5050/clients/moodle-admin-panel:1.0
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG .
+    - docker push $IMAGE_NAME:$IMAGE_TAG
     # - docker push $IMAGE_NAME:$IMAGE_TAG
 
   only:
