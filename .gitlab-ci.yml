@@ -2,7 +2,7 @@ image: lorisleiva/laravel-docker:8.2
 
 variables:
   IMAGE_NAME: agiledrop/moopanel
-  IMAGE_TAG: moopanel-dashboard-1.0.0
+  IMAGE_TAG: moodle-admin-panel
 
 
 stages:
