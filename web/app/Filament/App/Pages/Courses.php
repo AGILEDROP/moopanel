@@ -275,6 +275,9 @@ class Courses extends Page implements HasTable
 
                     return __('Categories').': '.implode(', ', Category::whereIn('id', $data['categories'])->get()->pluck('name')->toArray());
                 }),
+            Filter::make('is_scheduled')
+                ->toggle()
+                ->query(fn (Builder $query): Builder => $query->where('is_scheduled', true)),
         ];
     }
 
@@ -363,7 +366,7 @@ class Courses extends Page implements HasTable
      */
     protected function getTableFiltersFormWidth(): MaxWidth
     {
-        return MaxWidth::FourExtraLarge;
+        return MaxWidth::Small;
     }
 
     /**
@@ -371,7 +374,7 @@ class Courses extends Page implements HasTable
      */
     protected function getTableFilterColumns(): int
     {
-        return 2;
+        return 1;
     }
 
     /**
