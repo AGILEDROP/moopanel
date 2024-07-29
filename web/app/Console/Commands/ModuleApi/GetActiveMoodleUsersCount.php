@@ -7,6 +7,7 @@ use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
 
 class GetActiveMoodleUsersCount extends Command
 {
@@ -25,6 +26,8 @@ class GetActiveMoodleUsersCount extends Command
         Bus::batch($jobs)->dispatch();
 
         $this->info('Jobs dispatched.');
+
+        Log::info('GetActiveMoodleUsersCount job dispatched.');
 
         return self::SUCCESS;
     }
