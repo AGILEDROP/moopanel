@@ -114,7 +114,7 @@ image_build:
     - docker push $IMAGE_NAME:$IMAGE_TAG
 
   only:
-    - master
+    - cicd_testing
 
 # Add a `.` in front of a job to make it hidden.
 # Add a `&reference` to make it a reusable template.

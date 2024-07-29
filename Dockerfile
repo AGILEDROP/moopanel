@@ -1,6 +1,5 @@
 FROM hello-world
-# FROM php:8.2-fpm
-
+#FROM php:8.2-fpm
 # Set working directory
 # WORKDIR /var/www
 
@@ -25,13 +24,10 @@ FROM hello-world
 #     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
 #     rm -rf /var/lib/apt/lists/*
 
-# Install composer globally
-# RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# COPY ./web /var/www
 
 # Change current user to www-data (should be in php-fpm docker image).
 # USER www-data
-
-# TODO: copy inthere the project code here
 
 # Expose port 9000 and start php-fpm server
 # EXPOSE 9000
