@@ -23,7 +23,7 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
 
     public array $payload;
 
-        /**
+    /**
      * The number of times the job may be attempted.
      *
      * @var int
