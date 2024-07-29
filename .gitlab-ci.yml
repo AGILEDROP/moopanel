@@ -15,21 +15,17 @@ stages:
 composer:
   stage: php_build
   image: composer:2.7.7
-
   before_script:
     - cd $CI_PROJECT_DIR/web # Navigate to the project directory
-
   script:
     - composer -v
     - composer install --prefer-dist --no-ansi --no-interaction --no-scripts --ignore-platform-reqs --no-progress
     - ls -la
     - ls -la ..
-
   artifacts:
     expire_in: 1 month
     paths:
       - web/vendor/
-
   cache:
     key: ${CI_COMMIT_REF_SLUG}-composer
     paths:
@@ -43,13 +39,10 @@ npm:
   # Differnt stage as `composer` because we need /vendor artefact that contains tailwindcss presets
   stage: js_build
   image: node:22.5.1-slim
-
   dependencies:
     - composer #to be able to have filament tailwind style presets
-
   before_script:
     - cd $CI_PROJECT_DIR/web # Navigate to the project directory
-
   # Install and compile.
   script:
     - ls -la
@@ -58,18 +51,15 @@ npm:
     - npm -v
     - npm install # node_modules
     - npm run build # public/build
-
   cache:
     key: ${CI_COMMIT_REF_SLUG}-npm
     paths:
       - web/node_modules/
-
   artifacts:
     expire_in: 1 month
     paths:
       - web/node_modules/
       - web/public/build
-
   # TODO: uncomment
   only:
     - master
@@ -78,34 +68,27 @@ filament:
   # Same stage as `npm` job so that can they run in parallel.
   stage: js_build
   image: php:8.2-alpine3.17
-
   dependencies:
     - composer #to be able to have filament tailwind style presets
-
   before_script:
     - cd $CI_PROJECT_DIR/web # Navigate to the project directory
-
   # Install and compile.
   script:
     - php artisan filament:assets
-
   artifacts:
     expire_in: 1 month
     paths:
       - web/public/css/
       - web/public/js/
-
   # TODO: uncomment
   only:
     - master
 
 phpunit:
   stage: test
-
   # List of jobs from which it will download the artifacts.
   #dependencies:
   #  - composer
-
   script:
     - echo "TODO Running PHPUnit tests"
     #- phpunit --coverage-text --colors=never
@@ -148,7 +131,6 @@ image_build:
 
 production:
   stage: deploy
-
   before_script:
     - "command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )"
     - eval $(ssh-agent -s)
@@ -162,18 +144,15 @@ production:
     #- ssh-keyscan 10.31.10.11
     #- cat ~/.ssh/known_hosts
     #- chmod 644 ~/.ssh/known_hosts
-
   script:
     - echo "connecting to server"
     - echo "run gitlab runner on mdcenter to be able to connect to server"
     #- ssh -vvv -o StrictHostKeyChecking=no -i "$SSH_PRIVATE_KEY" root@10.31.10.11 "
     #  whoami &&
     #  docker ps"
-
   # Do not run automatically.
   # Wait for a human to click on play.
   #when: manual
-
   # TODO: uncomment
   only:
     - master
