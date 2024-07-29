@@ -2,7 +2,7 @@ image: lorisleiva/laravel-docker:8.2
 
 variables:
   IMAGE_NAME: git.agiledrop.com:5050/clients/moodle-admin-panel
-  IMAGE_TAG: $CI_COMMIT_TIMESTAMP
+  IMAGE_TAG: $$CI_COMMIT_SHA
 
 
 stages:
