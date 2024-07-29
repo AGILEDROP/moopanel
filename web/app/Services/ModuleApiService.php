@@ -75,7 +75,7 @@ class ModuleApiService
     {
         return Http::withHeaders([
             'X-API-KEY' => $apiKey,
-        ])->get($baseUrl.self::PLUGIN_PATH.'/tasks/check', wrapData($payload));
+        ])->get($baseUrl.self::PLUGIN_PATH.'/tasks/check', $payload);
     }
 
     /**
