@@ -1,9 +1,15 @@
 image: lorisleiva/laravel-docker:8.2
 
+variables:
+  IMAGE_NAME: agiledrop/moopanel
+  IMAGE_TAG: moopanel-dashboard-1.0.0
+
+
 stages:
   - php_build
   - js_build
   - test
+  - docker_build
   - deploy
 
 composer:
@@ -18,9 +24,6 @@ composer:
     - composer install --prefer-dist --no-ansi --no-interaction --no-scripts --ignore-platform-reqs --no-progress
     - ls -la
     - ls -la ..
-    # TODO: check where are .env variables
-    #- cp .env.example .env
-    #- php artisan key:generate
 
   artifacts:
     expire_in: 1 month
@@ -28,22 +31,16 @@ composer:
       - web/vendor/
 
   cache:
-    # The variable CI_COMMIT_REF_SLUG
-    # refers to the slug of the branch.
-    # For example: `master` for the master branch.
-    # We use the `composer` suffix to avoid conflicts with
-    # the `npm` cache that we'll define next.
     key: ${CI_COMMIT_REF_SLUG}-composer
-
-    # Define what to cache.
     paths:
-     - web/vendor/
+      - web/vendor/
 
+  # TODO: uncomment
   only:
     - master
 
 npm:
-  # Same stage as `composer` so that they run in parallel.
+  # Differnt stage as `composer` because we need /vendor artefact that contains tailwindcss presets
   stage: js_build
   image: node:22.5.1-slim
 
@@ -72,12 +69,13 @@ npm:
     paths:
       - web/node_modules/
       - web/public/build
-    
+
+  # TODO: uncomment
   only:
     - master
 
 filament:
-  # Same stage as `composer` so that they run in parallel.
+  # Same stage as `npm` job so that can they run in parallel.
   stage: js_build
   image: php:8.2-alpine3.17
 
@@ -91,14 +89,13 @@ filament:
   script:
     - php artisan filament:assets
 
-  # Provide the other jobs of the pipeline with
-  # the node dependencies and the compiled assets.
   artifacts:
     expire_in: 1 month
     paths:
       - web/public/css/
       - web/public/js/
 
+  # TODO: uncomment
   only:
     - master
 
@@ -117,8 +114,24 @@ codestyle:
   stage: test
   dependencies: []
   script:
-    - echo "Running PHP Code Sniffer"
+    - echo "Running PHP Code Linting"
     #- phpcs --standard=PSR2 --extensions=php --ignore=app/Support/helpers.php app
+
+image_build:
+  stage: docker_build
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+  script:
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG .
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+
+  only:
+    - master
 
 # Add a `.` in front of a job to make it hidden.
 # Add a `&reference` to make it a reusable template.
@@ -135,8 +148,9 @@ codestyle:
 
 production:
   stage: deploy
+
   before_script:
-    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+    - "command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )"
     - eval $(ssh-agent -s)
     - chmod 400 "$SSH_PRIVATE_KEY"
     - ssh-add "$SSH_PRIVATE_KEY"
@@ -145,10 +159,10 @@ production:
     - echo "$SSH_PUBLIC_KEY" >> ~/.ssh/id_rsa.pub
     - ls -la ~/.ssh
     - cat ~/.ssh/id_rsa.pub
-    - ping -c 1 mdcenter.uni-lj.si
     #- ssh-keyscan 10.31.10.11
     #- cat ~/.ssh/known_hosts
     #- chmod 644 ~/.ssh/known_hosts
+
   script:
     - echo "connecting to server"
     - echo "run gitlab runner on mdcenter to be able to connect to server"
@@ -160,7 +174,6 @@ production:
   # Wait for a human to click on play.
   #when: manual
 
-  #only:
-  #  - master
-
-  
+  # TODO: uncomment
+  only:
+    - master
