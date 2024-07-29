@@ -26,7 +26,7 @@ class WizardPluginsUpdateBulkAction
 
                     $payload = [
                         'user_id' => $user->id,
-                        'username' => $user->email,
+                        'username' => $user->email ?? $user->username,
                         'instance_id' => $instance->id,
                         'updates' => [],
                     ];
