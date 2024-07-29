@@ -99,7 +99,7 @@ class ZipUpdatesPage extends BaseUpdateWizardPage implements HasForms
 
             $payload = [
                 'user_id' => auth()->id(),
-                'username' => auth()->user()->email,
+                'username' => (auth()->user()->email) ?? (auth()->user()->username ?? 'unknown'),
                 'instance_id' => $instance->id,
                 'updates' => $updates,
                 'temp_updates_data' => $updatesAdittionalInfo,
