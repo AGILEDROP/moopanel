@@ -102,15 +102,14 @@ codestyle:
 
 image_build:
   stage: docker_build
-  image: docker:20.10.16
+  image: docker:24.0.5
   services:
-    - docker:20.10.16-dind
+    - docker:24.0.5-dind
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_DRIVER: overlay2
   before_script:
-   -  echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - docker info
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
   script:
     - docker build -t $IMAGE_NAME:$IMAGE_TAG .
     - docker push $IMAGE_NAME:$IMAGE_TAG
