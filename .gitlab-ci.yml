@@ -1,8 +1,8 @@
 image: lorisleiva/laravel-docker:8.2
 
 variables:
-  IMAGE_NAME: agiledrop/moopanel
-  IMAGE_TAG: moodle-admin-panel
+  IMAGE_NAME: git.agiledrop.com/clients/moodle-admin-panel
+  IMAGE_TAG: 1.0.0
 
 
 stages:
