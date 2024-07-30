@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Clusters\Backups\Resources;
 
+use App\Enums\BackupStorageType;
 use App\Filament\App\Clusters\Backups;
 use App\Filament\App\Clusters\Backups\Resources\BackupResultResource\Pages;
 use App\Helpers\StringHelper;
@@ -200,10 +201,30 @@ class BackupResultResource extends Resource
                 Action::make('download')
                     ->url(fn (BackupResult $record): string => $record->url ?? '#')
                     ->openUrlInNewTab()
-                    ->color('gray')
+                    ->color(function (BackupResult $record): string {
+                        $conditionsToHide = [
+                            is_null($record->status),
+                            ! $record->status,
+                            is_null($record->url),
+                            $record->backupStorage ? $record->backupStorage->storage_key === BackupStorageType::Local->value : true,
+                        ];
+
+                        if (in_array(true, $conditionsToHide)) {
+                            return 'gray';
+                        }
+
+                        return 'success';
+                    })
                     ->iconButton()
-                    ->hidden(function (BackupResult $record): bool {
-                        if (is_null($record->status) || ! $record->status || is_null($record->url)) {
+                    ->disabled(function (BackupResult $record): bool {
+                        $conditionsToHide = [
+                            is_null($record->status),
+                            ! $record->status,
+                            is_null($record->url),
+                            $record->backupStorage ? $record->backupStorage->storage_key === BackupStorageType::Local->value : true,
+                        ];
+
+                        if (in_array(true, $conditionsToHide)) {
                             return true;
                         }
 
