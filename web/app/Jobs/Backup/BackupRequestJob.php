@@ -87,7 +87,7 @@ class BackupRequestJob implements ShouldQueue
                     Notification::make()
                         ->warning()
                         ->title(__('Some course backups failed!'))
-                        ->body(__('Some course backups for instance :instance failed. Check backup report to see the failed backups.', ['instance' => $this->instance->name]))
+                        ->body(__('Some course backups for instance :instance failed or dont have any changes. Check backup report to see the failed backups.', ['instance' => $this->instance->name]))
                         ->icon('heroicon-o-circle-stack')
                         ->iconColor('warning')
                         ->actions([
@@ -104,7 +104,7 @@ class BackupRequestJob implements ShouldQueue
                     $this->markFailedBackups($response);
                 } else {
                     // Log failed backups on auto backups
-                    Log::error('Course backups failed for instance: '.$this->instance->name.'. Check backup report to see the failed backups. Response body: '.json_encode($response));
+                    Log::error('Partial backup success for instance: '.$this->instance->name.'. Check backup report to see the failed backups. Some courses might not have any changes and dont need backup. Response body: '.json_encode($response));
                 }
 
                 // Run course sync to delete coureses that might be deleted on moodle instance
