@@ -73,7 +73,7 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
             if (! array_key_exists('status', $body)) {
                 Log::error('Invalid response body for update request check of type :type and instance :instance. Missing status', ['type' => $this->updateRequest->type, 'instance' => $instance->name]);
 
-                throw new \Exception('Invalid response body for update request check of type: '.$this->updateRequest->type.' and instance: '.$instance->name.'. Missing status.');
+                throw new \Exception('Invalid response body for update request check of type: '.$this->updateRequest->type.' and instance: '.$instance->name.'. Received body: '.json_encode($body));
             }
 
             $this->updateRequestStatusUpdate($this->updateRequest, $body['status'], $body['error'] ?? '');
