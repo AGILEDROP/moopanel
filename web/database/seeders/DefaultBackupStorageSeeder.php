@@ -22,7 +22,7 @@ class DefaultBackupStorageSeeder extends Seeder
             BackupStorage::create([
                 'instance_id' => $instance->id,
                 'active' => true,
-                'name' => 'Default Local Storage',
+                'name' => 'Local Storage',
                 'storage_key' => 'local',
                 'url' => 'local://default',
                 'key' => 'local_dummy_key',

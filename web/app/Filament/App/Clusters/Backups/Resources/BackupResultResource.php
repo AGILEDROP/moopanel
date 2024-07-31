@@ -62,6 +62,7 @@ class BackupResultResource extends Resource
                     ->weight(FontWeight::SemiBold)
                     ->description(fn (Model $record) => $record->course->category->name)
                     ->searchable()
+                    ->wrap()
                     ->sortable(),
                 TextColumn::make('type')
                     ->color('info')
@@ -94,10 +95,11 @@ class BackupResultResource extends Resource
                     ->sortable(),
                 TextColumn::make('backupStorage.name')
                     ->label(__('Storage'))
-                    ->limit(15)
+                    ->limit(10)
                     ->badge()
                     ->icon('heroicon-o-circle-stack')
                     ->color('gray')
+                    ->tooltip(fn (BackupResult $record): string => $record->backupStorage ? $record->backupStorage->name : __('Local storage'))
                     ->url(
                         function (BackupResult $record): ?string {
                             $record = $record->backupStorage;
