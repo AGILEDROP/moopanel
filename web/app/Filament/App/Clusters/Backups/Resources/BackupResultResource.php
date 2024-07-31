@@ -6,6 +6,7 @@ use App\Enums\BackupStorageType;
 use App\Filament\App\Clusters\Backups;
 use App\Filament\App\Clusters\Backups\Resources\BackupResultResource\Pages;
 use App\Helpers\StringHelper;
+use App\Jobs\Backup\DeleteOldBackupsJob;
 use App\Jobs\Backup\RestoreBackupJob;
 use App\Models\BackupResult;
 use Carbon\Carbon;
@@ -20,6 +21,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 
 class BackupResultResource extends Resource
 {
@@ -150,7 +152,7 @@ class BackupResultResource extends Resource
             ->actions([
                 Action::make('restore')
                     ->requiresConfirmation()
-                    ->color('danger')
+                    ->color('success')
                     ->hidden(function (BackupResult $record): bool {
                         if (is_null($record->status) || ! $record->status || is_null($record->url)) {
                             return true;
@@ -198,6 +200,43 @@ class BackupResultResource extends Resource
                     ->modalHeading('Restore course')
                     ->modalDescription('This action will OVERRIDE the selected course with selected backup. Are you sure you\'d like to restore the selected course? Please provide the password for the backup file.')
                     ->modalSubmitActionLabel('Restore course'),
+                Action::make('delete')
+                    ->requiresConfirmation()
+                    ->color(fn (BackupResult $record): string => (! is_null($record->user_id) && $record->user_id === auth()->user()->id) ? 'danger' : 'gray')
+                    ->disabled(fn (BackupResult $record): bool => is_null($record->user_id) || (! is_null($record->user_id) && $record->user_id !== auth()->user()->id))
+                    ->action(function (BackupResult $record): void {
+
+                        $instanceId = filament()->getTenant()->id;
+                        $payload = [
+                            'instance_id' => $instanceId,
+                            // TODO: add instances current storage in V2.0
+                            'storage' => 'local',
+                            'mode' => 'manual',
+                            'credentials' => [],
+                            'backups' => [
+                                [
+                                    'backup_result_id' => $record->id,
+                                    'link' => $record->url ?? '',
+                                ],
+                            ],
+                        ];
+
+                        Log::info('Manually deleting manual backup with payload: '.json_encode($payload));
+
+                        DeleteOldBackupsJob::dispatch($instanceId, $payload, true, auth()->user());
+
+                        Notification::make()
+                            ->title(__('Backup deletion in progress'))
+                            ->body(__('Backup deletion for course :course is in progress.', ['course' => $record->course->name]))
+                            ->success()
+                            ->send();
+                    })
+                    ->icon('heroicon-o-trash')
+                    ->button()
+                    ->modalIcon('heroicon-o-trash')
+                    ->modalHeading(__('Delete backup'))
+                    ->modalDescription(__('This action will delete the selected backup. Are you sure you\'d like to delete the selected backup?'))
+                    ->modalSubmitActionLabel(__('Delete backup')),
                 Action::make('download')
                     ->url(fn (BackupResult $record): string => $record->url ?? '#')
                     ->openUrlInNewTab()
