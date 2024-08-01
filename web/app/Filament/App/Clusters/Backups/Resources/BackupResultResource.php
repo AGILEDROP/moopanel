@@ -16,6 +16,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -152,126 +153,155 @@ class BackupResultResource extends Resource
                 //
             ])
             ->actions([
-                Action::make('restore')
-                    ->requiresConfirmation()
-                    ->color('success')
-                    ->hidden(function (BackupResult $record): bool {
-                        if (is_null($record->status) || ! $record->status || is_null($record->url)) {
-                            return true;
-                        }
+                ActionGroup::make([
+                    Action::make('restore')
+                        ->requiresConfirmation()
+                        ->color('success')
+                        ->hidden(function (BackupResult $record): bool {
+                            if (is_null($record->status) || ! $record->status || is_null($record->url)) {
+                                return true;
+                            }
 
-                        return false;
-                    })
-                    ->form([
-                        TextInput::make('password')
-                            ->label('File password')
-                            ->required(),
-                    ])
-                    ->action(function (array $data, BackupResult $record): void {
-                        if (! isset($data['password'])) {
+                            return false;
+                        })
+                        ->form([
+                            TextInput::make('password')
+                                ->label('File password')
+                                ->required(),
+                        ])
+                        ->action(function (array $data, BackupResult $record): void {
+                            if (! isset($data['password'])) {
+                                Notification::make()
+                                    ->title(__('Backup restore error'))
+                                    ->body(__('Password is required'))
+                                    ->danger()
+                                    ->send();
+
+                                return;
+                            }
+
+                            if ($data['password'] !== Crypt::decrypt($record->password)) {
+                                Notification::make()
+                                    ->title(__('Backup restore error'))
+                                    ->body(__('Password is incorrect'))
+                                    ->danger()
+                                    ->send();
+
+                                return;
+                            }
+
+                            RestoreBackupJob::dispatch($record, $data['password'], auth()->user());
+
                             Notification::make()
-                                ->title(__('Backup restore error'))
-                                ->body(__('Password is required'))
-                                ->danger()
+                                ->title(__('Backup restore in progress'))
+                                ->body(__('Backup restore for course :course is in progress.', ['course' => $record->course->name]))
+                                ->success()
                                 ->send();
+                        })
+                        ->icon('heroicon-m-arrow-path')
+                        ->modalIcon('heroicon-m-arrow-path')
+                        ->modalHeading('Restore course')
+                        ->modalDescription('This action will OVERRIDE the selected course with selected backup. Are you sure you\'d like to restore the selected course? Please provide the password for the backup file.')
+                        ->modalSubmitActionLabel('Restore course'),
+                    Action::make('delete')
+                        ->requiresConfirmation()
+                        ->color(function (BackupResult $record): string {
+                            $conditionsToSetDisabledColor = [
+                                is_null($record->status),
+                                ! $record->status,
+                                is_null($record->user_id),
+                                (! is_null($record->user_id) && $record->user_id !== auth()->user()->id),
+                                ! is_null($record->backupStorage) ? $record->backupStorage->storage_key !== BackupStorageType::Local->value : true,
+                            ];
 
-                            return;
-                        }
+                            if (in_array(true, $conditionsToSetDisabledColor)) {
+                                return 'gray';
+                            }
 
-                        if ($data['password'] !== Crypt::decrypt($record->password)) {
-                            Notification::make()
-                                ->title(__('Backup restore error'))
-                                ->body(__('Password is incorrect'))
-                                ->danger()
-                                ->send();
+                            return 'danger';
+                        })
+                        ->disabled(function (BackupResult $record): bool {
+                            $conditionsToHide = [
+                                is_null($record->status),
+                                ! $record->status,
+                                is_null($record->user_id),
+                                (! is_null($record->user_id) && $record->user_id !== auth()->user()->id),
+                                ! is_null($record->backupStorage) ? $record->backupStorage->storage_key !== BackupStorageType::Local->value : true,
+                            ];
 
-                            return;
-                        }
+                            if (in_array(true, $conditionsToHide)) {
+                                return true;
+                            }
 
-                        RestoreBackupJob::dispatch($record, $data['password'], auth()->user());
+                            return false;
+                        })
+                        ->action(function (BackupResult $record): void {
 
-                        Notification::make()
-                            ->title(__('Backup restore in progress'))
-                            ->body(__('Backup restore for course :course is in progress.', ['course' => $record->course->name]))
-                            ->success()
-                            ->send();
-                    })
-                    ->icon('heroicon-m-arrow-path')
-                    ->button()
-                    ->modalIcon('heroicon-m-arrow-path')
-                    ->modalHeading('Restore course')
-                    ->modalDescription('This action will OVERRIDE the selected course with selected backup. Are you sure you\'d like to restore the selected course? Please provide the password for the backup file.')
-                    ->modalSubmitActionLabel('Restore course'),
-                Action::make('delete')
-                    ->requiresConfirmation()
-                    ->color(fn (BackupResult $record): string => (! is_null($record->user_id) && $record->user_id === auth()->user()->id) ? 'danger' : 'gray')
-                    ->disabled(fn (BackupResult $record): bool => is_null($record->user_id) || (! is_null($record->user_id) && $record->user_id !== auth()->user()->id))
-                    ->action(function (BackupResult $record): void {
-
-                        $instanceId = filament()->getTenant()->id;
-                        $payload = [
-                            'instance_id' => $instanceId,
-                            // TODO: add instances current storage in V2.0
-                            'storage' => 'local',
-                            'mode' => 'manual',
-                            'credentials' => [],
-                            'backups' => [
-                                [
-                                    'backup_result_id' => $record->id,
-                                    'link' => $record->url ?? '',
+                            $instanceId = filament()->getTenant()->id;
+                            $payload = [
+                                'instance_id' => $instanceId,
+                                // TODO: add instances current storage in V2.0
+                                'storage' => 'local',
+                                'mode' => 'manual',
+                                'credentials' => [],
+                                'backups' => [
+                                    [
+                                        'backup_result_id' => $record->id,
+                                        'link' => $record->url ?? '',
+                                    ],
                                 ],
-                            ],
-                        ];
+                            ];
 
-                        Log::info('Manually deleting manual backup with payload: '.json_encode($payload));
+                            Log::info('Manually deleting manual backup with payload: '.json_encode($payload));
 
-                        DeleteOldBackupsJob::dispatch($instanceId, $payload, true, auth()->user());
+                            DeleteOldBackupsJob::dispatch($instanceId, $payload, true, auth()->user());
 
-                        Notification::make()
-                            ->title(__('Backup deletion in progress'))
-                            ->body(__('Backup deletion for course :course is in progress.', ['course' => $record->course->name]))
-                            ->success()
-                            ->send();
-                    })
-                    ->icon('heroicon-o-trash')
+                            Notification::make()
+                                ->title(__('Backup deletion in progress'))
+                                ->body(__('Backup deletion for course :course is in progress.', ['course' => $record->course->name]))
+                                ->success()
+                                ->send();
+                        })
+                        ->icon('heroicon-o-trash')
+                        ->modalIcon('heroicon-o-trash')
+                        ->modalHeading(__('Delete backup'))
+                        ->modalDescription(__('This action will delete the selected backup. Are you sure you\'d like to delete the selected backup?'))
+                        ->modalSubmitActionLabel(__('Delete backup')),
+                    Action::make('download')
+                        ->url(fn (BackupResult $record): string => $record->url ?? '#')
+                        ->openUrlInNewTab()
+                        ->color(function (BackupResult $record): string {
+                            $conditionsToHide = [
+                                is_null($record->status),
+                                ! $record->status,
+                                is_null($record->url),
+                                $record->backupStorage ? $record->backupStorage->storage_key !== BackupStorageType::Local->value : true,
+                            ];
+
+                            if (in_array(true, $conditionsToHide)) {
+                                return 'gray';
+                            }
+
+                            return 'info';
+                        })
+                        ->hidden(function (BackupResult $record): bool {
+                            $conditionsToHide = [
+                                is_null($record->status),
+                                ! $record->status,
+                                is_null($record->url),
+                                $record->backupStorage ? $record->backupStorage->storage_key !== BackupStorageType::Local->value : true,
+                            ];
+
+                            if (in_array(true, $conditionsToHide)) {
+                                return true;
+                            }
+
+                            return false;
+                        })
+                        ->icon('heroicon-m-arrow-down-tray'),
+                ])
                     ->button()
-                    ->modalIcon('heroicon-o-trash')
-                    ->modalHeading(__('Delete backup'))
-                    ->modalDescription(__('This action will delete the selected backup. Are you sure you\'d like to delete the selected backup?'))
-                    ->modalSubmitActionLabel(__('Delete backup')),
-                Action::make('download')
-                    ->url(fn (BackupResult $record): string => $record->url ?? '#')
-                    ->openUrlInNewTab()
-                    ->color(function (BackupResult $record): string {
-                        $conditionsToHide = [
-                            is_null($record->status),
-                            ! $record->status,
-                            is_null($record->url),
-                            $record->backupStorage ? $record->backupStorage->storage_key === BackupStorageType::Local->value : true,
-                        ];
-
-                        if (in_array(true, $conditionsToHide)) {
-                            return 'gray';
-                        }
-
-                        return 'success';
-                    })
-                    ->iconButton()
-                    ->disabled(function (BackupResult $record): bool {
-                        $conditionsToHide = [
-                            is_null($record->status),
-                            ! $record->status,
-                            is_null($record->url),
-                            $record->backupStorage ? $record->backupStorage->storage_key === BackupStorageType::Local->value : true,
-                        ];
-
-                        if (in_array(true, $conditionsToHide)) {
-                            return true;
-                        }
-
-                        return false;
-                    })
-                    ->icon('heroicon-m-arrow-down-tray'),
+                    ->label(__('Actions')),
             ]);
     }
 

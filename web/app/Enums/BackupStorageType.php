@@ -30,9 +30,11 @@ enum BackupStorageType: string
     {
         $selectItems = [];
 
-        foreach (self::cases() as $case) {
+        $selectItems[self::Local->value] = self::Local->toReadableString();
+        // TODO: add in version 2.0
+        /* foreach (self::cases() as $case) {
             $selectItems[$case->value] = $case->toReadableString();
-        }
+        } */
 
         return $selectItems;
     }
