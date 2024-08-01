@@ -6,8 +6,10 @@ use App\Models\BackupResult;
 use App\Models\BackupSetting;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
+use App\Models\User;
 use App\Services\ModuleApiService;
 use Exception;
+use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -25,12 +27,14 @@ class DeleteOldBackupsJob implements ShouldQueue
     // Has to be max_tries(from config) + 1
     public $tries = 4;
 
+    public string $deletionType;
+
     /**
      * Create a new job instance.
      */
-    public function __construct(private int $instanceId, private array $payload, private bool $isManual = false)
+    public function __construct(private int $instanceId, private array $payload, private bool $isManual = false, private ?User $userToNotify = null)
     {
-        //
+        $this->deletionType = $isManual ? 'manual-deletion' : 'auto-deletion';
     }
 
     /**
@@ -75,22 +79,69 @@ class DeleteOldBackupsJob implements ShouldQueue
 
                 $successfullyDeletedBackupResultIds = array_reduce($response['backups'], function ($carry, $backup) {
                     if ($backup['status']) {
-                        $carry[] = $backup['backup_result_id'];
+                        $carry[] = (int) $backup['backup_result_id'];
                     }
 
                     return $carry;
                 }, []);
 
+                // Manually deleting single course backup
+                if ($this->isManual) {
+                    $backupResultId = $response['backups'][0]['backup_result_id'];
+                    $backupResultStatus = $response['backups'][0]['status'];
+                    $backupResultMessage = $response['backups'][0]['message'];
+
+                    $backupResult = BackupResult::findOrFail($backupResultId);
+
+                    // Failed manual backup deletion of single course
+                    if (! is_null($backupResultStatus) && $backupResultStatus === false) {
+                        $message = __('Failed to delete backup for course :course with filename :filename on instance :instance with message - :message', [
+                            'course' => $backupResult->course->name,
+                            'filename' => $backupResult->url,
+                            'instance' => $this->instance->short_name,
+                            'message' => $backupResultMessage,
+                        ]);
+
+                        Notification::make()
+                            ->danger()
+                            ->title(__('Backup deletion failed'))
+                            ->body($message)
+                            ->icon('heroicon-o-circle-stack')
+                            ->iconColor('danger')
+                            ->sendToDatabase($this->userToNotify);
+
+                        Log::info($message);
+
+                        return;
+                    }
+
+                    Notification::make()
+                        ->success()
+                        ->title(__('Backup deletion completed'))
+                        ->body(__('Successfully deleted backup for course :course with filename :filename on instance :instance.', [
+                            'course' => $backupResult->course->name,
+                            'filename' => $backupResult->url,
+                            'instance' => $this->instance->short_name,
+                        ]))
+                        ->icon('heroicon-o-circle-stack')
+                        ->iconColor('success')
+                        ->sendToDatabase($this->userToNotify);
+                }
+
                 // Soft delete backup results in mooPanel
                 BackupResult::whereIn('id', $successfullyDeletedBackupResultIds)->delete();
 
-                // Update deletion_last_run in backup settings - mark last run
-                BackupSetting::where('instance_id', $this->instance->id)
-                    ->update(['deletion_last_run' => now()]);
+                // Update deletion_last_run in backup settings - mark last run only on auto-backup deletion
+                if (! $this->isManual) {
+                    BackupSetting::where('instance_id', $this->instance->id)
+                        ->update(['deletion_last_run' => now()]);
+                }
 
+                // General log on successful deletion
                 Log::info(__(
-                    'Backup auto-deletion for instance :instance completed. Deleted :countSuccess out of :all requested backups deletion. Response body: :response',
+                    'Backup :deletion_type for instance :instance completed. Deleted :countSuccess out of :all requested backups deletion. Response body: :response',
                     [
+                        'deletion_type' => $this->deletionType,
                         'instance' => $this->instance->name,
                         'countSuccess' => count($successfullyDeletedBackupResultIds),
                         'all' => count($response['backups']),
@@ -98,7 +149,7 @@ class DeleteOldBackupsJob implements ShouldQueue
                     ]
                 ));
             } else {
-                Log::error('Course backup deletion request for instance: '.$this->instance->name.' failed. Response: '.json_encode($response));
+                throw new Exception('Course backup '.$this->deletionType.' request for instance: '.$this->instance->name.' failed. Response: '.json_encode($response));
             }
         } catch (Exception $exception) {
             $errorMessage = sprintf(
@@ -109,7 +160,33 @@ class DeleteOldBackupsJob implements ShouldQueue
                 $exception->getMessage()
             );
 
+            if (($this->attempts() >= $this->tries) && $this->isManual) {
+                $backupResultId = $this->payload['backups'][0]['backup_result_id'];
+                $backupResult = BackupResult::find($backupResultId);
+
+                $message = __('Failed to delete selected backup. Check the system logs for more information.');
+                if ($backupResult) {
+                    $this->instance = Instance::withoutGlobalScope(InstanceScope::class)->find($this->instanceId);
+
+                    $message = __('Failed to delete backup for course :course with filename :filename on instance :instance.', [
+                        'course' => $backupResult->course->name,
+                        'filename' => $backupResult->url,
+                        'instance' => $this->instance->short_name,
+                    ]);
+                }
+
+                Notification::make()
+                    ->danger()
+                    ->title(__('Backup deletion failed'))
+                    ->body($message)
+                    ->icon('heroicon-o-circle-stack')
+                    ->iconColor('danger')
+                    ->sendToDatabase($this->userToNotify);
+            }
+
             Log::error($errorMessage);
+
+            throw $exception;
         }
     }
 }
