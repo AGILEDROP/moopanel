@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Events\InstanceCreated;
+use App\Listeners\CreateInstanceBackupSetting;
+use App\Listeners\CreateInstanceBackupStorage;
 use App\Listeners\SyncNewInstanceData;
 use App\Models\Account;
 use App\Models\Instance;
@@ -35,6 +37,8 @@ class EventServiceProvider extends ServiceProvider
         ],
         InstanceCreated::class => [
             SyncNewInstanceData::class,
+            CreateInstanceBackupSetting::class,
+            CreateInstanceBackupStorage::class,
         ],
     ];
 
