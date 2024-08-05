@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Backup;
 
+use App\Models\BackupResult;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use Illuminate\Bus\Queueable;
@@ -42,14 +43,15 @@ class ScheduledBackupPruneJob implements ShouldQueue
             ->where('backup_results.status', true)
             ->whereNull('backup_results.deleted_at')
             ->whereNull('backup_results.user_id')
+            ->where('backup_results.in_deletion_process', 0)
             ->where(function ($query) {
                 $query->whereNull('backup_settings.backup_deletion_interval')
-                    ->orWhereRaw('backup_results.updated_at < NOW() - (backup_settings.backup_deletion_interval || \' days\')::interval');
+                    ->orWhereRaw('backup_results.created_at < NOW() - (backup_settings.backup_deletion_interval || \' days\')::interval');
             })
             ->get()
             ->groupBy('instance_id')
             ->map(function (Collection $instanceBackupResults) {
-                return $instanceBackupResults->select('id', 'url', 'course_id', 'updated_at')->toArray();
+                return $instanceBackupResults->select('id', 'url', 'course_id', 'backup_storage_id', 'updated_at')->toArray();
             });
 
         foreach ($instanceBackupGroups as $instanceId => $backupResults) {
@@ -67,32 +69,74 @@ class ScheduledBackupPruneJob implements ShouldQueue
                     return $sorted;
                 })
                 ->flatten(1)
-                ->select('id', 'url')
+                ->pluck('id')
                 ->toArray();
 
             $payload = [
                 'instance_id' => $instanceId,
-                // TODO: add instances current storage in V2.0
-                'storage' => 'local',
-                'mode' => 'auto',
-                'credentials' => [],
-                'backups' => array_map(function ($backupResult) {
-                    return [
-                        'backup_result_id' => $backupResult['id'],
-                        'link' => (isset($backupResult['url']) && ! is_null($backupResult['url'])) ? $backupResult['url'] : '',
-                    ];
-                }, $backupResultsToDelete),
+                'user_id' => null,
+                'storages' => $this->getStoragesPayload($backupResultsToDelete),
+                'backups' => $this->getBackupsPayload($backupResultsToDelete),
             ];
 
-            Log::info(__('Scheduling to delete :count/:all backups for instance :instanceId. Each course was left with its most recent auto-backup.', [
+            Log::info(__('Scheduling to delete :count/:all backups for instance :instanceId. Each course was left with its most recent auto-backup. Sent payload - :payload', [
                 'count' => count($payload['backups']),
                 'all' => count($backupResults),
                 'instanceId' => $instanceId,
+                'payload' => json_encode($payload),
             ]));
 
             DeleteOldBackupsJob::dispatch($instanceId, $payload);
         }
 
         Log::info('Done with scheduling backup auto-deletion jobs for instances.');
+    }
+
+    private function getStoragesPayload(array $backupResultIds): array
+    {
+        $backupResults = BackupResult::whereIn('id', $backupResultIds)
+            ->get()
+            ->unique('backup_storage_id');
+
+        return $backupResults->reduce(function ($carry, BackupResult $backupResult) {
+            $storage = $backupResult->backupStorage;
+
+            if ($storage) {
+                $carry[] = [
+                    'storage_key' => $storage->storage_key,
+                    'storage_id' => $storage->id,
+                    'credentials' => [],
+                ];
+
+                // TODO: version 2.0, dynamic storage credentials
+                /* $carry[] = [
+                    'storage_key' => $storage->storage_key,
+                    'credentials' => [
+                        'key' => $storage->key,
+                        'secret' => $storage->secret,
+                    ],
+                ]; */
+            }
+
+            return $carry;
+        }, []);
+    }
+
+    private function getBackupsPayload(array $backupResultIds): array
+    {
+        $backupResults = BackupResult::whereIn('id', $backupResultIds)
+            ->get();
+
+        $backups = [];
+
+        foreach ($backupResults as $backupResult) {
+            $backups[] = [
+                'backup_result_id' => $backupResult->id,
+                'storage_id' => $backupResult->backupStorage->id,
+                'link' => $backupResult->url,
+            ];
+        }
+
+        return $backups;
     }
 }

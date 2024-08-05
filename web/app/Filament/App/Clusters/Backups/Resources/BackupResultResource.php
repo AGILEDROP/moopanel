@@ -240,13 +240,20 @@ class BackupResultResource extends Resource
                             $instanceId = filament()->getTenant()->id;
                             $payload = [
                                 'instance_id' => $instanceId,
+                                'user_id' => auth()->user()->id,
                                 // TODO: add instances current storage in V2.0
-                                'storage' => 'local',
-                                'mode' => 'manual',
-                                'credentials' => [],
+                                'storages' => [
+                                    [
+                                        'storage_key' => 'local',
+                                        'storage_id' => $record->backupStorage ? $record->backupStorage->id : 1,
+                                        'credentials' => [],
+                                    ],
+                                ],
                                 'backups' => [
                                     [
                                         'backup_result_id' => $record->id,
+                                        'storage_key' => $record->backupStorage ? $record->backupStorage->storage_key : BackupStorageType::Local->value,
+                                        'storage_id' => $record->backupStorage ? $record->backupStorage->id : 1,
                                         'link' => $record->url ?? '',
                                     ],
                                 ],
@@ -257,8 +264,8 @@ class BackupResultResource extends Resource
                             DeleteOldBackupsJob::dispatch($instanceId, $payload, true, auth()->user());
 
                             Notification::make()
-                                ->title(__('Backup deletion in progress'))
-                                ->body(__('Backup deletion for course :course is in progress.', ['course' => $record->course->name]))
+                                ->title(__('Backup deletion requested'))
+                                ->body(__('Backup deletion for course :course was successfully requested.', ['course' => $record->course->name]))
                                 ->success()
                                 ->send();
                         })
