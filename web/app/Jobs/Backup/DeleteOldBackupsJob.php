@@ -3,6 +3,7 @@
 namespace App\Jobs\Backup;
 
 use App\Models\BackupResult;
+use App\Models\BackupSetting;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use App\Models\User;
@@ -124,6 +125,9 @@ class DeleteOldBackupsJob implements ShouldQueue
                         ->icon('heroicon-o-circle-stack')
                         ->iconColor($notificationColor)
                         ->sendToDatabase($this->userToNotify);
+                } else {
+                    BackupSetting::where('instance_id', $this->instance->id)
+                        ->update(['deletion_last_run' => now()]);
                 }
 
                 Log::info($notificationTitle.' '.$this->getLogBody($inDeletionProcessCount, $allCount, $this->payload, false));

@@ -43,6 +43,7 @@ class ScheduledBackupPruneJob implements ShouldQueue
             ->where('backup_results.status', true)
             ->whereNull('backup_results.deleted_at')
             ->whereNull('backup_results.user_id')
+            ->where('backup_results.in_deletion_process', 0)
             ->where(function ($query) {
                 $query->whereNull('backup_settings.backup_deletion_interval')
                     ->orWhereRaw('backup_results.created_at < NOW() - (backup_settings.backup_deletion_interval || \' days\')::interval');
@@ -78,10 +79,11 @@ class ScheduledBackupPruneJob implements ShouldQueue
                 'backups' => $this->getBackupsPayload($backupResultsToDelete),
             ];
 
-            Log::info(__('Scheduling to delete :count/:all backups for instance :instanceId. Each course was left with its most recent auto-backup.', [
+            Log::info(__('Scheduling to delete :count/:all backups for instance :instanceId. Each course was left with its most recent auto-backup. Sent payload - :payload', [
                 'count' => count($payload['backups']),
                 'all' => count($backupResults),
                 'instanceId' => $instanceId,
+                'payload' => json_encode($payload),
             ]));
 
             DeleteOldBackupsJob::dispatch($instanceId, $payload);
