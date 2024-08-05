@@ -141,9 +141,20 @@ class BackupResultResource extends Resource
                 TextColumn::make('password')
                     ->copyable()
                     ->copyMessage(__('Password copied to clipboard'))
-                    ->copyMessageDuration(1500)
+                    ->tooltip(__('Click to copy password'))
+                    ->copyMessageDuration(2000)
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->default('-'),
+                    ->copyableState(function (Model $record): string {
+                        try {
+                            $password = Crypt::decrypt($record->password);
+                        } catch (\Exception $e) {
+                            return 'invalid-password';
+                        }
+
+                        return $password;
+                    })
+                    ->formatStateUsing(fn ($state) => str_repeat('*', 8))
+                    ->placeholder('-'),
                 TextColumn::make('updated_at')
                     ->label(__('Last updated'))
                     ->sortable(),
@@ -180,7 +191,9 @@ class BackupResultResource extends Resource
                                 return;
                             }
 
-                            if ($data['password'] !== Crypt::decrypt($record->password)) {
+                            try {
+                                $decryptedPassword = Crypt::decrypt($record->password);
+                            } catch (\Exception $e) {
                                 Notification::make()
                                     ->title(__('Backup restore error'))
                                     ->body(__('Password is incorrect'))
