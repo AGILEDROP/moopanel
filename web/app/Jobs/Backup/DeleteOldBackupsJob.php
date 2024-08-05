@@ -34,6 +34,7 @@ class DeleteOldBackupsJob implements ShouldQueue
      */
     public function __construct(private int $instanceId, private array $payload, private bool $isManual = false, private ?User $userToNotify = null)
     {
+        $this->instance = Instance::withoutGlobalScope(InstanceScope::class)->find($this->instanceId);
         $this->deletionType = $isManual ? 'manual-deletion' : 'auto-deletion';
     }
 
@@ -42,14 +43,28 @@ class DeleteOldBackupsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        if (! isset($this->payload['backups']) || empty($this->payload['backups'])) {
-            Log::info('No course-backups for instanceID: '.$this->payload['instance_id'].' specified. Aborting backup deletion request.');
-
-            return;
-        }
-
         try {
-            $this->instance = Instance::withoutGlobalScope(InstanceScope::class)->find($this->instanceId);
+            // Remove pending deletion requests from the payload
+            $this->removePendingDeletionRequests();
+
+            // Skip deletion request if no backups are specified
+            // Notify user
+            if (! $this->payload['backups'] || empty($this->payload['backups'])) {
+
+                if ($this->isManual) {
+                    Notification::make()
+                        ->warning()
+                        ->title(__('Skipping backup deletion'))
+                        ->body(__('Selected backups are already in deletion process. Please wait for the process to complete or check system logs for more information.'))
+                        ->icon('heroicon-o-circle-stack')
+                        ->iconColor('warning')
+                        ->sendToDatabase($this->userToNotify);
+                }
+
+                Log::info('No course-backups for instanceID: '.$this->payload['instance_id'].' specified. Aborting backup deletion request with payload: '.json_encode($this->payload));
+
+                return;
+            }
 
             $moduleApiService = new ModuleApiService();
 
@@ -60,7 +75,7 @@ class DeleteOldBackupsJob implements ShouldQueue
                 // Retry job if service is temporarily unavailable
                 $maxRetries = config('queue.jobs.course-backup-deletion.max_tries') ?? 3;
                 if ($response->status() == 503 && $this->attempts() <= $maxRetries) {
-                    Log::info('Retrying course backup deletions for instance: '.$this->instance->name.' as the service is temporarily unavailable.');
+                    Log::info('Retrying course backup deletion request for instance: '.$this->instance->name.' as the service is temporarily unavailable.');
 
                     $retryAfter = config('queue.jobs.course-backup-deletion.retry_after');
                     $this->release($retryAfter);
@@ -68,86 +83,54 @@ class DeleteOldBackupsJob implements ShouldQueue
                     return;
                 }
 
-                Log::error('Course backup request for instance failed with status code and body: '.$response->status().' - '.$response->body());
+                Log::error('Course backup deletion request for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
-                throw new \Exception('Course backup request failed with status code: '.$response->status().'.');
+                throw new \Exception('Course backup deletion request failed with status code: '.$response->status().'.');
             }
 
             $response = $response->json();
 
+            Log::info('Course backup deletion response: '.json_encode($response));
+
             if (isset($response['backups']) && $response['backups']) {
 
-                $successfullyDeletedBackupResultIds = array_reduce($response['backups'], function ($carry, $backup) {
-                    if ($backup['status']) {
-                        $carry[] = (int) $backup['backup_result_id'];
+                foreach ($response['backups'] as $backup) {
+                    if ($backup['status'] === true) {
+                        BackupResult::where('id', $backup['backup_result_id'])
+                            ->update(
+                                [
+                                    'in_deletion_process' => true,
+                                    'moodle_job_id' => $backup['moodle_job_id'],
+                                ]
+                            );
                     }
-
-                    return $carry;
-                }, []);
-
-                // Manually deleting single course backup
-                if ($this->isManual) {
-                    $backupResultId = $response['backups'][0]['backup_result_id'];
-                    $backupResultStatus = $response['backups'][0]['status'];
-                    $backupResultMessage = $response['backups'][0]['message'];
-
-                    $backupResult = BackupResult::findOrFail($backupResultId);
-
-                    // Failed manual backup deletion of single course
-                    if (! is_null($backupResultStatus) && $backupResultStatus === false) {
-                        $message = __('Failed to delete backup for course :course with filename :filename on instance :instance with message - :message', [
-                            'course' => $backupResult->course->name,
-                            'filename' => $backupResult->url,
-                            'instance' => $this->instance->short_name,
-                            'message' => $backupResultMessage,
-                        ]);
-
-                        Notification::make()
-                            ->danger()
-                            ->title(__('Backup deletion failed'))
-                            ->body($message)
-                            ->icon('heroicon-o-circle-stack')
-                            ->iconColor('danger')
-                            ->sendToDatabase($this->userToNotify);
-
-                        Log::info($message);
-
-                        return;
-                    }
-
-                    Notification::make()
-                        ->success()
-                        ->title(__('Backup deletion completed'))
-                        ->body(__('Successfully deleted backup for course :course with filename :filename on instance :instance.', [
-                            'course' => $backupResult->course->name,
-                            'filename' => $backupResult->url,
-                            'instance' => $this->instance->short_name,
-                        ]))
-                        ->icon('heroicon-o-circle-stack')
-                        ->iconColor('success')
-                        ->sendToDatabase($this->userToNotify);
                 }
 
-                // Soft delete backup results in mooPanel
-                BackupResult::whereIn('id', $successfullyDeletedBackupResultIds)->delete();
+                $inDeletionProcessCount = count(array_filter($response['backups'], function ($backup) {
+                    return $backup['status'] === true;
+                }));
 
-                // Update deletion_last_run in backup settings - mark last run only on auto-backup deletion
-                if (! $this->isManual) {
+                $allCount = count($response['backups']);
+
+                $notificationTitle = $this->getNotificationTitle($inDeletionProcessCount, $allCount);
+
+                if ($this->isManual) {
+                    $notificationColor = $this->getNotificationColor($inDeletionProcessCount, $allCount);
+                    $notificationBody = $this->getLogBody($inDeletionProcessCount, $allCount, $this->payload, true, 3);
+
+                    Notification::make()
+                        ->status($notificationColor)
+                        ->title($notificationTitle)
+                        ->body($notificationBody)
+                        ->icon('heroicon-o-circle-stack')
+                        ->iconColor($notificationColor)
+                        ->sendToDatabase($this->userToNotify);
+                } else {
                     BackupSetting::where('instance_id', $this->instance->id)
                         ->update(['deletion_last_run' => now()]);
                 }
 
-                // General log on successful deletion
-                Log::info(__(
-                    'Backup :deletion_type for instance :instance completed. Deleted :countSuccess out of :all requested backups deletion. Response body: :response',
-                    [
-                        'deletion_type' => $this->deletionType,
-                        'instance' => $this->instance->name,
-                        'countSuccess' => count($successfullyDeletedBackupResultIds),
-                        'all' => count($response['backups']),
-                        'response' => json_encode($response),
-                    ]
-                ));
+                Log::info($notificationTitle.' '.$this->getLogBody($inDeletionProcessCount, $allCount, $this->payload, false));
             } else {
                 throw new Exception('Course backup '.$this->deletionType.' request for instance: '.$this->instance->name.' failed. Response: '.json_encode($response));
             }
@@ -161,23 +144,19 @@ class DeleteOldBackupsJob implements ShouldQueue
             );
 
             if (($this->attempts() >= $this->tries) && $this->isManual) {
-                $backupResultId = $this->payload['backups'][0]['backup_result_id'];
-                $backupResult = BackupResult::find($backupResultId);
+                $message = __('An error occured while deleting selected backups.');
 
-                $message = __('Failed to delete selected backup. Check the system logs for more information.');
-                if ($backupResult) {
-                    $this->instance = Instance::withoutGlobalScope(InstanceScope::class)->find($this->instanceId);
-
-                    $message = __('Failed to delete backup for course :course with filename :filename on instance :instance.', [
-                        'course' => $backupResult->course->name,
-                        'filename' => $backupResult->url,
-                        'instance' => $this->instance->short_name,
+                if (isset($this->payload['backups']) && count($this->payload['backups']) <= 3) {
+                    $message = __('An error occured while deleting backups: :backupUrls. Check the system logs for more information.', [
+                        'backupUrls' => implode(',', array_map(function ($backup) {
+                            return $backup['link'];
+                        }, $this->payload['backups'])),
                     ]);
                 }
 
                 Notification::make()
                     ->danger()
-                    ->title(__('Backup deletion failed'))
+                    ->title(__('Backup deletion error'))
                     ->body($message)
                     ->icon('heroicon-o-circle-stack')
                     ->iconColor('danger')
@@ -188,5 +167,88 @@ class DeleteOldBackupsJob implements ShouldQueue
 
             throw $exception;
         }
+    }
+
+    /**
+     * Check if there are any pending deletion requests for the backups in the payload
+     * and remove them from the payload.
+     */
+    private function removePendingDeletionRequests(): void
+    {
+        $backupResultIds = array_reduce($this->payload['backups'], function ($carry, $backup) {
+            $carry[] = $backup['backup_result_id'];
+
+            return $carry;
+        }, []);
+
+        $pendingBackupDeletionResults = BackupResult::whereIn('id', $backupResultIds)
+            ->where('in_deletion_process', true)
+            ->whereNotNull('moodle_job_id')
+            ->get();
+
+        $pendingBackupDeletionResultIds = $pendingBackupDeletionResults->pluck('id')->toArray();
+        $backupResultIdsToDelete = array_diff($backupResultIds, $pendingBackupDeletionResultIds);
+
+        $backupsPayloadToDelete = array_filter($this->payload['backups'], function ($backup) use ($backupResultIdsToDelete) {
+            return in_array($backup['backup_result_id'], $backupResultIdsToDelete);
+        });
+
+        $this->payload['backups'] = $backupsPayloadToDelete;
+
+        $backupsToDeleteCount = count($backupResultIds) - count($pendingBackupDeletionResultIds);
+        $allCount = count($backupResultIds);
+
+        $backupUrlsToDelete = BackupResult::whereIn('id', $backupResultIdsToDelete)->get()->pluck('url')->toArray();
+        $backupUrlsToSkip = $pendingBackupDeletionResults->pluck('url')->toArray();
+
+        Log::info("There are $backupsToDeleteCount / $allCount backups to be deleted on instance {$this->instance->name} . Backup files to delete: ".json_encode($backupUrlsToDelete).' Some backups might be in deletion process already. Skipping deletion for: '.json_encode($backupUrlsToSkip));
+    }
+
+    private function getNotificationColor(int $successful, int $total): string
+    {
+        if ($successful === 0) {
+            return 'danger';
+        }
+
+        if ($successful === $total) {
+            return 'success';
+        }
+
+        return 'warning';
+    }
+
+    private function getNotificationTitle(int $successful, int $total): string
+    {
+        if ($successful === 0) {
+            return __('Backup deletion process failed');
+        }
+
+        if ($successful === $total) {
+            return __('Backup deletion process successful');
+        }
+
+        return __('Backup deletion process partially successful');
+    }
+
+    private function getLogBody(int $successful, int $total, array $payload, bool $isNotification = false, int $limit = 3): string
+    {
+        $message = __(':successful out of :total backups are in deletion process on instance :instance.', [
+            'successful' => $successful,
+            'total' => $total,
+            'instance' => $this->instance->short_name,
+        ]);
+
+        // Do not print all backup URLs in logs if it's a notification
+        if ($isNotification && (count($payload['backups']) > $limit)) {
+            return $message.__(' Check system logs for more information.');
+        }
+
+        $message .= __(' Backup files to be deleted: :backupUrls', [
+            'backupUrls' => implode(', ', array_map(function ($backup) {
+                return $backup['link'];
+            }, $payload['backups'])),
+        ]);
+
+        return $message;
     }
 }

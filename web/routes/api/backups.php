@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Backups\CourseBackupController;
+use App\Http\Controllers\Backups\CourseBackupDeletionController;
 use App\Http\Controllers\Backups\CourseBackupRestoreController;
 use App\Models\Instance;
 use Illuminate\Support\Facades\Route;
@@ -23,4 +24,6 @@ Route::prefix('backups')->group(function () {
     Route::middleware(['checkInstanceToken'])->post('restore/instance/{instance_id}', [CourseBackupRestoreController::class, 'restore']);
 
     Route::middleware(['checkRefererToken'])->get('course/{moodle_course_id}', [CourseBackupController::class, 'index']);
+
+    Route::middleware(['checkInstanceToken'])->post('delete/instance/{instance_id}', [CourseBackupDeletionController::class, 'delete']);
 });
