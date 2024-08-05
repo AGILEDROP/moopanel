@@ -38,7 +38,7 @@ class CourseBackupDeletionController extends Controller
         }
 
         return response()->json([
-            'message' => 'Course backup deletion statuse received successfully.',
+            'message' => 'Course backup deletion status received successfully.',
             'status' => true,
         ]);
     }
