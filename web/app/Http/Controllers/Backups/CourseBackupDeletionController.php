@@ -26,11 +26,11 @@ class CourseBackupDeletionController extends Controller
         try {
             $isSuccessfull = $isSuccessfull && $this->statusUpdate($instance, $validatedData);
         } catch (Exception $e) {
-            Log::error(__FILE__ . ':' . __LINE__ . ' - ' . " Failed to check if there is pending backup deletion request for instance {$instance->id} and backup-id {$validatedData['backup_result_id']}. on backup-deletion endpoint" . ' Message: ' . $e->getMessage());
+            Log::error(__FILE__.':'.__LINE__.' - '." Failed to check if there is pending backup deletion request for instance {$instance->id} and backup-id {$validatedData['backup_result_id']}. on backup-deletion endpoint".' Message: '.$e->getMessage());
             $isSuccessfull = false;
         }
 
-        if (!$isSuccessfull) {
+        if (! $isSuccessfull) {
             return response()->json([
                 'message' => 'There was and error while receiving and updating course backup deletion status. Please try again or contact support.',
                 'status' => false,
@@ -69,7 +69,7 @@ class CourseBackupDeletionController extends Controller
             ]);
 
             // Notify user on manual deletion
-            if (!is_null($data['user_id'])) {
+            if (! is_null($data['user_id'])) {
                 Notification::make()
                     ->status($notificationType)
                     ->title($notificationTitle)
@@ -89,9 +89,9 @@ class CourseBackupDeletionController extends Controller
             }
 
             // General log on successful deletion
-            Log::info($notificationBody . ' Response body: ' . json_encode($data));
+            Log::info($notificationBody.' Response body: '.json_encode($data));
         } catch (Exception $e) {
-            Log::error(__FILE__ . ':' . __LINE__ . ' - ' . " Failed to update backup result statuses for instance {$instance->id} and backup_result_id {$data['backup_result_id']}. on backup-deletion endpoint" . ' Message: ' . $e->getMessage());
+            Log::error(__FILE__.':'.__LINE__.' - '." Failed to update backup result statuses for instance {$instance->id} and backup_result_id {$data['backup_result_id']}. on backup-deletion endpoint".' Message: '.$e->getMessage());
             $statusUpdateSuccessfull = false;
         }
 
