@@ -100,12 +100,12 @@ class BackupRequestJob implements ShouldQueue
                                 ->close(),
                         ])
                         ->sendToDatabase($this->userToNotify);
-
-                    $this->markFailedBackups($response);
                 } else {
                     // Log failed backups on auto backups
                     Log::error('Partial backup success for instance: '.$this->instance->name.'. Check backup report to see the failed backups. Some courses might not have any changes and dont need backup. Response body: '.json_encode($response));
                 }
+
+                $this->markFailedBackups($response);
 
                 // Run course sync to delete coureses that might be deleted on moodle instance
                 // NOTE: currently only notify user about this option
