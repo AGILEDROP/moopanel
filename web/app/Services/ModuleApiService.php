@@ -40,6 +40,23 @@ class ModuleApiService
 
     public function triggerCourseBackup(string $baseUrl, string $apiKey, ?array $payload): PromiseInterface|Response
     {
+        /* Http::fake([
+            'github.com/*' => Http::response([
+                'backups' => [
+                    [
+                        'id' => 56,
+                        'message' => 'true',
+                    ],
+                ],
+                'errors' => [],
+            ], 200),
+        ]);
+
+        // Then, make an actual request, which will be intercepted by the fake.
+        // For demonstration, let's assume you're making a GET request to "https://github.com/api/data"
+        $response = Http::get('https://github.com/api/data');
+
+        return $response; */
         return Http::withHeaders([
             'X-API-KEY' => $apiKey,
         ])->post($baseUrl.self::PLUGIN_PATH.'/backups', wrapData($payload));
