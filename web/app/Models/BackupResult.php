@@ -49,6 +49,12 @@ class BackupResult extends Model
 
     public const STATUS_FAILED = false;
 
+    public const JOB_KEY_CREATE = 'backup_course';
+
+    public const JOB_KEY_DELETE = 'backup_course_delete';
+
+    public const JOB_KEY_RESTORE = 'backup_course_restore';
+
     public function getUpdatedAtTimestampAttribute()
     {
         return Carbon::parse($this->attributes['updated_at'])->timestamp;

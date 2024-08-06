@@ -60,10 +60,10 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
                 'type' => $this->parseUpdateType($this->updateRequest->type),
             ];
 
-            $response = $moduleApiService->triggerUpdateRequestCheck($instance->url, Crypt::decrypt($instance->api_key), $this->payload);
+            $response = $moduleApiService->triggerTaskCheck($instance->url, Crypt::decrypt($instance->api_key), $this->payload);
 
             if (! $response->ok()) {
-                Log::error('Update request check of type :type and instance :instance failed with status code: :status.', ['type' => $this->updateRequest->type, 'instance' => $instance->name, 'status' => $response->status()]);
+                Log::error(__('Update request check of type :type and instance :instance failed with status code: :status.', ['type' => $this->updateRequest->type, 'instance' => $instance->name, 'status' => $response->status()]));
 
                 throw new \Exception('Update request check failed with status code: '.$response->status().'.');
             }
@@ -71,7 +71,7 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
             $body = $response->json();
 
             if (! array_key_exists('status', $body)) {
-                Log::error('Invalid response body for update request check of type :type and instance :instance. Missing status', ['type' => $this->updateRequest->type, 'instance' => $instance->name]);
+                Log::error(__('Invalid response body for update request check of type :type and instance :instance. Missing status', ['type' => $this->updateRequest->type, 'instance' => $instance->name]));
 
                 throw new \Exception('Invalid response body for update request check of type: '.$this->updateRequest->type.' and instance: '.$instance->name.'. Received body: '.json_encode($body));
             }
