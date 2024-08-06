@@ -154,9 +154,18 @@ class BackupRequestJob implements ShouldQueue
     private function removeCoursesFromPayload(): void
     {
         // Moodle course IDs of courses that already have pending backup requests
-        $pendingBackupResults = BackupResult::where('status', BackupResult::STATUS_PENDING)
+        $pendingBackupResultsQuery = BackupResult::where('status', BackupResult::STATUS_PENDING)
             ->where('instance_id', $this->payload['instance_id'])
-            ->whereIn('moodle_course_id', $this->payload['courses'])
+            ->whereIn('moodle_course_id', $this->payload['courses']);
+
+        // Allow creating manual backup if there already is pending auto-backup for same course
+        if ($this->isManual) {
+            $pendingBackupResultsQuery = $pendingBackupResultsQuery->whereNotNull('user_id');
+        } else {
+            $pendingBackupResultsQuery = $pendingBackupResultsQuery->whereNull('user_id');
+        }
+
+        $pendingBackupResults = $pendingBackupResultsQuery
             ->get()
             ->pluck('moodle_course_id')
             ->unique()
@@ -208,27 +217,24 @@ class BackupRequestJob implements ShouldQueue
             // It doesnt make sense to backup n identical courses n times in a row without receiving response first
             // backup results will be poluted with duplicated entries and list wont be readable
             // NOTE: duplicated pending backup course IDs are not sent to moodle on the previous step(removed from "courses" array in payload)
-            $manualBackupConditions =
-                $this->isManual &&
-                ! is_null($this->userToNotify) &&
-                BackupResult::where('instance_id', $this->payload['instance_id'])
+            if ($this->isManual) {
+                $this->pendingCourseBackupsExist = BackupResult::where('instance_id', $this->payload['instance_id'])
                     ->where('moodle_course_id', $courseIds['moodle_course_id'])
                     ->where('status', BackupResult::STATUS_PENDING)
                     ->where('manual_trigger_timestamp', '!=', null)
                     ->where('user_id', $this->userToNotify->id)
                     ->exists();
+            } else {
+                $this->pendingCourseBackupsExist = BackupResult::where('instance_id', $this->payload['instance_id'])
+                    ->where('moodle_course_id', $courseIds['moodle_course_id'])
+                    ->where('status', BackupResult::STATUS_PENDING)
+                    ->whereNull('manual_trigger_timestamp')
+                    ->whereNull('user_id')
+                    ->exists();
+            }
 
-            // There can be only one auto backup pending result for instance:course in the moment
-            $autoBackupConditions = BackupResult::where('instance_id', $this->payload['instance_id'])
-                ->where('moodle_course_id', $courseIds['moodle_course_id'])
-                ->where('status', BackupResult::STATUS_PENDING)
-                ->whereNull('manual_trigger_timestamp')
-                ->whereNull('user_id')
-                ->exists();
-
-            if ($manualBackupConditions || $autoBackupConditions) {
-                $this->pendingCourseBackupsExist = true;
-
+            // Skip creating pending backup result if there already is pending backup for this course
+            if ($this->pendingCourseBackupsExist) {
                 continue;
             }
 
