@@ -23,6 +23,8 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
 
     public array $payload;
 
+    public Instance $instance;
+
     /**
      * The number of times the job may be attempted.
      *
@@ -35,7 +37,7 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
      */
     public function __construct(public UpdateRequest $updateRequest)
     {
-        //
+        $this->instance = Instance::withoutGlobalScope(InstanceScope::class)->find($this->updateRequest->instance_id);
     }
 
     /**
@@ -43,7 +45,6 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $instance = Instance::withoutGlobalScope(InstanceScope::class)->find($this->updateRequest->instance_id);
 
         try {
             $moduleApiService = new ModuleApiService();
@@ -60,10 +61,10 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
                 'type' => $this->parseUpdateType($this->updateRequest->type),
             ];
 
-            $response = $moduleApiService->triggerUpdateRequestCheck($instance->url, Crypt::decrypt($instance->api_key), $this->payload);
+            $response = $moduleApiService->triggerTaskCheck($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
             if (! $response->ok()) {
-                Log::error('Update request check of type :type and instance :instance failed with status code: :status.', ['type' => $this->updateRequest->type, 'instance' => $instance->name, 'status' => $response->status()]);
+                Log::error(__('Update request check of type :type and instance :instance failed with status code: :status.', ['type' => $this->updateRequest->type, 'instance' => $this->instance->name, 'status' => $response->status()]));
 
                 throw new \Exception('Update request check failed with status code: '.$response->status().'.');
             }
@@ -71,16 +72,20 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
             $body = $response->json();
 
             if (! array_key_exists('status', $body)) {
-                Log::error('Invalid response body for update request check of type :type and instance :instance. Missing status', ['type' => $this->updateRequest->type, 'instance' => $instance->name]);
+                Log::error(__('Invalid response body for update request check of type :type and instance :instance. Missing status', ['type' => $this->updateRequest->type, 'instance' => $this->instance->name]));
 
-                throw new \Exception('Invalid response body for update request check of type: '.$this->updateRequest->type.' and instance: '.$instance->name.'. Received body: '.json_encode($body));
+                throw new \Exception('Invalid response body for update request check of type: '.$this->updateRequest->type.' and instance: '.$this->instance->name.'. Received body: '.json_encode($body));
             }
 
-            $this->updateRequestStatusUpdate($this->updateRequest, $body['status'], $body['error'] ?? '');
+            $this->updateRequestStatusUpdate($body['status'], $body['error'] ?? '');
 
-            $this->notify($this->updateRequest, $body['status'], $body['error'] ?? '');
+            if ($body['status'] !== UpdateRequest::CHECK_STATUS_PENDING) {
+                $this->notify($body['status'], $body['error'] ?? '');
+            }
+
+            $this->logStatus($body);
         } catch (\Exception $exception) {
-            Log::error(__METHOD__.' line: '.__LINE__.' - '.'Failed to request for pending update-request status check for instance: '.$instance->name.' Error message: '.$exception->getMessage());
+            Log::error(__METHOD__.' line: '.__LINE__.' - '.'Failed to request for pending update-request status check for instance: '.$this->instance->name.' Error message: '.$exception->getMessage());
 
             throw $exception;
         }
@@ -88,20 +93,16 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
 
     /**
      * Update Updaterequest status and error
-     *
-     * @param  Instance  $instance
-     * @param  User  $userToNotify
-     * @param  array  $payload
      */
-    private function updateRequestStatusUpdate(UpdateRequest $updateRequest, int $status, string $error = ''): void
+    private function updateRequestStatusUpdate(int $status, string $error = ''): void
     {
-        $status = $this->parseStatus($status);
+        $status = $this->updateRequest->parseStatus($status);
 
-        $updateRequest->update([
+        $this->updateRequest->update([
             'status' => $status,
         ]);
 
-        $updateRequest->items()->update([
+        $this->updateRequest->items()->update([
             'status' => $status,
             'error' => $error,
         ]);
@@ -110,15 +111,13 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
     /**
      * Notify user about the status of the update request
      */
-    private function notify(UpdateRequest $updateRequest, int $statusNumber, string $error = ''): void
+    private function notify(int $statusNumber, string $error = ''): void
     {
-        $instance = Instance::withoutGlobalScope(InstanceScope::class)->find($updateRequest->instance_id);
-
-        $status = $this->parseStatus($statusNumber);
+        $status = $this->updateRequest->parseStatus($statusNumber);
         $statusColor = $this->getStatusColor($status);
 
         $notificationTitle = $this->getNotificationTitle($status);
-        $notificationBody = $this->getNotificationBody($instance, $status, $error);
+        $notificationBody = $this->getNotificationBody($status, $error);
 
         Notification::make()
             ->status($statusColor)
@@ -128,14 +127,27 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
                 Action::make('view')
                     ->color($statusColor)
                     ->button()
-                    ->url(route('filament.app.pages.app-dashboard', ['tenant' => $instance]), shouldOpenInNewTab: true),
+                    ->url(route('filament.app.pages.app-dashboard', ['tenant' => $this->instance]), shouldOpenInNewTab: true),
                 Action::make('cancel')
                     ->color('secondary')
                     ->close(),
             ])
             ->icon('heroicon-o-arrow-up-circle')
             ->iconColor($statusColor)
-            ->sendToDatabase($updateRequest->user);
+            ->sendToDatabase($this->updateRequest->user);
+    }
+
+    /**
+     * Log the status of the update request
+     */
+    private function logStatus(array $data): void
+    {
+        $status = $this->updateRequest->parseStatus($data['status']);
+
+        $notificationTitle = $this->getNotificationTitle($status);
+        $notificationBody = $this->getNotificationBody($status, $data['error'] ?? '');
+
+        Log::info($notificationTitle.'- Via update request checker job - '.$notificationBody);
     }
 
     /**
@@ -175,46 +187,29 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
      *
      * @param  ?bool  $status
      */
-    private function getNotificationBody(Instance $instance, ?bool $status, string $error): string
+    private function getNotificationBody(?bool $status, string $error): string
     {
         switch ($this->updateRequest->type) {
             case UpdateRequest::TYPE_CORE:
                 return match ($status) {
-                    true => __('Core update for :instance was successful.', ['instance' => $instance->name]),
-                    false => __('Core update for :instance failed with error: :error', ['instance' => $instance->name, 'error' => $error]),
-                    default => __('Core update for :instance is in progress.', ['instance' => $instance->name]),
+                    true => __('Core update for :instance was successful.', ['instance' => $this->instance->name]),
+                    false => __('Core update for :instance failed with error: :error', ['instance' => $this->instance->name, 'error' => $error]),
+                    default => __('Core update for :instance is in progress.', ['instance' => $this->instance->name]),
                 };
             case UpdateRequest::TYPE_PLUGIN:
                 return match ($status) {
-                    true => __('Plugin update for :instance was successful.', ['instance' => $instance->name]),
-                    false => __('Plugin update for :instance failed with error: :error', ['instance' => $instance->name, 'error' => $error]),
-                    default => __('Plugin update for :instance is in progress.', ['instance' => $instance->name]),
+                    true => __('Plugin update for :instance was successful.', ['instance' => $this->instance->name]),
+                    false => __('Plugin update for :instance failed with error: :error', ['instance' => $this->instance->name, 'error' => $error]),
+                    default => __('Plugin update for :instance is in progress.', ['instance' => $this->instance->name]),
                 };
             case UpdateRequest::TYPE_PLUGIN_ZIP:
                 return match ($status) {
-                    true => __('Plugin ZIP update for :instance was successful.', ['instance' => $instance->name]),
-                    false => __('Plugin ZIP update for :instance failed with error: :error', ['instance' => $instance->name, 'error' => $error]),
-                    default => __('Plugin ZIP update for :instance is in progress.', ['instance' => $instance->name]),
+                    true => __('Plugin ZIP update for :instance was successful.', ['instance' => $this->instance->name]),
+                    false => __('Plugin ZIP update for :instance failed with error: :error', ['instance' => $this->instance->name, 'error' => $error]),
+                    default => __('Plugin ZIP update for :instance is in progress.', ['instance' => $this->instance->name]),
                 };
             default:
-                return __('Update for :instance is in progress.', ['instance' => $instance->name]);
-        }
-    }
-
-    /**
-     * Parse status from int to bool
-     */
-    private function parseStatus(int $status): ?bool
-    {
-        switch ($status) {
-            case 1:
-                return true;
-            case 2:
-                return null;
-            case 3:
-                return false;
-            default:
-                return null;
+                return __('Update for :instance is in progress.', ['instance' => $this->instance->name]);
         }
     }
 

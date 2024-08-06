@@ -19,7 +19,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('module-api:zip-plugin-file-delete')->hourly();
         $schedule->command('module-api:sync-data')->everyTwoHours();
         $schedule->command('module-api:get-active-moodle-users-count')->hourly();
+
+        // Penging backup/update checkers
         $schedule->command('module-api:check-pending-update-requests')->everyThreeMinutes();
+        $schedule->command('backup:check-pending-backup-results')->everyThreeMinutes();
 
         $schedule->command('backup:automatic-backup-command')->hourly();
         $schedule->command('backup:auto-prune')->daily();
