@@ -71,7 +71,7 @@ class ModuleApiService
         ])->delete($baseUrl.self::PLUGIN_PATH.'/backups', wrapData($payload));
     }
 
-    public function triggerUpdateRequestCheck(string $baseUrl, string $apiKey, ?array $payload): PromiseInterface|Response
+    public function triggerTaskCheck(string $baseUrl, string $apiKey, ?array $payload): PromiseInterface|Response
     {
         return Http::withHeaders([
             'X-API-KEY' => $apiKey,
