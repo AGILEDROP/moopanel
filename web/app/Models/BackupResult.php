@@ -55,6 +55,33 @@ class BackupResult extends Model
 
     public const JOB_KEY_RESTORE = 'backup_course_restore';
 
+    public const CHECK_STATUS_SUCCESS = 1;
+
+    public const CHECK_STATUS_PENDING = 2;
+
+    public const CHECK_STATUS_FAIL = 3;
+
+    public const CHECK_STATUS_NOT_FOUND = 4;
+
+    /**
+     * Parse status from int to bool
+     */
+    public function parseStatus(int $status): ?bool
+    {
+        switch ($status) {
+            case self::CHECK_STATUS_SUCCESS:
+                return true;
+            case self::CHECK_STATUS_PENDING:
+                return null;
+            case self::CHECK_STATUS_FAIL:
+                return false;
+            case self::CHECK_STATUS_NOT_FOUND:
+                return false;
+            default:
+                return null;
+        }
+    }
+
     public function getUpdatedAtTimestampAttribute()
     {
         return Carbon::parse($this->attributes['updated_at'])->timestamp;

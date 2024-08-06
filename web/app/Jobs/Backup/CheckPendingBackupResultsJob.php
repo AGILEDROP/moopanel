@@ -85,7 +85,7 @@ class CheckPendingBackupResultsJob implements ShouldQueue
 
             $this->updateBackupResult($body);
 
-            if (! is_null($this->backupResult->user_id)) {
+            if (! is_null($this->backupResult->user_id) && $body['status'] !== BackupResult::CHECK_STATUS_PENDING) {
                 $this->notify($body, $this->backupResult->user);
             }
 
@@ -102,7 +102,7 @@ class CheckPendingBackupResultsJob implements ShouldQueue
      */
     private function updateBackupResult(array $data): void
     {
-        $status = $this->parseStatus($data['status']);
+        $status = $this->backupResult->parseStatus($data['status']);
         $error = $data['error'] ?? '';
 
         switch ($this->type) {
@@ -132,7 +132,7 @@ class CheckPendingBackupResultsJob implements ShouldQueue
      */
     private function notify(array $data, User $user): void
     {
-        $status = $this->parseStatus($data['status']);
+        $status = $this->backupResult->parseStatus($data['status']);
 
         // Do not notify user yet, if the process is still pending
         if (is_null($status)) {
@@ -158,7 +158,7 @@ class CheckPendingBackupResultsJob implements ShouldQueue
      */
     private function logStatus(array $data): void
     {
-        $status = $this->parseStatus($data['status']);
+        $status = $this->backupResult->parseStatus($data['status']);
 
         $notificationTitle = $this->getNotificationTitle($status);
         $notificationBody = $this->getNotificationBody($status, $data['error'] ?? '');
@@ -258,23 +258,6 @@ class CheckPendingBackupResultsJob implements ShouldQueue
                 Log::warning(__FILE__.__METHOD__.'Unknown backup result type: '.$this->type.' for instance: '.$this->instance->name);
 
                 return __('Backup operation in progress.');
-        }
-    }
-
-    /**
-     * Parse status from int to bool
-     */
-    private function parseStatus(int $status): ?bool
-    {
-        switch ($status) {
-            case 1:
-                return true;
-            case 2:
-                return null;
-            case 3:
-                return false;
-            default:
-                return null;
         }
     }
 
