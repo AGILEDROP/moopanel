@@ -7,7 +7,6 @@ use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use App\Models\User;
 use App\Services\ModuleApiService;
-use Exception;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -92,7 +91,7 @@ class CheckPendingBackupResultsJob implements ShouldQueue
 
             $this->logStatus($body);
         } catch (\Exception $exception) {
-            Log::error(__METHOD__.' line: '.__LINE__.' - '."Failed to request for backup status check for instance: {$this->instance->name} and backup_result_id {$this->backupResult->id}". ' Error message: '.$exception->getMessage());
+            Log::error(__METHOD__.' line: '.__LINE__.' - '."Failed to request for backup status check for instance: {$this->instance->name} and backup_result_id {$this->backupResult->id}".' Error message: '.$exception->getMessage());
 
             throw $exception;
         }
