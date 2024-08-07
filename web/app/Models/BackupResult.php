@@ -28,6 +28,7 @@ class BackupResult extends Model
         'backup_storage_id',
         'password',
         'in_deletion_process',
+        'in_restore_process',
         'moodle_job_id',
 
         'created_at',
@@ -38,6 +39,7 @@ class BackupResult extends Model
     protected $casts = [
         'status' => 'boolean',
         'in_deletion_process' => 'boolean',
+        'in_restore_process' => 'boolean',
         'filesize' => 'integer',
     ];
 

@@ -152,6 +152,7 @@ class CourseBackupController extends Controller
                     'url' => $data['link'],
                     'password' => Crypt::encrypt($data['password']),
                     'filesize' => isset($data['filesize']) ? $data['filesize'] : 0,
+                    'moodle_job_id' => null,
                 ]);
 
             $updatedBackupResults = BackupResult::whereIn('id', $updatedBackupResultIds)->get();
