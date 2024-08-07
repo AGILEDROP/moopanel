@@ -112,6 +112,8 @@ class BackupRequestJob implements ShouldQueue
                 // Sync::dispatch($this->instance, CourseSyncType::TYPE, 'Course sync failed.');
             }
 
+            $this->setMoodleJobIds($response);
+
             if ($this->isManual && ! is_null($this->userToNotify)) {
                 Notification::make()
                     ->success()
@@ -270,6 +272,20 @@ class BackupRequestJob implements ShouldQueue
                 ->update([
                     'status' => BackupResult::STATUS_FAILED,
                     'message' => $backup['message'],
+                ]);
+        }
+    }
+
+    private function setMoodleJobIds(array $response): void
+    {
+        $backups = $response['backups'] ?? [];
+
+        foreach ($backups as $backup) {
+            Log::info('Updating backup with payload: '.json_encode($backup));
+
+            BackupResult::where('id', $backup['id'])
+                ->update([
+                    'moodle_job_id' => $backup['moodle_job_id'],
                 ]);
         }
     }

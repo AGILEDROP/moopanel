@@ -181,6 +181,28 @@ class BackupResultResource extends Resource
                                 ->required(),
                         ])
                         ->action(function (array $data, BackupResult $record): void {
+                            if ($record->in_deletion_process) {
+                                Notification::make()
+                                    ->title(__('Backup restore error'))
+                                    ->body(__('Backup is in deletion process. Please wait until the deletion process is completed.'))
+                                    ->danger()
+                                    ->seconds(8)
+                                    ->send();
+
+                                return;
+                            }
+
+                            if ($record->in_restore_process) {
+                                Notification::make()
+                                    ->title(__('Backup restore error'))
+                                    ->body(__('Backup is already in restore process. Please wait until it is completed.'))
+                                    ->danger()
+                                    ->seconds(8)
+                                    ->send();
+
+                                return;
+                            }
+
                             if (! isset($data['password'])) {
                                 Notification::make()
                                     ->title(__('Backup restore error'))
@@ -249,6 +271,29 @@ class BackupResultResource extends Resource
                             return false;
                         })
                         ->action(function (BackupResult $record): void {
+                            if ($record->in_deletion_process) {
+                                Notification::make()
+                                    ->title(__('Backup deletion error'))
+                                    ->body(__('Backup is already in deletion process. Please wait until the process is completed.'))
+                                    ->danger()
+                                    ->seconds(8)
+                                    ->send();
+
+                                return;
+                            }
+
+                            if ($record->in_restore_process) {
+                                Notification::make()
+                                    ->title(__('Backup deletion error'))
+                                    ->body(__('Backup is in restore process. Please wait until it is completed.'))
+                                    ->danger()
+                                    ->seconds(8)
+                                    ->send();
+
+                                return;
+                            }
+
+                            dd($record);
 
                             $instanceId = filament()->getTenant()->id;
                             $payload = [

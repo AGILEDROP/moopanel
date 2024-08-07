@@ -83,6 +83,14 @@ class CheckPendingBackupResultsJob implements ShouldQueue
                 throw new \Exception("Invalid response body for backup check of type {$this->type} and instance {$this->instance->name}.");
             }
 
+            // Abort updating backup_result status if task/check returns success for backup creation
+            // in this case, we have to wait for moodle to send response to backup create mooPanel endpoint so that we receive the backup file, password, filesize etc.
+            if ($this->type === BackupResult::JOB_KEY_CREATE && $body['status'] === BackupResult::CHECK_STATUS_SUCCESS) {
+                Log::info("Received status {$body['status']} for backup creation check for instance: {$this->instance->name} and backup_result_id {$this->backupResult->id}. Stopping backup_result status update.");
+
+                return;
+            }
+
             $this->updateBackupResult($body);
 
             if (! is_null($this->backupResult->user_id) && $body['status'] !== BackupResult::CHECK_STATUS_PENDING) {
@@ -123,6 +131,15 @@ class CheckPendingBackupResultsJob implements ShouldQueue
                 if ($status === true) {
                     $this->backupResult->delete();
                 }
+                break;
+
+            case BackupResult::JOB_KEY_RESTORE:
+                $this->backupResult->update([
+                    'in_restore_process' => is_null($status) ? true : false,
+                    'moodle_job_id' => is_null($status) ? $this->backupResult->moodle_job_id : null,
+                    'message' => $error,
+                ]);
+
                 break;
         }
     }
@@ -187,6 +204,12 @@ class CheckPendingBackupResultsJob implements ShouldQueue
                     false => __('Backup deletion failed!'),
                     default => __('Backup deletion in progress.'),
                 };
+            case BackupResult::JOB_KEY_RESTORE:
+                return match ($status) {
+                    true => __('Backup restore successful!'),
+                    false => __('Backup restore failed!'),
+                    default => __('Backup restore in progress.'),
+                };
             default:
                 Log::warning(__FILE__.__METHOD__.'Unknown backup result type: '.$this->type.' for instance: '.$this->instance->name);
 
@@ -248,6 +271,32 @@ class CheckPendingBackupResultsJob implements ShouldQueue
                     ),
                     default => __(
                         'Backup deletion for course :course on :instance in progress',
+                        [
+                            'course' => $this->backupResult->course->name,
+                            'instance' => $this->instance->short_name,
+                        ]
+                    ),
+                };
+            case BackupResult::JOB_KEY_RESTORE:
+                return match ($status) {
+                    true => __(
+                        'Backup restore for course :course on :instance was successful. Restored file :file',
+                        [
+                            'course' => $this->backupResult->course->name,
+                            'instance' => $this->instance->short_name,
+                            'file' => $this->backupResult->url,
+                        ]
+                    ),
+                    false => __(
+                        'Backup restore for course :course on :instance failed with error :error',
+                        [
+                            'course' => $this->backupResult->course->name,
+                            'instance' => $this->instance->short_name,
+                            'error' => $error,
+                        ]
+                    ),
+                    default => __(
+                        'Backup restore for course :course on :instance in progress',
                         [
                             'course' => $this->backupResult->course->name,
                             'instance' => $this->instance->short_name,
