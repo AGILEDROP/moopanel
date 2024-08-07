@@ -32,7 +32,7 @@ class CheckPendingBackupResults extends Command
 
         $this->checkBackupDeletions();
 
-        // TODO: dispatch jobs for checking the backups in restore process
+        $this->checkBackupRestores();
 
         $this->info('Checked pending backup results to create and delete.');
     }
@@ -79,6 +79,29 @@ class CheckPendingBackupResults extends Command
             ));
 
             CheckPendingBackupResultsJob::dispatch($backupResult, BackupResult::JOB_KEY_DELETE);
+        }
+    }
+
+    /**
+     * Check pending backup results to restore
+     */
+    private function checkBackupRestores(): void
+    {
+        $pendingBackupResultsToDelete = BackupResult::where('status', true)
+            ->where('in_restore_process', true)
+            ->whereNotNull('moodle_job_id')
+            ->get();
+
+        foreach ($pendingBackupResultsToDelete as $backupResult) {
+            Log::info(__(
+                'Running restore backup check on backup result with id :backup_result_id and moodle job id :moodle_job_id.',
+                [
+                    'backup_result_id' => $backupResult->id,
+                    'moodle_job_id' => $backupResult->moodle_job_id,
+                ]
+            ));
+
+            CheckPendingBackupResultsJob::dispatch($backupResult, BackupResult::JOB_KEY_RESTORE);
         }
     }
 }

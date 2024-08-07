@@ -76,6 +76,8 @@ class RestoreBackupJob implements ShouldQueue
         $response = $response->json();
         $message = isset($response['message']) ? $response['message'] : 'No message received';
 
+        $this->updateBackupStatus($response);
+
         if (isset($response['status']) && $response['status'] === true) {
             Notification::make()
                 ->success()
@@ -99,5 +101,20 @@ class RestoreBackupJob implements ShouldQueue
             ->sendToDatabase($this->userToNotify);
 
         Log::error('Backup restore for course: '.$this->backupResult->course->name.' on instance: '.$this->instance->name.' failed. Received response: '.$message);
+    }
+
+    private function updateBackupStatus(array $data): void
+    {
+        $status = $data['status'];
+        $moodleJobId = (isset($data['moodle_job_id']) && $status) ? $data['moodle_job_id'] : null;
+
+        $this->backupResult->update([
+            'in_restore_process' => $status,
+            'moodle_job_id' => $moodleJobId,
+        ]);
+
+        $moodleJobId = $moodleJobId ?? 'null';
+
+        Log::info("Updating backup result with id: {$this->backupResult->id} with status: {$status} and moodle job id: {$moodleJobId}.");
     }
 }
