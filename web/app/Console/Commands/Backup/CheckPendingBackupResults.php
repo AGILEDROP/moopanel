@@ -28,23 +28,57 @@ class CheckPendingBackupResults extends Command
      */
     public function handle()
     {
+        $this->checkBackupCreations();
+
+        $this->checkBackupDeletions();
+
+        // TODO: dispatch jobs for checking the backups in restore process
+
+        $this->info('Checked pending backup results to create and delete.');
+    }
+
+    /**
+     * Check pending backup results to create backups
+     */
+    private function checkBackupCreations(): void
+    {
+        $pendingBackupResultsToCreate = BackupResult::whereNull('status')
+            ->whereNotNull('moodle_job_id')
+            ->get();
+
+        foreach ($pendingBackupResultsToCreate as $backupResult) {
+            Log::info(__(
+                'Running create backup check on backup result with id :backup_result_id and moodle job id :moodle_job_id.',
+                [
+                    'backup_result_id' => $backupResult->id,
+                    'moodle_job_id' => $backupResult->moodle_job_id,
+                ]
+            ));
+
+            CheckPendingBackupResultsJob::dispatch($backupResult, BackupResult::JOB_KEY_CREATE);
+        }
+    }
+
+    /**
+     * Check pending backup results to delete
+     */
+    private function checkBackupDeletions(): void
+    {
         $pendingBackupResultsToDelete = BackupResult::where('status', true)
             ->where('in_deletion_process', true)
             ->whereNotNull('moodle_job_id')
             ->get();
 
         foreach ($pendingBackupResultsToDelete as $backupResult) {
-            Log::info('Checking pending backup result to delete.', [
-                'backup_result_id' => $backupResult->id,
-                'moodle_job_id' => $backupResult->moodle_job_id,
-            ]);
+            Log::info(__(
+                'Running delete backup check on backup result with id :backup_result_id and moodle job id :moodle_job_id.',
+                [
+                    'backup_result_id' => $backupResult->id,
+                    'moodle_job_id' => $backupResult->moodle_job_id,
+                ]
+            ));
 
             CheckPendingBackupResultsJob::dispatch($backupResult, BackupResult::JOB_KEY_DELETE);
         }
-
-        // TODO: dispatch jobs for checking the backups in create process
-        // TODO: dispatch jobs for checking the backups in restore process
-
-        $this->info('Checked pending backup results to delete.');
     }
 }
