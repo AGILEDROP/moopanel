@@ -83,6 +83,14 @@ class CheckPendingBackupResultsJob implements ShouldQueue
                 throw new \Exception("Invalid response body for backup check of type {$this->type} and instance {$this->instance->name}.");
             }
 
+            // Abort updating backup_result status if task/check returns success for backup creation
+            // in this case, we have to wait for moodle to send response to backup create mooPanel endpoint so that we receive the backup file, password, filesize etc.
+            if ($this->type === BackupResult::JOB_KEY_CREATE && $body['status'] === BackupResult::CHECK_STATUS_SUCCESS) {
+                Log::info("Received status {$body['status']} for backup creation check for instance: {$this->instance->name} and backup_result_id {$this->backupResult->id}. Stopping backup_result status update.");
+
+                return;
+            }
+
             $this->updateBackupResult($body);
 
             if (! is_null($this->backupResult->user_id) && $body['status'] !== BackupResult::CHECK_STATUS_PENDING) {
