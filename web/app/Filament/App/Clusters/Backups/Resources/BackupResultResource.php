@@ -192,10 +192,10 @@ class BackupResultResource extends Resource
                                 return;
                             }
 
-                            if ($record->in_restore_process) {
+                            if (BackupResult::where('moodle_course_id', $record->moodle_course_id)->where('in_restore_process', true)->exists()) {
                                 Notification::make()
                                     ->title(__('Backup restore error'))
-                                    ->body(__('Backup is already in restore process. Please wait until it is completed.'))
+                                    ->body(__('There\'s an ongoing restore process on selected course. Please wait until it is completed.'))
                                     ->danger()
                                     ->seconds(8)
                                     ->send();
@@ -212,6 +212,8 @@ class BackupResultResource extends Resource
 
                                 return;
                             }
+
+                            dd('restoring');
 
                             try {
                                 $decryptedPassword = Crypt::decrypt($record->password);
