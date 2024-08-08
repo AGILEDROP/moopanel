@@ -213,8 +213,6 @@ class BackupResultResource extends Resource
                                 return;
                             }
 
-                            dd('restoring');
-
                             try {
                                 $decryptedPassword = Crypt::decrypt($record->password);
                             } catch (\Exception $e) {
