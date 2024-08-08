@@ -24,7 +24,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('module-api:check-pending-update-requests')->everyThreeMinutes();
         $schedule->command('backup:check-pending-backup-results')->everyThreeMinutes();
 
-        $schedule->command('backup:automatic-backup-command')->hourly();
+        // Later can be set to one hour - 30mins because of testing
+        $schedule->command('backup:automatic-backup-command')->everyThirtyMinutes();
         $schedule->command('backup:auto-prune')->daily();
         $schedule->command('backup:clean')->weekly();
     }
