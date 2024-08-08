@@ -99,18 +99,25 @@ class CourseBackupController extends Controller
         $validatedData = $request->validated();
         $instance = Instance::withoutGlobalScope(InstanceScope::class)->where('id', (int) $instance_id)->first();
         $isSuccessfull = true;
+        $updatingStatus = false;
 
         // Avoid duplicated notifications if request repeated for already successful update
         if ($this->hasPendingBackupRequest($instance, $validatedData['courseid'])) {
             $isSuccessfull = $isSuccessfull && $this->statusUpdate($instance, $validatedData);
+            $updatingStatus = true;
         }
 
         if (! $isSuccessfull) {
+            Log::error('Backup status update failed for received payload '.json_encode($validatedData)." for instance {$instance->id}.");
+
             return response()->json([
                 'message' => 'There was and error while receiving and updating course backup results. Please try again or contact support.',
                 'status' => false,
             ], 500);
         }
+
+        $updatingStatusMsg = $updatingStatus ? 'yes' : 'no';
+        Log::info("Successfully received backup for instance {$instance->id} and payload ".json_encode($validatedData).'. Did update backup status: '.$updatingStatusMsg);
 
         return response()->json([
             'message' => 'Course backup statuses received successfully.',
