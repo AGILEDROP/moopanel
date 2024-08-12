@@ -8,6 +8,8 @@ use App\Filament\Admin\Resources\InstanceResource;
 use App\Filament\Custom\Admin\Actions\Forms\CopyFieldStateAction;
 use App\Models\Cluster;
 use App\Models\Instance;
+use App\Models\UniversityMember;
+use App\Rules\AzureAppId;
 use App\Services\ModuleApiService;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
@@ -151,6 +153,15 @@ class AddInstance extends Page implements HasForms
                                         Forms\Components\Select::make('cluster_id')
                                             ->label('Assign cluster')
                                             ->options(Cluster::all()->pluck('name', 'id'))
+                                            ->searchable()
+                                            ->required(fn () => $this->connected),
+                                        Forms\Components\TextInput::make('azure_app_id')
+                                            ->rules([new AzureAppId()])
+                                            ->label(__('Azure App ID')),
+                                        Forms\Components\Select::make('university_member_id')
+                                            ->label('Assign university')
+                                            ->options(UniversityMember::all()->pluck('name', 'id'))
+                                            ->rules('exists:university_members,id')
                                             ->searchable()
                                             ->required(fn () => $this->connected),
                                     ]),
