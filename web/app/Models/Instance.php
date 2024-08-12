@@ -32,6 +32,7 @@ class Instance extends Model implements HasAvatar
         'key_expiration_date',
         'status',
         'configuration_path',
+        'azure_app_id',
     ];
 
     protected $hidden = [
