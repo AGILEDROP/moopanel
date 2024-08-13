@@ -42,7 +42,7 @@ class InstanceSettings extends Page implements HasForms
                     ->rules([new AzureAppId()])
                     ->required(),
                 Select::make('university_member_id')
-                    ->label('University')
+                    ->label('University member')
                     ->options(UniversityMember::all()->pluck('name', 'id'))
                     ->rules('exists:university_members,id')
                     ->searchable()
