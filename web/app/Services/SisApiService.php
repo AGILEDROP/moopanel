@@ -5,10 +5,12 @@ namespace App\Services;
 use App\Enums\AccountTypes;
 use App\Models\Account;
 use App\Models\UniversityMember;
+use Firebase\JWT\JWT;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -19,16 +21,44 @@ class SisApiService
 
     const ACCOUNT_UPN_FIELD = 'username';
 
+    private string $accessToken;
+
+    private string $jwtToken;
+
+    public function __construct()
+    {
+        $jwtToken = Cache::get('jwt_token');
+
+        if (! $jwtToken) {
+            $jwtToken = $this->getSisJwtToken();
+            Cache::put('jwt_token', $jwtToken, (int) config('custom.sis_api_jwt_expiration'));
+        }
+
+        $this->jwtToken = $jwtToken;
+
+        $accessToken = Cache::get('access_token');
+
+        if (! $accessToken) {
+            $accessToken = $this->getAccessToken($this->jwtToken);
+        }
+
+        $this->accessToken = $accessToken;
+    }
+
     public function getAllEmployees(UniversityMember $universityMember): Collection
     {
         $response = $this->getEndpointResponse($universityMember->sis_base_url, 'zaposleni', $universityMember->sis_current_year, $universityMember->code);
         if (! $response->ok()) {
-            Log::error("{$universityMember->name} (code: {$universityMember->code}) SIS endpoint does not return employees data.");
+            Log::error("{$universityMember->name} (code: {$universityMember->code}) SIS endpoint does not return employees data with response code {$response->status()} and body {$response->body()}");
 
             return collect();
         }
 
-        return $response->collect();
+        $employees = $response->collect();
+
+        Log::info("{$universityMember->name} (code: {$universityMember->code}) SIS endpoint returned ".count($employees).' employees.');
+
+        return $employees;
     }
 
     public function getAllStudents(UniversityMember $universityMember): Collection
@@ -39,7 +69,7 @@ class SisApiService
         foreach ($years as $year) {
             $response = $this->getEndpointResponse($universityMember->sis_base_url, 'student', $year, $universityMember->code);
             if (! $response->ok()) {
-                Log::error("{$universityMember->name} (code: {$universityMember->code}, year: {$year}) SIS endpoint does not return students data.");
+                Log::error("{$universityMember->name} (code: {$universityMember->code}, year: {$year}) SIS endpoint does not return students data with response code {$response->status()} and body {$response->body()}");
 
                 return $data;
             }
@@ -54,6 +84,8 @@ class SisApiService
 
             $previousYear = $year;
         }
+
+        Log::info("{$universityMember->name} (code: {$universityMember->code}) SIS endpoint returned ".count($data).' students.');
 
         return $data;
     }
@@ -101,9 +133,8 @@ class SisApiService
     {
         Log::warning("{$baseSisApiUrl}/{$endpoint}}/{$schoolYear}/{$universityMemberCode}");
 
-        return Http::withHeader(config('custom.sis_api_key_name'), config('custom.sis_api_key_value'))
+        return Http::withToken($this->accessToken)
             ->get("{$baseSisApiUrl}/{$endpoint}/{$schoolYear}/{$universityMemberCode}");
-
     }
 
     private function getStudentSchoolYears(?string $currentYear = null, int $numYears = 1): array
@@ -137,5 +168,58 @@ class SisApiService
         }
 
         return $year;
+    }
+
+    private function getSisJwtToken(): string
+    {
+        $privateKey = config('custom.sis_api_jwt_private_key');
+
+        $headers = [
+            'typ' => 'JWT',
+            'alg' => config('custom.sis_api_jwt_alg'),
+            'x5t' => config('custom.sis_api_jwt_x5t'),
+        ];
+
+        $payload = [
+            'iss' => config('custom.sis_api_jwt_iss'),
+            'sub' => config('custom.sis_api_jwt_sub'),
+            'aud' => config('custom.sis_api_jwt_aud'),
+            'iat' => time(), // Time when JWT was issued.
+            'nbf' => time(), // Time when JWT was issued.
+            'exp' => time() + ((int) config('custom.sis_api_jwt_expiration')), // Expiration time (1 hour from now)
+            'jti' => uniqid(), // Unique identifier for the token
+        ];
+
+        $jwt = JWT::encode($payload, $privateKey, 'RS256', null, $headers);
+
+        return $jwt;
+    }
+
+    private function getAccessToken(string $jwtToken): string
+    {
+        $response = Http::asForm()->post('https://login.microsoftonline.com/'.config('custom.azure_tenant_id').'/oauth2/v2.0/token', [
+            'grant_type' => 'client_credentials',
+            'tenant' => config('custom.azure_tenant_id'),
+            'scope' => config('custom.azure_oauth2_scope'),
+            'client_id' => config('custom.azure_sis_client_id'),
+            'client_assertion_type' => config('custom.azure_client_assertion_type'),
+            'client_assertion' => $jwtToken,
+        ]);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            Cache::put('access_token', $data['access_token'], ((int) $data['expires_in'] - 10));
+            $accessToken = $data['access_token'];
+        } else {
+            Log::error('Error getting access token from Azure, Status Code: '.$response->status());
+
+            if ($response->status() === 404) {
+                Log::error('Extra info for 404 code: '.'https://login.microsoftonline.com/'.config('custom.azure_tenant_id').'/oauth2/v2.0/token');
+            }
+
+            throw new \Exception('Error getting access token from Azure');
+        }
+
+        return $accessToken;
     }
 }
