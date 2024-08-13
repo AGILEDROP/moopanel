@@ -155,14 +155,17 @@ class UniversityMemberSeeder extends Seeder
             // For now all accounts (with students) should be fetched from current year.
             // In the future this number will tell SisApiService how many years back
             // it should look to update user accounts type & member.
-            UniversityMember::factory()->create([
-                'code' => $universityMember['code'],
-                'acronym' => $universityMember['acronym'],
-                'name' => $universityMember['name'],
-                'sis_base_url' => 'https://visapi.uni-lj.si/UL_MOODLE2/RESTAdapter/v1',
-                'sis_current_year' => '2023-2024',
-                'sis_student_years' => 1,
-            ]);
+            if (! UniversityMember::where('code', $universityMember['code'])->exists()) {
+
+                UniversityMember::factory()->create([
+                    'code' => $universityMember['code'],
+                    'acronym' => $universityMember['acronym'],
+                    'name' => $universityMember['name'],
+                    'sis_base_url' => 'https://visapi.uni-lj.si/UL_MOODLE/RESTAdapter/v1',
+                    'sis_current_year' => '2023-2024',
+                    'sis_student_years' => 1,
+                ]);
+            }
         }
     }
 }
