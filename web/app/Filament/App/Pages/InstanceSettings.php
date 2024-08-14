@@ -13,6 +13,7 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Exceptions\Halt;
+use Illuminate\Validation\Rule;
 
 class InstanceSettings extends Page implements HasForms
 {
@@ -39,12 +40,18 @@ class InstanceSettings extends Page implements HasForms
             ->schema([
                 TextInput::make('azure_app_id')
                     ->label(__('Azure App ID'))
-                    ->rules([new AzureAppId()])
+                    ->rules([
+                        new AzureAppId(),
+                        Rule::unique('instances', 'azure_app_id')->ignore(filament()->getTenant()->id),
+                    ])
                     ->required(),
                 Select::make('university_member_id')
                     ->label('University member')
                     ->options(UniversityMember::all()->pluck('name', 'id'))
-                    ->rules('exists:university_members,id')
+                    ->rules([
+                        'exists:university_members,id',
+                        Rule::unique('instances', 'university_member_id')->ignore(filament()->getTenant()->id),
+                    ])
                     ->searchable()
                     ->required(),
             ])

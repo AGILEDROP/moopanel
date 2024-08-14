@@ -156,12 +156,12 @@ class AddInstance extends Page implements HasForms
                                             ->searchable()
                                             ->required(fn () => $this->connected),
                                         Forms\Components\TextInput::make('azure_app_id')
-                                            ->rules([new AzureAppId()])
+                                            ->rules([new AzureAppId(), 'unique:instances,azure_app_id'])
                                             ->label(__('Azure App ID')),
                                         Forms\Components\Select::make('university_member_id')
                                             ->label('Assign university')
                                             ->options(UniversityMember::all()->pluck('name', 'id'))
-                                            ->rules('exists:university_members,id')
+                                            ->rules(['exists:university_members,id', 'unique:instances,university_member_id'])
                                             ->searchable()
                                             ->required(fn () => $this->connected),
                                     ]),
