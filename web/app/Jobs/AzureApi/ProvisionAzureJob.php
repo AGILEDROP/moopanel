@@ -21,7 +21,8 @@ class ProvisionAzureJob implements ShouldQueue
      */
     public function __construct(
         private UniversityMember $universityMember,
-        private Account $account
+        private Account $account,
+        private string $type
     ) {
         //
     }
@@ -29,8 +30,10 @@ class ProvisionAzureJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(AzureApiService $azureApiService): void
+    public function handle(): void
     {
+        $azureApiService = new AzureApiService();
+
         // perform the provisioning - request to Azure API
         $appRoleAssignmentId = $azureApiService->assignUserToUniversityMemberApp($this->universityMember, $this->account);
 
@@ -43,11 +46,11 @@ class ProvisionAzureJob implements ShouldQueue
                 $this->universityMember->accounts()->attach($this->account->id, ['app_role_assignment_id' => $appRoleAssignmentId]);
             }
 
-            Log::info("User assigned to university member app for account {$this->account->id} and university member: {$this->universityMember->code}, {$this->universityMember->name},  with app_role_assignment_id: {$appRoleAssignmentId}.");
+            Log::info("User of type {$this->type} assigned to university member app for account {$this->account->id} and university member: {$this->universityMember->code}, {$this->universityMember->name},  with app_role_assignment_id: {$appRoleAssignmentId}.");
 
             return;
         }
 
-        Log::error("Error assigning user to university member app for account {$this->account->id} and university member {$this->universityMember->code}. Missing app_role_assignment_id returned from Azure AD.");
+        Log::error("Error assigning user of type {$this->type} to university member app for account {$this->account->id} and university member {$this->universityMember->code}. Missing app_role_assignment_id returned from Azure AD.");
     }
 }

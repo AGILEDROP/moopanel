@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AccountTypes;
+use App\Jobs\AzureApi\DeprovisionAzureJob;
 use App\Jobs\AzureApi\ProvisionAzureJob;
 use App\Models\Account;
 use App\Models\UniversityMember;
@@ -118,32 +119,25 @@ class SisApiService
                 ->pluck('id')
                 ->toArray();
 
-            // TODO: uncomment to allow account assignment to Azure AD app and mooPanel via jobs
-            //$this->scheduleToAssign($accountItems, $universityMember, $type);
-
-            // Assign adittional account to current university member
-            // Syncwithoutdetaching is used because we want to keep existing accounts linked
-            // not needed - form v1.0.0 - this is now done in job
-            $universityMember->accounts()->syncWithoutDetaching($accounts);
+            $this->scheduleToAssign($accountItems, $universityMember, $type);
 
             Account::whereIn('id', $accounts)
                 ->update([
                     'type' => $type,
                 ]);
+
             // Handle also detaching -> Sync can't be used because this function is used on two different endpoints
             // (one for students and one for employees).
             $accountsThatShouldBeDetached = $universityMember
                 ->accounts()
                 ->where('type', $type)
                 ->whereNotIn('id', $accounts)
-                ->pluck('id');
+                ->get();
+
             if (count($accountsThatShouldBeDetached) > 0) {
-                // TODO:
-                // first remove users from Azure AD app via job an then detach, so that we know which app_role_assignment_id to submit on deletion request to Azure
-                // maybe also detach if inside job
-                // Remove user from Azure AD app via job?
-                $universityMember->accounts()->detach($accountsThatShouldBeDetached);
+                $this->scheduleToUnassign($accountsThatShouldBeDetached, $universityMember, $type);
             }
+
         } else {
             Log::warning("{$universityMember->name} endpoint returned an empty {$typeName} collection.");
         }
@@ -264,13 +258,41 @@ class SisApiService
 
                     continue;
                 }
-
             }
 
             // Put account into process of assignint it into Azure AD app and inside mooPanel
-            ProvisionAzureJob::dispatch($universityMember, $account);
+            ProvisionAzureJob::dispatch($universityMember, $account, $type);
         }
 
         Log::info("Accounts of type {$type} scheduled for assignment to Azure AD app and mooPanel via SIS api service.");
+    }
+
+    /**
+     * Trigger account unassignment from Azure AD app and mooPanel for each account that was assigned to university-member
+     * both in mooPanel and Azure AD app(contains app_role_assignment_id)
+     */
+    private function scheduleToUnassign(Collection $accounts, UniversityMember $universityMember, string $type): void
+    {
+        foreach ($accounts as $account) {
+            $universityMemberAccount = $universityMember->accounts->where('id', $account->id)->first();
+
+            if (is_null($universityMemberAccount)) {
+                Log::warning(__METHOD__."Account {$account->id} is not assigned to university member {$universityMember->code}.");
+
+                continue;
+            }
+
+            $appRoleAssignmentId = $universityMemberAccount->pivot->app_role_assignment_id;
+
+            if (is_null($appRoleAssignmentId)) {
+                Log::warning(__METHOD__."Account {$account->id} is not assigned to university member {$universityMember->code} in Azure AD app.");
+
+                continue;
+            }
+
+            DeprovisionAzureJob::dispatch($universityMember, $account, $type);
+        }
+
+        Log::info("Accounts of type {$type} scheduled for UNassignment from Azure AD app and mooPanel via SIS api service.");
     }
 }
