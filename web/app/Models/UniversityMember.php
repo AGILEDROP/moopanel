@@ -26,16 +26,18 @@ class UniversityMember extends Model
 
     public function accounts(): MorphToMany
     {
-        return $this->morphedByMany(Account::class, 'memberable', 'university_memberables');
+        return $this->morphedByMany(Account::class, 'memberable', 'university_memberables')
+            ->withPivot('app_role_assignment_id');
     }
 
     public function users(): MorphToMany
     {
-        return $this->morphedByMany(User::class, 'memberable', 'university_memberables');
+        return $this->morphedByMany(User::class, 'memberable', 'university_memberables')
+            ->withPivot('app_role_assignment_id');
     }
 
     public function instances(): HasMany
     {
-        return $this->hasMany(Instance::class);
+        return $this->hasMany(Instance::class, 'university_member_id');
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Enums\AccountTypes;
+use App\Jobs\AzureApi\DeprovisionAzureJob;
+use App\Jobs\AzureApi\ProvisionAzureJob;
 use App\Models\Account;
 use App\Models\UniversityMember;
 use Firebase\JWT\JWT;
@@ -100,30 +102,42 @@ class SisApiService
             // Log sisUsers that don't have defined Account model.
             $sisUsersWithoutAccount = $sisUsers->whereNotIn(self::SIS_UPN_FIELD, $accountsUpns);
             if ($sisUsersWithoutAccount->count() > 0) {
-                Log::warning('Not all '.$typeName.' data returned from the SIS endpoint have a defined Account model!');
-                Log::debug('Missing '.$typeName.' data: '.print_r($sisUsersWithoutAccount, true));
+                Log::info("{$universityMember->name} endpoint returned ".$sisUsersWithoutAccount->count()." {$typeName} data that don't have a defined Account model.");
+
+                //Log::warning('Not all ' . $typeName . ' data returned from the SIS endpoint have a defined Account model!');
+                //Log::debug('Missing ' . $typeName . ' data: ' . print_r($sisUsersWithoutAccount, true));
             }
 
             // Assign university member to existing account & update type value!
             $sisUsersWithAccount = $sisUsers->whereIn(self::SIS_UPN_FIELD, $accountsUpns);
-            $accounts = Account::whereIn(self::ACCOUNT_UPN_FIELD, $sisUsersWithAccount->pluck(self::SIS_UPN_FIELD)->toArray())
+
+            $accountItems = Account::whereIn(self::ACCOUNT_UPN_FIELD, $sisUsersWithAccount->pluck(self::SIS_UPN_FIELD)->toArray())
+                ->get();
+
+            // Account IDs of users that arrived from SIS and are already in the database.
+            $accounts = $accountItems
                 ->pluck('id')
                 ->toArray();
-            $universityMember->accounts()->syncWithoutDetaching($accounts);
+
+            $this->scheduleToAssign($accountItems, $universityMember, $type);
+
             Account::whereIn('id', $accounts)
                 ->update([
                     'type' => $type,
                 ]);
+
             // Handle also detaching -> Sync can't be used because this function is used on two different endpoints
             // (one for students and one for employees).
             $accountsThatShouldBeDetached = $universityMember
                 ->accounts()
                 ->where('type', $type)
                 ->whereNotIn('id', $accounts)
-                ->pluck('id');
+                ->get();
+
             if (count($accountsThatShouldBeDetached) > 0) {
-                $universityMember->accounts()->detach($accountsThatShouldBeDetached);
+                $this->scheduleToUnassign($accountsThatShouldBeDetached, $universityMember, $type);
             }
+
         } else {
             Log::warning("{$universityMember->name} endpoint returned an empty {$typeName} collection.");
         }
@@ -221,5 +235,64 @@ class SisApiService
         }
 
         return $accessToken;
+    }
+
+    /**
+     * Trigger account assignment to Azure AD app and mooPanel for each account that is not already assigned
+     * to Azure AD app(nullable app_role_assignment_id)
+     *
+     * Trigger assignment also if account is assigned to university-member in moopanel but not in Azure AD app
+     */
+    private function scheduleToAssign(Collection $accounts, UniversityMember $universityMember, string $type): void
+    {
+        foreach ($accounts as $account) {
+            $universityMemberAccount = $universityMember->accounts->where('id', $account->id)->first();
+
+            // Find if current account is already assigned to university member
+            if ($universityMemberAccount) {
+                $appRoleAssignmentId = $universityMemberAccount->pivot->app_role_assignment_id;
+
+                // If account is already assigned to university member, then skip it
+                if ($appRoleAssignmentId) {
+                    Log::info("Account {$account->id} is already assigned to university member {$universityMember->code} with app_role_assignment_id {$appRoleAssignmentId}.");
+
+                    continue;
+                }
+            }
+
+            // Put account into process of assignint it into Azure AD app and inside mooPanel
+            ProvisionAzureJob::dispatch($universityMember, $account, $type);
+        }
+
+        Log::info("Accounts of type {$type} scheduled for assignment to Azure AD app and mooPanel via SIS api service.");
+    }
+
+    /**
+     * Trigger account unassignment from Azure AD app and mooPanel for each account that was assigned to university-member
+     * both in mooPanel and Azure AD app(contains app_role_assignment_id)
+     */
+    private function scheduleToUnassign(Collection $accounts, UniversityMember $universityMember, string $type): void
+    {
+        foreach ($accounts as $account) {
+            $universityMemberAccount = $universityMember->accounts->where('id', $account->id)->first();
+
+            if (is_null($universityMemberAccount)) {
+                Log::warning(__METHOD__."Account {$account->id} is not assigned to university member {$universityMember->code}.");
+
+                continue;
+            }
+
+            $appRoleAssignmentId = $universityMemberAccount->pivot->app_role_assignment_id;
+
+            if (is_null($appRoleAssignmentId)) {
+                Log::warning(__METHOD__."Account {$account->id} is not assigned to university member {$universityMember->code} in Azure AD app.");
+
+                continue;
+            }
+
+            DeprovisionAzureJob::dispatch($universityMember, $account, $type);
+        }
+
+        Log::info("Accounts of type {$type} scheduled for UNassignment from Azure AD app and mooPanel via SIS api service.");
     }
 }

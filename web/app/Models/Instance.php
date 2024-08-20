@@ -33,6 +33,7 @@ class Instance extends Model implements HasAvatar
         'status',
         'configuration_path',
         'azure_app_id',
+        'app_info',
     ];
 
     protected $hidden = [
@@ -41,6 +42,7 @@ class Instance extends Model implements HasAvatar
 
     protected $casts = [
         'status' => Status::class,
+        'app_info' => 'json',
     ];
 
     public function universityMember(): BelongsTo
