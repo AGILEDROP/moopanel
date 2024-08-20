@@ -3,6 +3,7 @@
 namespace App\Jobs\AzureApi;
 
 use App\Models\Account;
+use App\Models\Scopes\InstanceScope;
 use App\Models\UniversityMember;
 use App\Services\AzureApiService;
 use Illuminate\Bus\Queueable;
@@ -32,7 +33,15 @@ class ProvisionAzureJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $azureApiService = new AzureApiService();
+        $instance = $this->universityMember->instances()->withoutGlobalScope(InstanceScope::class)->get()->first();
+
+        if (! $instance) {
+            Log::error("Error provisioning users to azure app - missing instance for university member {$this->universityMember->code}.");
+
+            return;
+        }
+
+        $azureApiService = new AzureApiService($instance);
 
         // perform the provisioning - request to Azure API
         $appRoleAssignmentId = $azureApiService->assignUserToUniversityMemberApp($this->universityMember, $this->account);

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\LicenseType;
 use App\Enums\Role;
 use App\Models\Account;
+use App\Models\Instance;
 use App\Models\License;
 use App\Models\Scopes\InstanceScope;
 use App\Models\UniversityMember;
@@ -20,9 +21,10 @@ class AzureApiService
 
     private ?string $accessToken = null;
 
-    public function __construct()
+    public function __construct(private ?Instance $instance)
     {
-        /* $accessToken = Cache::get('access_token');
+        $accessToken = Cache::get('azure_ad_access_token');
+
         if (! $accessToken) {
             $response = Http::asForm()->post('https://login.microsoftonline.com/'.config('custom.azure_tenant_id').'/oauth2/v2.0/token', [
                 'grant_type' => 'client_credentials',
@@ -33,7 +35,8 @@ class AzureApiService
 
             if ($response->successful()) {
                 $data = $response->json();
-                Cache::put('access_token', $data['access_token'], ((int) $data['expires_in'] - 10));
+
+                Cache::put('azure_ad_access_token', $data['access_token'], ((int) $data['expires_in'] - 10));
                 $accessToken = $data['access_token'];
             } else {
                 Log::error('Error getting access token from Azure, Status Code: '.$response->status());
@@ -43,8 +46,7 @@ class AzureApiService
             }
         }
 
-        $this->accessToken = $accessToken; */
-        $this->accessToken = 'Bearer dummy_token';
+        $this->accessToken = $accessToken;
     }
 
     public function assignUserToUniversityMemberApp(UniversityMember $universityMember, Account $account): string|bool

@@ -14,6 +14,8 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('activitylog:clean --force')->daily();
 
+        $schedule->command('azure-api:app-data-sync')->dailyAt('01:00');
+
         $schedule->command('sis:sync-accounts-data')->dailyAt('03:00');
 
         $schedule->command('module-api:zip-plugin-file-delete')->hourly();
