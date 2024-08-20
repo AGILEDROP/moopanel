@@ -44,7 +44,7 @@ class DeprovisionAzureJob implements ShouldQueue
         $azureApiService = new AzureApiService($instance);
 
         // perform the provisioning - request to Azure API
-        $unassignedSuccessfully = $azureApiService->unassignUserfromUniversityMemberApp($this->universityMember, $this->account);
+        $unassignedSuccessfully = $azureApiService->unassignUserfromUniversityMemberApp($instance, $this->account);
 
         if (! $unassignedSuccessfully) {
             Log::error("Error unassigning user from university member app for account {$this->account->id} and university member {$this->universityMember->code}.");

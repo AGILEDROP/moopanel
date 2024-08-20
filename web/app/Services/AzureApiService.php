@@ -2,12 +2,10 @@
 
 namespace App\Services;
 
-use App\Enums\LicenseType;
 use App\Enums\Role;
 use App\Models\Account;
 use App\Models\Instance;
 use App\Models\License;
-use App\Models\Scopes\InstanceScope;
 use App\Models\UniversityMember;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -49,85 +47,78 @@ class AzureApiService
         $this->accessToken = $accessToken;
     }
 
-    public function assignUserToUniversityMemberApp(UniversityMember $universityMember, Account $account): string|bool
+    public function assignUserToUniversityMemberApp(Instance $instance, Account $account): string|bool
     {
-        $instance = $universityMember->instances()->withoutGlobalScope(InstanceScope::class)->get()->first();
-
-        if (! $instance) {
-            Log::error("Error calling assignUserToUniversityMemberApp - missing instance for university member {$universityMember->code}.");
+        if (is_null($instance->app_info)) {
+            Log::error(__METHOD__." - Error assigning user to Azure AD app - missing app_info for instance {$instance->name} with id {$instance->id}.");
 
             return false;
         }
 
-        $appID = $instance->azure_app_id;
+        $appInfo = json_decode($instance->app_info, true);
+        $appID = $appInfo['id'];
         $appRoleId = null;
 
-        Http::fake([
-            'github.com/*' => Http::response([
-                'id' => 'LOLO-frewf-ewf-ewf-ewf',
-                'error' => [
-                    'message' => 'Backup restore request successfuly accepted!',
-                ],
-            ], 200),
-        ]);
-
-        // Then, make an actual request, which will be intercepted by the fake.
-        // For demonstration, let's assume you're making a GET request to "https://github.com/api/data"
-        $response = Http::get('https://github.com/api/data');
-
-        return $response->json()['id'];
-
-        // TBD: check this
-        /* if ($license->type === LicenseType::Bookwidget) {
-            $appRoleId = '00000000-0000-0000-0000-000000000000';
-        } else {
-            foreach ($license->app_info['appRoles'] as $roles) {
-                if ($roles['displayName'] === 'User') {
-                    $appRoleId = $roles['id'];
-                    break;
-                }
+        foreach ($appInfo['appRoles'] as $roles) {
+            if ($roles['displayName'] === 'User') {
+                $appRoleId = $roles['id'];
+                break;
             }
-        } */
+        }
 
-        /* $response = Http::withToken($this->accessToken)
-            ->post(self::DOMAIN . "/v1.0/servicePrincipals/$appID/appRoleAssignedTo", [
-                'principalId' => $user->azure_id,
+        if (empty($appRoleId)) {
+            Log::error(__METHOD__." - Error assigning user to Azure AD app - missing appRoleId for instance {$instance->name} with id {$instance->id}.");
+
+            return false;
+        }
+
+        $response = Http::withToken($this->accessToken)
+            ->post(self::DOMAIN."/v1.0/servicePrincipals/$appID/appRoleAssignedTo", [
+                'principalId' => $account->azure_id,
                 'resourceId' => $appID,
-                'appRoleId' => $appRoleId
+                'appRoleId' => $appRoleId,
             ]);
 
         $json = $response->json();
-        if (!$response->successful()) {
+
+        if (! $response->successful()) {
             if (
                 is_array($json)
-                && !empty($json['error']['message'])
+                && ! empty($json['error']['message'])
                 && $json['error']['message'] === 'Permission being assigned already exists on the object'
             ) {
                 return true;
             }
 
-            Log::error('Error posting addUserToLicense from Azure, Status Code: ' . $response->status()
-                . ' ' . self::DOMAIN . "/v1.0/servicePrincipals/$appID/appRoleAssignedTo"
-                . $appRoleId);
+            Log::error('Error posting addUserToLicense from Azure, Status Code: '.$response->status()
+                .' '.self::DOMAIN."/v1.0/servicePrincipals/$appID/appRoleAssignedTo"
+                .$appRoleId
+                .$response->body());
 
             return false;
         }
 
-        return $json['id']; */
+        return $json['id'];
     }
 
-    public function unassignUserfromUniversityMemberApp(UniversityMember $universityMember, Account $account): bool
+    public function unassignUserfromUniversityMemberApp(Instance $instance, Account $account): bool
     {
-        $instance = $universityMember->instances()->withoutGlobalScope(InstanceScope::class)->get()->first();
-
-        if (! $instance) {
-            Log::error("Error calling unassignUserfromUniversityMemberApp - missing instance for university member {$universityMember->code}.");
+        if (is_null($instance->app_info)) {
+            Log::error(__METHOD__." - Error assigning user to Azure AD app - missing app_info for instance {$instance->name} with id {$instance->id}.");
 
             return false;
         }
 
-        $appID = $instance->azure_app_id;
-        $appRoleId = null;
+        $appInfo = json_decode($instance->app_info, true);
+        $appID = $appInfo['id'];
+
+        $universityMember = $instance->universityMember;
+
+        if (is_null($universityMember)) {
+            Log::error(__METHOD__." - Error assigning user to Azure AD app - missing university member for instance {$instance->name} with id {$instance->id}.");
+
+            return false;
+        }
 
         $appRoleAssignmentId = $universityMember->accounts()->where('id', $account->id)->first()?->pivot->app_role_assignment_id;
 
@@ -137,48 +128,16 @@ class AzureApiService
             return false;
         }
 
-        Http::fake([
-            'github.com/*' => Http::response([
-                'status' => true,
-            ], 200),
-        ]);
-
-        // Then, make an actual request, which will be intercepted by the fake.
-        // For demonstration, let's assume you're making a GET request to "https://github.com/api/data"
-        $response = Http::get('https://github.com/api/data');
+        $response = Http::withToken($this->accessToken)
+            ->delete(self::DOMAIN."/v1.0/servicePrincipals/$appID/appRoleAssignedTo/$appRoleAssignmentId");
 
         if (! $response->successful()) {
-            Log::error("Error requesting for unassignin user from Azure AD app for account {$account->id} and university member {$universityMember->code}. Received status code: {$response->status()}.");
+            Log::error('Error calling removeUserFromLicense from Azure, Status Code: '.$response->status());
 
             return false;
         }
 
         return true;
-
-        /* $instances = $universityMember->instances;
-
-        foreach ($instances as $instance) {
-            $appID = $instance->azure_app_id;
-            $appRoleId = null;
-        }
-
-        $appID = $license->app_info['id'];
-        $appRoleAssignmentId = $user->licenses->where('pivot.license_id', '=', $license->id)->first()->pivot->app_role_assignment_id;
-
-        if (empty($appRoleAssignmentId)) {
-            Log::error('Error calling removeUserFromLicense - missing app_role_assignment_id.');
-
-            return false;
-        }
-
-        $response = Http::withToken($this->accessToken)
-            ->delete(self::DOMAIN . "/v1.0/servicePrincipals/$appID/appRoleAssignedTo/$appRoleAssignmentId");
-
-        if (! $response->successful()) {
-            Log::error('Error calling removeUserFromLicense from Azure, Status Code: ' . $response->status());
-
-            return false;
-        } */
     }
 
     public function userInfo(string $userPrincipalName): array
@@ -239,86 +198,5 @@ class AzureApiService
         }
 
         return $values[0] ?? $values;
-    }
-
-    public function removeUserFromLicense(UniversityMember $universityMember, Account $account): bool
-    {
-        /* $instances = $universityMember->instances;
-
-        foreach ($instances as $instance) {
-            $appID = $instance->azure_app_id;
-            $appRoleId = null;
-        }
-
-        $appID = $license->app_info['id'];
-        $appRoleAssignmentId = $user->licenses->where('pivot.license_id', '=', $license->id)->first()->pivot->app_role_assignment_id;
-
-        if (empty($appRoleAssignmentId)) {
-            Log::error('Error calling removeUserFromLicense - missing app_role_assignment_id.');
-
-            return false;
-        }
-
-        $response = Http::withToken($this->accessToken)
-            ->delete(self::DOMAIN . "/v1.0/servicePrincipals/$appID/appRoleAssignedTo/$appRoleAssignmentId");
-
-        if (! $response->successful()) {
-            Log::error('Error calling removeUserFromLicense from Azure, Status Code: ' . $response->status());
-
-            return false;
-        } */
-
-        return true;
-    }
-
-    public function lastAccess(User $user): string|false
-    {
-        /* $upn = $user->username;
-        $licenseDisplayName = $license->name;
-
-        $response = Http::withToken($this->accessToken)
-            ->get(self::DOMAIN . '/v1.0/auditLogs/signIns', [
-                '$top' => 1,
-                '$filter' => "userPrincipalName eq '$upn' and appDisplayName eq '$licenseDisplayName'",
-            ]);
-
-        if (! $response->successful()) {
-            Log::error('Error getting lastAccess from Azure, Status Code: ' . $response->status());
-
-            return false;
-        }
-
-        $values = $response->json('value');
-        if (empty($values)) {
-            return false;
-        }
-
-        $createdDateTime = $values[0]['createdDateTime'];
-        $date = Carbon::parse($createdDateTime, 'UTC');
-        $date->setTimezone(config('app.timezone'));
-
-        // "2024-01-17 11:58:23"
-        return $date->toDateTime()->format('Y-m-d H:i:s'); */
-
-        return true;
-    }
-
-    public function listOfUsers(?string $token = null): array|false
-    {
-        /* $appID = $license->app_info['id'];
-        $response = Http::withToken($this->accessToken)
-            ->get(self::DOMAIN . "/v1.0/servicePrincipals/$appID/appRoleAssignedTo", [
-                '$top' => 500,
-                '$skiptoken' => $token,
-            ]);
-
-        if (! $response->successful()) {
-            Log::error('Error getting listOfUsers from Azure, Status Code: ' . $response->status());
-
-            return false;
-        }
-
-        return $response->json(); */
-        return false;
     }
 }

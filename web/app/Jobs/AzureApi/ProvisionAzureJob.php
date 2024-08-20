@@ -44,7 +44,7 @@ class ProvisionAzureJob implements ShouldQueue
         $azureApiService = new AzureApiService($instance);
 
         // perform the provisioning - request to Azure API
-        $appRoleAssignmentId = $azureApiService->assignUserToUniversityMemberApp($this->universityMember, $this->account);
+        $appRoleAssignmentId = $azureApiService->assignUserToUniversityMemberApp($instance, $this->account);
 
         // save app_role_assignment_id to the pivot table
         if (is_string($appRoleAssignmentId)) {
@@ -60,6 +60,10 @@ class ProvisionAzureJob implements ShouldQueue
             return;
         }
 
-        Log::error("Error assigning user of type {$this->type} to university member app for account {$this->account->id} and university member {$this->universityMember->code}. Missing app_role_assignment_id returned from Azure AD.");
+        if ($appRoleAssignmentId === false) {
+            Log::error("Error assigning user of type {$this->type} to university member app for account {$this->account->id} and university member {$this->universityMember->code}. Missing app_role_assignment_id returned from Azure AD.");
+        }
+
+        Log::info("User of type {$this->type} already assigned to university member app for account {$this->account->id} and university member: {$this->universityMember->code}, {$this->universityMember->name}.");
     }
 }
