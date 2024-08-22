@@ -293,8 +293,6 @@ class BackupResultResource extends Resource
                                 return;
                             }
 
-                            dd($record);
-
                             $instanceId = filament()->getTenant()->id;
                             $payload = [
                                 'instance_id' => $instanceId,
