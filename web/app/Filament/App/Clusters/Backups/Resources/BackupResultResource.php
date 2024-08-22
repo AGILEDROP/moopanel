@@ -293,8 +293,6 @@ class BackupResultResource extends Resource
                                 return;
                             }
 
-                            dd($record);
-
                             $instanceId = filament()->getTenant()->id;
                             $payload = [
                                 'instance_id' => $instanceId,
@@ -332,7 +330,8 @@ class BackupResultResource extends Resource
                         ->modalHeading(__('Delete backup'))
                         ->modalDescription(__('This action will delete the selected backup. Are you sure you\'d like to delete the selected backup?'))
                         ->modalSubmitActionLabel(__('Delete backup')),
-                    Action::make('download')
+                    // TODO: enable in V2.0 when there will be a possibility to download backups from other storages
+                    /* Action::make('download')
                         ->url(fn (BackupResult $record): string => $record->url ?? '#')
                         ->openUrlInNewTab()
                         ->color(function (BackupResult $record): string {
@@ -363,7 +362,7 @@ class BackupResultResource extends Resource
 
                             return false;
                         })
-                        ->icon('heroicon-m-arrow-down-tray'),
+                        ->icon('heroicon-m-arrow-down-tray'), */
                 ])
                     ->button()
                     ->label(__('Actions')),

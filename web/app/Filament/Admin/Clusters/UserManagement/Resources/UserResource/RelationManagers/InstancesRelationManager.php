@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Clusters\UserManagement\Resources\UserResource\RelationManagers;
 
+use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -31,7 +32,12 @@ class InstancesRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\AttachAction::make()
-                    ->recordSelectOptionsQuery(fn (Builder $query) => $query->withoutGlobalScope(InstanceScope::class))
+                    ->recordSelectOptionsQuery(function () {
+                        // custom query to avoid "select distinct" query, that is not supported by psql for json() column
+                        return Instance::withoutGlobalScope(InstanceScope::class)
+                            ->select('instances.*')
+                            ->leftJoin('instance_user', 'instances.id', '=', 'instance_user.instance_id');
+                    })
                     ->action(function (array $data, Tables\Actions\AttachAction $action): void {
                         $this->ownerRecord->instances()->attach($data['recordId']);
                         $action->sendSuccessNotification();
