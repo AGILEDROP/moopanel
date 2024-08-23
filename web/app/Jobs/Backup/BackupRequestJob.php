@@ -81,8 +81,6 @@ class BackupRequestJob implements ShouldQueue
 
             // There were some immediate errors on the Moodle side - some backup jobs didnt proceed on moodle
             if (
-                isset($response['backups']) &&
-                (count($response['backups']) != count($this->payload['courses'])) &&
                 isset($response['errors']) &&
                 (count($response['errors']) > 0)
             ) {
