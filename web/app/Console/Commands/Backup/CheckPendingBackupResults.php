@@ -35,6 +35,8 @@ class CheckPendingBackupResults extends Command
         $this->checkBackupRestores();
 
         $this->info('Checked pending backup results to create and delete.');
+
+        Log::notice('Checked pending backup results to create, delete and restore.');
     }
 
     /**

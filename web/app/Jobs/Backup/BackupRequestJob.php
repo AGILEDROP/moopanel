@@ -80,7 +80,12 @@ class BackupRequestJob implements ShouldQueue
             $response = $response->json();
 
             // There were some immediate errors on the Moodle side - some backup jobs didnt proceed on moodle
-            if (isset($response['backups']) && (count($response['backups']) != count($this->payload['courses']))) {
+            if (
+                isset($response['backups']) &&
+                (count($response['backups']) != count($this->payload['courses'])) &&
+                isset($response['errors']) &&
+                (count($response['errors']) > 0)
+            ) {
 
                 // Notify user about failed backups
                 if ($this->isManual && ! is_null($this->userToNotify)) {
@@ -113,6 +118,10 @@ class BackupRequestJob implements ShouldQueue
             }
 
             $this->setMoodleJobIds($response);
+
+            // Remove or set log level to > debug
+            Log::debug('Course backup payload: '.json_encode($this->payload));
+            Log::debug('Course backup response: '.json_encode($response));
 
             if ($this->isManual && ! is_null($this->userToNotify)) {
                 Notification::make()
@@ -266,6 +275,18 @@ class BackupRequestJob implements ShouldQueue
         $failedBackups = isset($response['errors']) ? $response['errors'] : [];
 
         foreach ($failedBackups as $backup) {
+
+            if (isset($backup['status']) && $backup['status'] === 204) {
+                Log::info("Backup not needed for moodle_course_id: {$backup['id']}. Deleting pending backup result.");
+
+                BackupResult::where('instance_id', $this->instance->id)
+                    ->where('moodle_course_id', $backup['id'])
+                    ->where('status', BackupResult::STATUS_PENDING)
+                    ->delete();
+
+                continue;
+            }
+
             BackupResult::where('instance_id', $this->instance->id)
                 ->where('moodle_course_id', $backup['id'])
                 ->where('status', BackupResult::STATUS_PENDING)
