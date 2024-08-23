@@ -137,7 +137,6 @@ class SisApiService
             if (count($accountsThatShouldBeDetached) > 0) {
                 $this->scheduleToUnassign($accountsThatShouldBeDetached, $universityMember, $type);
             }
-
         } else {
             Log::warning("{$universityMember->name} endpoint returned an empty {$typeName} collection.");
         }
@@ -260,8 +259,9 @@ class SisApiService
                 }
             }
 
-            // Put account into process of assignint it into Azure AD app and inside mooPanel
-            ProvisionAzureJob::dispatch($universityMember, $account, $type);
+            if ($universityMember->hasAnyInstance()) {
+                ProvisionAzureJob::dispatch($universityMember, $account, $type);
+            }
         }
 
         Log::info("Accounts of type {$type} scheduled for assignment to Azure AD app and mooPanel via SIS api service.");
@@ -290,7 +290,9 @@ class SisApiService
                 continue;
             }
 
-            DeprovisionAzureJob::dispatch($universityMember, $account, $type);
+            if ($universityMember->hasAnyInstance()) {
+                DeprovisionAzureJob::dispatch($universityMember, $account, $type);
+            }
         }
 
         Log::info("Accounts of type {$type} scheduled for UNassignment from Azure AD app and mooPanel via SIS api service.");
