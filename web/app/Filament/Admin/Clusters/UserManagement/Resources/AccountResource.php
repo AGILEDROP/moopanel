@@ -52,6 +52,7 @@ class AccountResource extends Resource
                         return [$case->value => $case->toReadableString()];
                     })->toArray()),
             ])
+            ->paginated([10, 25, 50])
             ->defaultSort('updated_at', 'desc');
     }
 

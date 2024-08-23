@@ -163,6 +163,7 @@ class BackupResultResource extends Resource
             ->filters([
                 //
             ])
+            ->paginated([10, 25, 50])
             ->actions([
                 ActionGroup::make([
                     Action::make('restore')

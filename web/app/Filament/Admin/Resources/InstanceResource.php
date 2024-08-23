@@ -165,6 +165,7 @@ class InstanceResource extends Resource
             ->actions([
                 Custom\Admin\Actions\Table\EditInstanceAction::make(),
             ])
+            ->paginated([10, 25, 50])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

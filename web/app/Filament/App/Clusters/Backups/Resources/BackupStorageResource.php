@@ -149,6 +149,7 @@ class BackupStorageResource extends Resource
             ->filters([
                 //
             ])
+            ->paginated([10, 25, 50])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),

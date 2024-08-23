@@ -121,6 +121,7 @@ class BackupSettingResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
+            ->paginated([10, 25, 50])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
