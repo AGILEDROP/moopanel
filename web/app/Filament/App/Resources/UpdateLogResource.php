@@ -77,7 +77,7 @@ class UpdateLogResource extends Resource
                     ->visibleOn(Pages\ManageUpdateLogs::class),
             ])
             ->defaultSort('timemodified', 'desc')
-            ->paginationPageOptions([5, 10, 25, 50, 100]);
+            ->paginationPageOptions([5, 10, 25, 50]);
     }
 
     public static function getPages(): array

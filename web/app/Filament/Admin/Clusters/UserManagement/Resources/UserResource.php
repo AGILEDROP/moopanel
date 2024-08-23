@@ -63,6 +63,7 @@ class UserResource extends Resource
                 EditAction::make()
                     ->hidden(fn () => auth()->user()->role() !== Role::MasterAdmin),
             ])
+            ->paginated([10, 25, 50])
             ->bulkActions([
             ]);
     }

@@ -72,6 +72,7 @@ class PluginResource extends Resource
                 CustomAppComponents\Filters\AvailableUpdatesFilter::make('available_updates'),
                 CustomAppComponents\Filters\InstancePluginTypeFilter::make('plugin_type'),
             ])
+            ->paginated([10, 25, 50])
             ->headerActions([
                 $syncType->getTableAction('sync', ['managePluginsPage']),
             ])

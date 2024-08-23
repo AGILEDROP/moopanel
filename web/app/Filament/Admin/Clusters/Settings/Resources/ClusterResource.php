@@ -93,6 +93,7 @@ class ClusterResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
+            ->paginated([10, 25, 50])
             ->checkIfRecordIsSelectableUsing(fn (Model $record): bool => $record->default !== true)
             ->recordAction(null);
     }
