@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\InstanceScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -39,5 +40,12 @@ class UniversityMember extends Model
     public function instances(): HasMany
     {
         return $this->hasMany(Instance::class, 'university_member_id');
+    }
+
+    public function hasAnyInstance(): bool
+    {
+        $instance = $this->instances()->withoutGlobalScope(InstanceScope::class)->get()->first();
+
+        return $instance ? true : false;
     }
 }
