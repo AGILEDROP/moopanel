@@ -48,7 +48,7 @@ class ZipUpdatesPage extends BaseUpdateWizardPage implements HasForms
                     ->required()
                     ->disk('public')
                     ->directory('zip_updates')
-                    ->maxSize(1024)
+                    ->maxSize(10240) // 10MB
                     ->storeFileNamesIn('original_filenames')
                     ->rules('file|mimes:zip')
                     ->helperText(__('Upload zip files you want to use for updates on chosen instances.'))
