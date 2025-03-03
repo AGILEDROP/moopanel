@@ -2,3 +2,9 @@
 .env
 /.idea
 /.vscode
+vendor
+/.ddev/adminer
+/.ddev/commands/host/adminer
+/.ddev/addon-metadata/adminer
+/.ddev/docker-compose.adminer.yaml
+docker-compose.adminer_norouter.yaml
