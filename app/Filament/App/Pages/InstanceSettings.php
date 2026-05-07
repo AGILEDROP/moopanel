@@ -2,6 +2,9 @@
 
 namespace App\Filament\App\Pages;
 
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form;
 use Filament\Schemas\Schema;
 use App\Jobs\AzureApi\AzureAppDataSyncJob;
 use App\Models\UniversityMember;
@@ -66,6 +69,23 @@ class InstanceSettings extends Page implements HasForms
             ->statePath('data');
     }
 
+    public function content(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Form::make([EmbeddedSchema::make('form')])
+                    ->id('form')
+                    ->livewireSubmitHandler('save')
+                    ->footer([
+                        Actions::make($this->getFormActions())
+                            ->alignment($this->getFormActionsAlignment())
+                            ->fullWidth($this->hasFullWidthFormActions())
+                            ->sticky($this->areFormActionsSticky())
+                            ->key('form-actions'),
+                    ]),
+            ]);
+    }
+
     protected function getFormActions(): array
     {
         return [
@@ -73,6 +93,11 @@ class InstanceSettings extends Page implements HasForms
                 ->label(__('filament-panels::resources/pages/edit-record.form.actions.save.label'))
                 ->submit('save'),
         ];
+    }
+
+    protected function hasFullWidthFormActions(): bool
+    {
+        return false;
     }
 
     public function save(): void

@@ -61,7 +61,8 @@ class BackupStorageResource extends Resource
                             // if the only one local storage is somehow deleted, we can add one
                             ->disableOptionWhen(fn (string $value): bool => $value === BackupStorageType::Local->value && filament()->getTenant()->backupStorages()->where('storage_key', BackupStorageType::Local->value)->exists())
                             ->options(fn (): array => BackupStorageType::toSelectOptions()),
-                    ]),
+                    ])
+                ->columnSpanFull(),
                 /* Section::make('AWS S3 storage details')
                     ->visible(fn (callable $get) => $get('storage_key') !== null && $get('storage_key') === BackupStorageType::S3->value)
                     ->schema([

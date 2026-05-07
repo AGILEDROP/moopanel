@@ -46,8 +46,7 @@ class UpdateRequests extends Page implements HasTable
             $updateRequestId = (int) request()->query('id', '');
             $this->updateRequest = UpdateRequest::find($updateRequestId);
 
-            // Check if the user is the owner of the update request
-            if (Auth::user()->id === $this->updateRequest->user_id) {
+            if ($this->updateRequest && Auth::user()?->id === $this->updateRequest->user_id) {
                 $this->updateRequestId = $updateRequestId;
 
                 return;

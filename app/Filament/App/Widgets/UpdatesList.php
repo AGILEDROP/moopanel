@@ -88,7 +88,7 @@ class UpdatesList extends Widget
                     'Core upgraded',
                 ])
                 ->latest('timemodified')
-                ->take($itemsCount - $this->maxItems)
+                ->take($this->maxItems - $itemsCount)
                 ->get(),
             'plugins' => $instance->pluginUpdateLog()
                 ->whereIn('info', [
@@ -96,7 +96,7 @@ class UpdatesList extends Widget
                     'Plugin upgraded',
                 ])
                 ->latest('timemodified')
-                ->take($itemsCount - $this->maxItems)
+                ->take($this->maxItems - $itemsCount)
                 ->get(),
         };
     }

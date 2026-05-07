@@ -15,8 +15,6 @@ trait InteractsWithCoursesTable
 
     public function table(Table $table): Table
     {
-        $this->defaultTableRecordsPerPageSelectOption = $this->getCoursesTableDefaultRecordsPerPageOption();
-
         $recordSelectableCallback = $this->getCoursesTableRecordSelectableUsing();
 
         return $table

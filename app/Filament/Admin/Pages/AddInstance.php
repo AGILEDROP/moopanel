@@ -8,6 +8,8 @@ use Filament\Schemas\Components\Wizard\Step;
 use Filament\Forms\Components\TextInput;
 use Filament\Actions\Action;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form;
 use Filament\Forms\Components\DatePicker;
 use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Select;
@@ -194,6 +196,16 @@ class AddInstance extends Page implements HasForms
                         </x-filament::button>
                     BLADE))),
 
+            ]);
+    }
+
+    public function content(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Form::make([EmbeddedSchema::make('form')])
+                    ->id('form')
+                    ->livewireSubmitHandler('create'),
             ]);
     }
 

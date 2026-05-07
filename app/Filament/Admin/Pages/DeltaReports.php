@@ -5,6 +5,9 @@ namespace App\Filament\Admin\Pages;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Utilities\Get;
@@ -116,6 +119,23 @@ class DeltaReports extends Page implements HasForms
             ]);
     }
 
+    public function content(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Form::make([EmbeddedSchema::make('form')])
+                    ->id('form')
+                    ->livewireSubmitHandler('create')
+                    ->footer([
+                        Actions::make($this->getFormActions())
+                            ->alignment($this->getFormActionsAlignment())
+                            ->fullWidth($this->hasFullWidthFormActions())
+                            ->sticky($this->areFormActionsSticky())
+                            ->key('form-actions'),
+                    ]),
+            ]);
+    }
+
     private function getOptions(?int $clusterId)
     {
         $options = Instance::where('cluster_id', $clusterId)->pluck('name', 'id');
@@ -145,6 +165,11 @@ class DeltaReports extends Page implements HasForms
                 ->extraAttributes(['class' => 'ms-auto'])
                 ->action('compare'),
         ];
+    }
+
+    protected function hasFullWidthFormActions(): bool
+    {
+        return false;
     }
 
     #[NoReturn]

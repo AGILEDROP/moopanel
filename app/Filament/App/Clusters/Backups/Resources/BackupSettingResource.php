@@ -40,7 +40,7 @@ class BackupSettingResource extends Resource
             ->components([
                 Grid::make([
                     'default' => 1,
-                    'sm' => 2,
+                    'sm' => 1,
                 ])->schema([
                     Section::make()
                         ->schema([
@@ -107,7 +107,8 @@ class BackupSettingResource extends Resource
                                 ])
                                 ->columns(2),
                         ]),
-                ]),
+                ])
+                ->columnSpanFull(),
             ]);
     }
 

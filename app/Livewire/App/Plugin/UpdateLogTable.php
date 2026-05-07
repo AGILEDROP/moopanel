@@ -25,9 +25,6 @@ class UpdateLogTable extends Component implements HasForms, HasTable, HasActions
     public function mount(Plugin $plugin): void
     {
         $this->plugin = $plugin;
-
-        // Small hack responsible for refreshing the table when the modal opens (listener var don't work here)!
-        $this->setPage(1, 'page');
     }
 
     public function table(Table $table): Table
