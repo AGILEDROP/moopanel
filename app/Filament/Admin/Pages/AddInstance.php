@@ -103,7 +103,7 @@ class AddInstance extends Page implements HasForms
                                     )))
                                     ->required()
                                     ->minValue(40)
-                                    ->regex("/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/")
+                                    ->regex('/^(?=.{40,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).*$/')
                                     ->live()
                                     ->afterStateUpdated(fn () => $this->resetConnection()),
                                 Forms\Components\DatePicker::make('key_expiration_date')
