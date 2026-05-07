@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -32,7 +33,9 @@ class UserFactory extends Factory
             'azure_id' => fake()->uuid(),
             'username' => fake()->userName(),
             'employee_id' => null,
-            'app_role_id' => null,
+            'app_role_id' => collect([
+                ['value' => json_encode(['value' => Role::MasterAdmin->value])],
+            ]),
         ];
     }
 
