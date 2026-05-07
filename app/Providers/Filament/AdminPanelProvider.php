@@ -32,7 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(Login::class)
             ->sidebarCollapsibleOnDesktop()
             ->databaseNotifications()
-            ->renderHook('panels::auth.login.form.after', fn (): string => Blade::render('components/azure-login'))
+            ->renderHook('panels::auth.login.form.after', fn(): string => Blade::render('components/azure-login'))
             ->colors([
                 'primary' => Color::generateV3Palette('rgb(225, 42, 38)'),
             ])

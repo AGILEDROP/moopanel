@@ -7,7 +7,6 @@ use Filament\Actions\Action;
 use App\Filament\Admin\Clusters\Logs\LogsCluster;
 use App\Filament\Admin\Clusters\Logs\Resources\ActivityLogs\ActivityLogResource;
 use App\Filament\Admin\Resources\Instances\InstanceResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\HtmlString;
 

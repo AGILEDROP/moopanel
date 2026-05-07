@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Clusters\Logs\Resources\ActivityLogs;
 
+use BackedEnum;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -10,10 +11,8 @@ use Filament\Schemas\Components\Section;
 use App\Filament\Admin\Clusters\Logs\Resources\ActivityLogs\Pages\ListActivityLogs;
 use App\Enums\Role;
 use App\Filament\Admin\Clusters\Logs\LogsCluster;
-use App\Filament\Admin\Clusters\Logs\Resources\ActivityLogResource\Pages;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
 use Spatie\Activitylog\Models\Activity;
 
@@ -25,7 +24,7 @@ class ActivityLogResource extends Resource
 
     protected static ?string $navigationLabel = 'Activity Logs';
 
-    protected static string | \BackedEnum | null $navigationIcon = 'fas-clipboard-list';
+    protected static string | BackedEnum | null $navigationIcon = 'fas-clipboard-list';
 
     protected static ?int $navigationSort = 1;
 
