@@ -10,7 +10,6 @@ use App\UseCases\Syncs\SyncType;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action as TableAction;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -123,9 +122,9 @@ class BaseSyncType implements SyncType
     /**
      * Return table action which trigger table records sync and refresh selected components.
      */
-    public function getTableAction(string $name, array $refreshComponents): TableAction
+    public function getTableAction(string $name, array $refreshComponents): Action
     {
-        return TableAction::make($name)
+        return Action::make($name)
             ->label(__('Sync'))
             ->icon('heroicon-o-arrow-path')
             ->action(fn () => $this->run(true))

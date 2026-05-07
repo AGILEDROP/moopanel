@@ -2,6 +2,14 @@
 
 namespace App\Filament\App\Resources;
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Support\Enums\Width;
+use App\Filament\App\Resources\PluginResource\Pages\ManagePlugins;
 use App\Filament\App\Resources\PluginResource\Pages;
 use App\Filament\Custom\App as CustomAppComponents;
 use App\Models\Instance;
@@ -10,7 +18,6 @@ use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
 use App\UseCases\Syncs\SyncTypeFactory;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +26,7 @@ class PluginResource extends Resource
 {
     protected static ?string $model = InstancePlugin::class;
 
-    protected static ?string $navigationIcon = 'fas-plug';
+    protected static string | \BackedEnum | null $navigationIcon = 'fas-plug';
 
     protected static ?string $tenantOwnershipRelationshipName = 'instance';
 
@@ -38,35 +45,35 @@ class PluginResource extends Resource
             ->query(fn () => self::getTableQuery())
             ->description($syncType->getLatestTimeText())
             ->columns([
-                Tables\Columns\TextColumn::make('plugin.display_name')
+                TextColumn::make('plugin.display_name')
                     ->label(__('Plugin name'))
                     ->weight(FontWeight::SemiBold)
                     ->description(fn (Model $record) => $record->plugin->type)
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('plugin.component')
+                TextColumn::make('plugin.component')
                     ->label(__('Component'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('enabled')
+                IconColumn::make('enabled')
                     ->label(__('Enabled'))
                     ->sortable()
                     ->boolean(),
-                Tables\Columns\IconColumn::make('updates_exists')
+                IconColumn::make('updates_exists')
                     ->label(__('Available updates'))
                     ->icon('fas-plug')
                     ->color(fn ($state) => $state === true ? 'danger' : 'gray')
                     ->sortable()
                     ->boolean(),
-                Tables\Columns\TextColumn::make('version')
+                TextColumn::make('version')
                     ->label(__('Version')),
-                Tables\Columns\TextColumn::make('lastUpdateTime')
+                TextColumn::make('lastUpdateTime')
                     ->label(__('Last update'))
                     ->dateTime(),
             ])
             ->defaultSort('updates_exists', 'desc')
             ->filters([
-                Tables\Filters\TernaryFilter::make('enabled')
+                TernaryFilter::make('enabled')
                     ->label(__('Enabled'))
                     ->placeholder(__('Select option')),
                 CustomAppComponents\Filters\AvailableUpdatesFilter::make('available_updates'),
@@ -76,29 +83,29 @@ class PluginResource extends Resource
             ->headerActions([
                 $syncType->getTableAction('sync', ['managePluginsPage']),
             ])
-            ->actions([
+            ->recordActions([
                 CustomAppComponents\Actions\Table\UpdatePluginAction::make('update_plugin', ['managePluginsPage']),
                 CustomAppComponents\Actions\Table\PluginUpdateLogAction::make(),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->iconButton(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+            ->toolbarActions([
+                BulkActionGroup::make([
                     // todo: wait for endpoint and implement action logic!
                     //  Tables\Actions\BulkAction::make('enable_plugins')
                     //      ->label(__('Enable'))
                     //      ->icon('heroicon-o-check-circle')
                     //      ->action(fn () => dd('Implement logic when endpoint will be available!')),
                     CustomAppComponents\Actions\Table\UpdatePluginsBulkAction::make('update_plugins', ['managePluginsPage']),
-                    Tables\Actions\DeleteBulkAction::make(),
-                ])->dropdownWidth(MaxWidth::Medium),
+                    DeleteBulkAction::make(),
+                ])->dropdownWidth(Width::Medium),
             ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManagePlugins::route('/'),
+            'index' => ManagePlugins::route('/'),
         ];
     }
 }

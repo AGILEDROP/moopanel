@@ -2,6 +2,8 @@
 
 namespace App\Filament\App\Resources;
 
+use Filament\Tables\Columns\TextColumn;
+use App\Filament\App\Resources\UpdateLogResource\Pages\ManageUpdateLogs;
 use App\Enums\UpdateLogType;
 use App\Filament\App\Resources\UpdateLogResource\Pages;
 use App\Filament\Custom\App as CustomAppComponents;
@@ -17,7 +19,7 @@ class UpdateLogResource extends Resource
 {
     protected static ?string $model = UpdateLog::class;
 
-    protected static ?string $navigationIcon = 'fas-timeline';
+    protected static string | \BackedEnum | null $navigationIcon = 'fas-timeline';
 
     public static function table(Table $table): Table
     {
@@ -26,8 +28,8 @@ class UpdateLogResource extends Resource
         return $table
             ->description($syncType->getLatestTimeText())
             ->columns([
-                Tables\Columns\TextColumn::make('plugin_exists')
-                    ->visibleOn(Pages\ManageUpdateLogs::class)
+                TextColumn::make('plugin_exists')
+                    ->visibleOn(ManageUpdateLogs::class)
                     ->label('Type')
                     ->exists('plugin')
                     ->formatStateUsing(fn ($state) => $state === true ? __('Plugin') : __('Core'))
@@ -35,30 +37,30 @@ class UpdateLogResource extends Resource
                     ->color('gray')
                     ->badge()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('plugin.display_name')
-                    ->visibleOn(Pages\ManageUpdateLogs::class)
-                    ->toggleable(fn ($livewire) => ($livewire instanceof Pages\ManageUpdateLogs), isToggledHiddenByDefault: false)
+                TextColumn::make('plugin.display_name')
+                    ->visibleOn(ManageUpdateLogs::class)
+                    ->toggleable(fn ($livewire) => ($livewire instanceof ManageUpdateLogs), isToggledHiddenByDefault: false)
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('info')
+                TextColumn::make('info')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('timemodified')
+                TextColumn::make('timemodified')
                     ->label(__('Time modified'))
                     ->sortable()
                     ->dateTime(),
-                Tables\Columns\TextColumn::make('username')
+                TextColumn::make('username')
                     ->searchable()
                     ->label(__('Modified by'))
                     ->sortable(),
-                Tables\Columns\TextColumn::make('version')
+                TextColumn::make('version')
                     ->label(__('Version'))
                     ->sortable(),
-                Tables\Columns\TextColumn::make('targetversion')
+                TextColumn::make('targetversion')
                     ->label(__('Target version'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->label(__('Operation result'))
                     ->formatStateUsing(fn (UpdateLogType $state): string => $state->toReadableString())
                     ->color(fn (UpdateLogType $state): string => $state->toDisplayColor())
@@ -69,12 +71,12 @@ class UpdateLogResource extends Resource
             ->headerActions([
                 $syncType->getTableAction('sync', ['manageUpdateLogPage']),
             ])
-            ->actions([
+            ->recordActions([
                 CustomAppComponents\Actions\Table\UpdateLogDetailsAction::make(),
             ])
             ->filters([
                 CustomAppComponents\Filters\UpdateLogTypeFilter::make('main')
-                    ->visibleOn(Pages\ManageUpdateLogs::class),
+                    ->visibleOn(ManageUpdateLogs::class),
             ])
             ->defaultSort('timemodified', 'desc')
             ->paginationPageOptions([5, 10, 25, 50]);
@@ -83,7 +85,7 @@ class UpdateLogResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageUpdateLogs::route('/'),
+            'index' => ManageUpdateLogs::route('/'),
         ];
     }
 }

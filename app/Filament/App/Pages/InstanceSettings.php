@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Pages;
 
+use Filament\Schemas\Schema;
 use App\Jobs\AzureApi\AzureAppDataSyncJob;
 use App\Models\UniversityMember;
 use App\Rules\AzureAppId;
@@ -11,7 +12,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Exceptions\Halt;
@@ -23,9 +23,9 @@ class InstanceSettings extends Page implements HasForms
 
     public ?array $data = [];
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static string $view = 'filament.app.pages.instance-settings';
+    protected string $view = 'filament.app.pages.instance-settings';
 
     protected static ?string $navigationLabel = 'Settings';
 
@@ -36,10 +36,10 @@ class InstanceSettings extends Page implements HasForms
         $this->form->fill(filament()->getTenant()->attributesToArray());
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('azure_app_id')
                     ->label(__('Azure App ID'))
                     ->rules([

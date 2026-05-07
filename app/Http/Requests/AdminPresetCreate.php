@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use DOMDocument;
 use App\Traits\ValidatesInstanceId;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -21,7 +22,7 @@ class AdminPresetCreate extends FormRequest
         }
 
         if ($this->header('Content-Type') == 'application/xml') {
-            $dom = new \DOMDocument;
+            $dom = new DOMDocument;
             libxml_use_internal_errors(true);
             $dom->loadXML($this->getContent());
             $errors = libxml_get_errors();

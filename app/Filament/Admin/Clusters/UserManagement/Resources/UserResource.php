@@ -2,6 +2,17 @@
 
 namespace App\Filament\Admin\Clusters\UserManagement\Resources;
 
+use App\Filament\Custom\Admin\Columns\IdColumn;
+use App\Filament\Custom\Admin\Columns\NameColumn;
+use App\Filament\Custom\Admin\Columns\UpnColumn;
+use App\Filament\Custom\Admin\Columns\EmailColumn;
+use App\Filament\Custom\Admin\Columns\AzureIdColumn;
+use Filament\Tables\Columns\TextColumn;
+use App\Filament\Custom\Admin\Columns\SortableDateTimeColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\EditAction;
+use App\Filament\Admin\Clusters\UserManagement\Resources\UserResource\Pages\ManageUsers;
+use App\Filament\Admin\Clusters\UserManagement\Resources\UserResource\Pages\EditUser;
 use App\Enums\Role;
 use App\Filament\Admin\Clusters\UserManagement;
 use App\Filament\Admin\Clusters\UserManagement\Resources\UserResource\Pages;
@@ -10,7 +21,6 @@ use App\Filament\Custom;
 use App\Models\User;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,38 +43,38 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Custom\Admin\Columns\IdColumn::make('id', __('ID')),
-                Custom\Admin\Columns\NameColumn::make('name', __('Name')),
-                Custom\Admin\Columns\UpnColumn::make('username', __('UPN')),
-                Custom\Admin\Columns\EmailColumn::make('email', __('Email')),
-                Custom\Admin\Columns\AzureIdColumn::make('azure_id', __('Azure ID')),
-                Tables\Columns\TextColumn::make('employee_id')
+                IdColumn::make('id', __('ID')),
+                NameColumn::make('name', __('Name')),
+                UpnColumn::make('username', __('UPN')),
+                EmailColumn::make('email', __('Email')),
+                AzureIdColumn::make('azure_id', __('Azure ID')),
+                TextColumn::make('employee_id')
                     ->label(__('Employee ID'))
                     ->copyable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('app_role_id')
+                TextColumn::make('app_role_id')
                     ->label(__('Role'))
                     ->state(fn (User $record): string => $record->role() ? $record->role()->toReadableString() : __('No Role'))
                     ->badge()
                     ->color(fn (User $record): string => $record->role() ? $record->role()->toDisplayColor() : 'gray')
                     ->sortable(),
-                Custom\Admin\Columns\SortableDateTimeColumn::make('updated_at', __('Updated At')),
+                SortableDateTimeColumn::make('updated_at', __('Updated At')),
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('app_role_id')
+                SelectFilter::make('app_role_id')
                     ->label(__('Role'))
                     ->options(collect(Role::cases())->mapWithKeys(function ($case) {
                         return [$case->value => $case->toReadableString()];
                     })->toArray())
                     ->multiple(),
             ])
-            ->actions([
+            ->recordActions([
                 EditAction::make()
                     ->hidden(fn () => auth()->user()->role() !== Role::MasterAdmin),
             ])
             ->paginated([10, 25, 50])
-            ->bulkActions([
+            ->toolbarActions([
             ]);
     }
 
@@ -78,8 +88,8 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageUsers::route('/'),
-            'edit' => Pages\EditUser::route('edit/{record}'),
+            'index' => ManageUsers::route('/'),
+            'edit' => EditUser::route('edit/{record}'),
         ];
     }
 }

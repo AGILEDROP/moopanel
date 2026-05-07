@@ -2,10 +2,10 @@
 
 namespace App\Filament\Admin\Clusters\Logs\Pages;
 
+use Filament\Pages\Enums\SubNavigationPosition;
 use App\Enums\Role;
 use App\Filament\Admin\Clusters\Logs;
 use App\Filament\Admin\Resources\InstanceResource;
-use Filament\Pages\SubNavigationPosition;
 use Illuminate\Support\HtmlString;
 use Saade\FilamentLaravelLog\Pages\ViewLog as BaseViewLog;
 
@@ -50,7 +50,7 @@ class SystemLogs extends BaseViewLog
         return 'fas-server';
     }
 
-    public function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }

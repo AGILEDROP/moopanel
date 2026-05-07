@@ -2,6 +2,10 @@
 
 namespace App\Filament\Admin\Clusters\Backups\Pages;
 
+use Exception;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Support\Enums\Width;
 use App\Enums\BackupStorageType;
 use App\Enums\BackupType;
 use App\Filament\Concerns\InteractsWithCoursesTable;
@@ -14,9 +18,6 @@ use App\Models\Scopes\InstanceScope;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
-use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
@@ -28,7 +29,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
 {
     use InteractsWithCoursesTable;
 
-    protected static string $view = 'filament.admin.pages.choose-course-page';
+    protected string $view = 'filament.admin.pages.choose-course-page';
 
     protected static ?string $title = 'Create backups';
 
@@ -172,7 +173,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
     /**
      * Query the table records.
      */
-    protected function getTableQuery(): Builder
+    protected function getCoursesTableQuery(): Builder
     {
         return Course::whereIn('instance_id', $this->instanceIds)
             ->with('category');
@@ -183,7 +184,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
      */
     public function getTableQueryForExport(): Builder
     {
-        throw new \Exception('Not implemented');
+        throw new Exception('Not implemented');
 
         return Course::query();
     }
@@ -191,7 +192,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
     /**
      * Set table columns.
      */
-    protected function getTableColumns(): array
+    protected function getCoursesTableColumns(): array
     {
         return [
             TextColumn::make('name')
@@ -217,11 +218,11 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
     /**
      * Set table filters.
      */
-    protected function getTableFilters(): array
+    protected function getCoursesTableFilters(): array
     {
         return [
             Filter::make('category')
-                ->form([
+                ->schema([
                     SelectTree::make('categories')
                         ->relationship(
                             relationship: 'category',
@@ -287,7 +288,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
         return $descendantIds;
     }
 
-    protected function getTableActions(): array
+    protected function getCoursesTableRecordActions(): array
     {
         return [
             Action::make('backup')
@@ -300,7 +301,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
         ];
     }
 
-    protected function getTableBulkActions(): array
+    protected function getCoursesTableBulkActions(): array
     {
         return [
             BulkAction::make('bulk_backup')
@@ -318,15 +319,15 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
     /**
      * Set table filters form width.
      */
-    protected function getTableFiltersFormWidth(): MaxWidth
+    protected function getCoursesTableFiltersFormWidth(): string
     {
-        return MaxWidth::FourExtraLarge;
+        return Width::FourExtraLarge->value;
     }
 
     /**
      * Set table filters columns.
      */
-    protected function getTableFilterColumns(): int
+    protected function getCoursesTableFilterColumns(): int
     {
         return 2;
     }
@@ -336,7 +337,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
      *
      * @return int
      */
-    protected function getTableRecordsPerPageSelectOptions(): array
+    protected function getCoursesTablePaginationPageOptions(): array
     {
         return [10, 25, 50];
     }

@@ -2,6 +2,17 @@
 
 namespace App\Filament\Admin\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
+use Filament\Forms\Components\TextInput;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Forms\Components\DatePicker;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\FileUpload;
+use Exception;
 use App\Enums\Status;
 use App\Events\InstanceCreated;
 use App\Filament\Admin\Resources\InstanceResource;
@@ -12,10 +23,8 @@ use App\Models\UniversityMember;
 use App\Rules\AzureAppId;
 use App\Services\ModuleApiService;
 use Filament\Forms;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Facades\FilamentView;
@@ -33,9 +42,9 @@ class AddInstance extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-plus-circle';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-plus-circle';
 
-    protected static string $view = 'filament.admin.pages.add-instance';
+    protected string $view = 'filament.admin.pages.add-instance';
 
     protected static ?int $navigationSort = 1;
 
@@ -58,19 +67,19 @@ class AddInstance extends Page implements HasForms
         ];
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->model(Instance::class)
             ->statePath('data')
-            ->schema([
-                Forms\Components\Wizard::make()
+            ->components([
+                Wizard::make()
                     ->schema([
-                        Forms\Components\Wizard\Step::make('connection_details')
+                        Step::make('connection_details')
                             ->label(__('Connection details'))
                             ->columns(['sm' => 1, 'md' => 2, 'lg' => 2])
                             ->schema([
-                                Forms\Components\TextInput::make('url')
+                                TextInput::make('url')
                                     ->label(__('Base URL'))
                                     ->required()
                                     ->unique()
@@ -79,16 +88,16 @@ class AddInstance extends Page implements HasForms
                                     ->suffix(ModuleApiService::PLUGIN_PATH)
                                     ->columnSpan('full')
                                     ->afterStateUpdated(fn () => $this->resetConnection()),
-                                Forms\Components\TextInput::make('api_key')
+                                TextInput::make('api_key')
                                     ->label(__('API Key'))
                                     ->password()
                                     ->revealable()
                                     ->hintAction(fn () => CopyFieldStateAction::make('copy_api_key', 'Copy API Key'))
                                     ->prefixActions([
-                                        Forms\Components\Actions\Action::make('generateApiKey')
+                                        Action::make('generateApiKey')
                                             ->label(__('Generate key'))
                                             ->icon('heroicon-o-arrow-path')
-                                            ->action(function (Forms\Set $set) {
+                                            ->action(function (Set $set) {
                                                 $set('api_key', Str::password(60));
                                                 $this->resetConnection();
                                             }),
@@ -106,15 +115,15 @@ class AddInstance extends Page implements HasForms
                                     ->regex('/^(?=.{40,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).*$/')
                                     ->live()
                                     ->afterStateUpdated(fn () => $this->resetConnection()),
-                                Forms\Components\DatePicker::make('key_expiration_date')
+                                DatePicker::make('key_expiration_date')
                                     ->label(__('Expiration date'))
                                     ->native(false)
                                     ->displayFormat('d/m/Y')
                                     ->suffixAction(
-                                        Forms\Components\Actions\Action::make('Expiration date')
+                                        Action::make('Expiration date')
                                             ->label(__('Clear expiration date'))
                                             ->icon('heroicon-o-x-mark')
-                                            ->action(function (Forms\Set $set) {
+                                            ->action(function (Set $set) {
                                                 $set('key_expiration_date', null);
                                                 $this->resetConnection();
                                             }),
@@ -136,36 +145,36 @@ class AddInstance extends Page implements HasForms
                                 }
                             }),
 
-                        Forms\Components\Wizard\Step::make('General information')
+                        Step::make('General information')
                             ->columns()
                             ->schema([
                                 Grid::make()
                                     ->columnSpan(1)
                                     ->columns(1)
                                     ->schema([
-                                        Forms\Components\TextInput::make('name')
+                                        TextInput::make('name')
                                             ->label(__('Name'))
                                             ->required(fn () => $this->connected),
-                                        Forms\Components\TextInput::make('short_name')
+                                        TextInput::make('short_name')
                                             ->label(__('Shortened form'))
                                             ->live()
                                             ->required(fn () => $this->connected),
-                                        Forms\Components\Select::make('cluster_id')
+                                        Select::make('cluster_id')
                                             ->label('Assign cluster')
                                             ->options(Cluster::all()->pluck('name', 'id'))
                                             ->searchable()
                                             ->required(fn () => $this->connected),
-                                        Forms\Components\TextInput::make('azure_app_id')
+                                        TextInput::make('azure_app_id')
                                             ->rules([new AzureAppId, 'unique:instances,azure_app_id'])
                                             ->label(__('Azure App ID')),
-                                        Forms\Components\Select::make('university_member_id')
+                                        Select::make('university_member_id')
                                             ->label('Assign university')
                                             ->options(UniversityMember::all()->pluck('name', 'id'))
                                             ->rules(['exists:university_members,id', 'unique:instances,university_member_id'])
                                             ->searchable()
                                             ->required(fn () => $this->connected),
                                     ]),
-                                Forms\Components\FileUpload::make('img_path')
+                                FileUpload::make('img_path')
                                     ->label(__('Choose image'))
                                     ->image()
                                     ->imageEditor()
@@ -202,7 +211,7 @@ class AddInstance extends Page implements HasForms
             // Get data from moodle site.
             $response = (new ModuleApiService)->getInstanceData($data['url'], $data['api_key']);
             if (! $response->ok()) {
-                throw new \Exception('Connection to external moodle plugin failed! Status code: '.$response->status());
+                throw new Exception('Connection to external moodle plugin failed! Status code: '.$response->status());
             }
 
             if ($updateData) {
@@ -214,7 +223,7 @@ class AddInstance extends Page implements HasForms
 
             // Change connected flag.
             $this->connected = true;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             Log::error($exception->getMessage());
             Notification::make()
                 ->title(__('Connection failed!'))
@@ -234,7 +243,7 @@ class AddInstance extends Page implements HasForms
         try {
             $response = (new ModuleApiService)->postApiKeyStatus($data['url'], $data['api_key'], dateToUnixOrNull($data['key_expiration_date']));
             if ($response->status() !== 201) {
-                throw new \Exception('Creation failed due to unsuccessful api key status operation! Status code: '.$response->status());
+                throw new Exception('Creation failed due to unsuccessful api key status operation! Status code: '.$response->status());
             }
 
             $data['api_key'] = Crypt::encrypt($data['api_key']);
@@ -253,7 +262,7 @@ class AddInstance extends Page implements HasForms
                 ->send();
 
             $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             DB::rollBack();
 
             Log::error($error->getMessage());

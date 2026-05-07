@@ -2,6 +2,15 @@
 
 namespace App\Filament\Admin\Clusters\UserManagement\Resources;
 
+use App\Filament\Custom\Admin\Columns\IdColumn;
+use App\Filament\Custom\Admin\Columns\NameColumn;
+use App\Filament\Custom\Admin\Columns\UpnColumn;
+use App\Filament\Custom\Admin\Columns\EmailColumn;
+use App\Filament\Custom\Admin\Columns\AzureIdColumn;
+use App\Filament\Custom\Admin\Columns\SortableDateTimeColumn;
+use App\Filament\Custom\Admin\Filters\UniversityMembersFilter;
+use Filament\Tables\Filters\SelectFilter;
+use App\Filament\Admin\Clusters\UserManagement\Resources\AccountResource\Pages\ManageAccounts;
 use App\Enums\AccountTypes;
 use App\Filament\Admin\Clusters\UserManagement;
 use App\Filament\Admin\Clusters\UserManagement\Resources\AccountResource\Pages;
@@ -28,11 +37,11 @@ class AccountResource extends Resource
     {
         return $table
             ->columns([
-                Custom\Admin\Columns\IdColumn::make('id', __('ID')),
-                Custom\Admin\Columns\NameColumn::make('name', __('Name')),
-                Custom\Admin\Columns\UpnColumn::make('username', __('UPN')),
-                Custom\Admin\Columns\EmailColumn::make('email', __('Email')),
-                Custom\Admin\Columns\AzureIdColumn::make('azure_id', __('Azure ID')),
+                IdColumn::make('id', __('ID')),
+                NameColumn::make('name', __('Name')),
+                UpnColumn::make('username', __('UPN')),
+                EmailColumn::make('email', __('Email')),
+                AzureIdColumn::make('azure_id', __('Azure ID')),
                 TextColumn::make('type')
                     ->label(__('Type'))
                     ->formatStateUsing(fn (string $state): string => AccountTypes::tryFrom($state)->toReadableString())
@@ -42,11 +51,11 @@ class AccountResource extends Resource
                     ->searchable()
                     ->badge()
                     ->separator(','),
-                Custom\Admin\Columns\SortableDateTimeColumn::make('updated_at', __('Updated At')),
+                SortableDateTimeColumn::make('updated_at', __('Updated At')),
             ])
             ->filters([
-                Custom\Admin\Filters\UniversityMembersFilter::make('universityMembers'),
-                Tables\Filters\SelectFilter::make('type')
+                UniversityMembersFilter::make('universityMembers'),
+                SelectFilter::make('type')
                     ->label(__('Type'))
                     ->options(collect(AccountTypes::cases())->mapWithKeys(function ($case) {
                         return [$case->value => $case->toReadableString()];
@@ -59,7 +68,7 @@ class AccountResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageAccounts::route('/'),
+            'index' => ManageAccounts::route('/'),
         ];
     }
 }

@@ -2,13 +2,16 @@
 
 namespace App\Filament\Admin\Clusters\Logs\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Section;
+use App\Filament\Admin\Clusters\Logs\Resources\ActivityLogResource\Pages\ListActivityLogs;
 use App\Enums\Role;
 use App\Filament\Admin\Clusters\Logs;
 use App\Filament\Admin\Clusters\Logs\Resources\ActivityLogResource\Pages;
-use Filament\Forms\Form;
-use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -22,13 +25,13 @@ class ActivityLogResource extends Resource
 
     protected static ?string $navigationLabel = 'Activity Logs';
 
-    protected static ?string $navigationIcon = 'fas-clipboard-list';
+    protected static string | \BackedEnum | null $navigationIcon = 'fas-clipboard-list';
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([]);
+        return $schema->components([]);
     }
 
     public static function canAccess(): bool
@@ -41,10 +44,10 @@ class ActivityLogResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('log_name')
+                TextColumn::make('log_name')
                     ->badge()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('event')
+                TextColumn::make('event')
                     ->badge()
                     ->color(fn (?string $state): string => match ($state) {
                         'created' => 'success',
@@ -53,24 +56,24 @@ class ActivityLogResource extends Resource
                         default => 'gray',
                     })
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('description')
+                TextColumn::make('description')
                     ->searchable()
                     ->wrap(),
-                Tables\Columns\TextColumn::make('subject_type')
+                TextColumn::make('subject_type')
                     ->label('Subject')
                     ->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : '-')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('causer_type')
+                TextColumn::make('causer_type')
                     ->label('Causer')
                     ->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : 'System')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Logged at')
                     ->dateTime('d/m/Y H:i:s')
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('log_name')
+                SelectFilter::make('log_name')
                     ->options(fn (): array => Activity::query()
                         ->select('log_name')
                         ->distinct()
@@ -78,7 +81,7 @@ class ActivityLogResource extends Resource
                         ->pluck('log_name', 'log_name')
                         ->filter()
                         ->all()),
-                Tables\Filters\SelectFilter::make('event')
+                SelectFilter::make('event')
                     ->options(fn (): array => Activity::query()
                         ->select('event')
                         ->distinct()
@@ -87,13 +90,13 @@ class ActivityLogResource extends Resource
                         ->filter()
                         ->all()),
             ])
-            ->actions([
-                Tables\Actions\Action::make('details')
+            ->recordActions([
+                Action::make('details')
                     ->icon('heroicon-o-eye')
                     ->color('gray')
                     ->modalHeading(fn (Activity $record): string => 'Activity #'.$record->getKey())
                     ->modalSubmitAction(false)
-                    ->infolist(fn (Activity $record): array => [
+                    ->schema(fn (Activity $record): array => [
                         Section::make()
                             ->schema([
                                 TextEntry::make('log_name')->state($record->log_name ?: '-'),
@@ -108,12 +111,12 @@ class ActivityLogResource extends Resource
                             ->columns(1),
                     ]),
             ])
-            ->bulkActions([]);
+            ->toolbarActions([]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist;
+        return $schema;
     }
 
     public static function getNavigationGroup(): ?string
@@ -124,7 +127,7 @@ class ActivityLogResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListActivityLogs::route('/'),
+            'index' => ListActivityLogs::route('/'),
         ];
     }
 

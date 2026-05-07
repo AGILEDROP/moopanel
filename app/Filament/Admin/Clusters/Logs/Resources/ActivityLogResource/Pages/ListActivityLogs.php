@@ -2,11 +2,12 @@
 
 namespace App\Filament\Admin\Clusters\Logs\Resources\ActivityLogResource\Pages;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Actions\Action;
 use App\Filament\Admin\Clusters\Logs;
 use App\Filament\Admin\Clusters\Logs\Resources\ActivityLogResource;
 use App\Filament\Admin\Resources\InstanceResource;
 use Filament\Actions;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\HtmlString;
 
@@ -24,7 +25,7 @@ class ListActivityLogs extends ListRecords
         ];
     }
 
-    public function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }
@@ -32,7 +33,7 @@ class ListActivityLogs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('refresh')
+            Action::make('refresh')
                 ->icon('heroicon-o-arrow-path')
                 ->action(fn () => null),
         ];

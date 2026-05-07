@@ -2,12 +2,20 @@
 
 namespace App\Filament\Admin\Clusters\Settings\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Admin\Clusters\Settings\Resources\UniversityMemberResource\Pages\ManageUniversityMembers;
 use App\Enums\Role;
 use App\Filament\Admin\Clusters\Settings;
 use App\Filament\Admin\Clusters\Settings\Resources\UniversityMemberResource\Pages;
 use App\Models\UniversityMember;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,7 +25,7 @@ class UniversityMemberResource extends Resource
 {
     protected static ?string $model = UniversityMember::class;
 
-    protected static ?string $navigationIcon = 'fas-building-columns';
+    protected static string | \BackedEnum | null $navigationIcon = 'fas-building-columns';
 
     protected static ?string $cluster = Settings::class;
 
@@ -28,26 +36,26 @@ class UniversityMemberResource extends Resource
         return auth()->user()->role() === Role::MasterAdmin;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Grid::make()
+        return $schema
+            ->components([
+                Grid::make()
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label(__('Name'))
                             ->required()
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('code')
+                        TextInput::make('code')
                             ->label(__('Code'))
                             ->numeric()
                             ->required(),
-                        Forms\Components\TextInput::make('acronym')
+                        TextInput::make('acronym')
                             ->label(__('Acronym'))
                             ->required(),
                     ]),
 
-                Forms\Components\Section::make('sis_settings')
+                Section::make('sis_settings')
                     ->heading(__('SIS Settings'))
                     ->description('Set SIS connection responsible for updating account type and university members relations.')
                     ->icon('heroicon-o-cog-6-tooth')
@@ -55,17 +63,17 @@ class UniversityMemberResource extends Resource
                     ->collapsible()
                     ->collapsed(fn (string $operation): bool => $operation !== 'create')
                     ->schema([
-                        Forms\Components\TextInput::make('sis_base_url')
+                        TextInput::make('sis_base_url')
                             ->label(__('Base url'))
                             ->helperText('Base url for SIS endpoints.')
                             ->url()
                             ->required()
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('sis_current_year')
+                        TextInput::make('sis_current_year')
                             ->label(__('Current school year'))
                             ->helperText('Set current school year that will be used in the API calls (example: 2023-2024).')
                             ->required(),
-                        Forms\Components\TextInput::make('sis_student_years')
+                        TextInput::make('sis_student_years')
                             ->label(__('Max student years'))
                             ->helperText('It tells us how many recent school years we must consider when retrieving student data.
                             By default, it is set to 1, which means that only data from the current school year is used.')
@@ -82,24 +90,24 @@ class UniversityMemberResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('code')
+                TextColumn::make('code')
                     ->label(__('Code'))
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('acronym')
+                TextColumn::make('acronym')
                     ->label(__('Acronym'))
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label(__('Name'))
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('users_count')
+                TextColumn::make('users_count')
                     ->label(__('Users'))
                     ->counts('users')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('accounts_count')
+                TextColumn::make('accounts_count')
                     ->label(__('Accounts'))
                     ->counts('accounts')
                     ->sortable()
@@ -110,12 +118,12 @@ class UniversityMemberResource extends Resource
                 //
             ])
             ->paginated([10, 25, 50])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -130,7 +138,7 @@ class UniversityMemberResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageUniversityMembers::route('/'),
+            'index' => ManageUniversityMembers::route('/'),
         ];
     }
 }

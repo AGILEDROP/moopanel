@@ -34,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->renderHook('panels::auth.login.form.after', fn (): string => Blade::render('components/azure-login'))
             ->colors([
-                'primary' => Color::rgb('rgb(225, 42, 38)'),
+                'primary' => Color::generateV3Palette('rgb(225, 42, 38)'),
             ])
             ->maxContentWidth(true)
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
@@ -50,7 +50,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 //
             ])
-            ->viteTheme('resources/css/app.css')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->plugins([
                 TableLayoutTogglePlugin::make()
                     ->persistLayoutInLocalStorage(false) // allow user to keep his layout preference in his local storage

@@ -7,7 +7,7 @@ use Filament\Notifications\Notification;
 
 class ChooseBackupTypePage extends BaseBackupWizardPage
 {
-    protected static string $view = 'filament.admin.pages.choose-type-page';
+    protected string $view = 'filament.admin.pages.choose-type-page';
 
     protected static ?string $title = 'Choose backup type';
 

@@ -2,6 +2,27 @@
 
 namespace App\Filament\Admin\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Filters\SelectFilter;
+use App\Filament\Custom\Admin\Filters\UniversityMembersFilter;
+use Filament\Support\Enums\Width;
+use App\Filament\Custom\Admin\Actions\Table\EditInstanceAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Columns\Layout\Stack;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Support\Enums\TextSize;
+use App\Filament\Admin\Resources\InstanceResource\Pages\ManageInstances;
 use App\Enums\Status;
 use App\Filament\Admin\Resources\InstanceResource\Pages;
 use App\Filament\Custom;
@@ -10,13 +31,9 @@ use App\Models\Cluster;
 use App\Models\Instance;
 use App\Services\ModuleApiService;
 use Filament\Forms;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -25,35 +42,35 @@ class InstanceResource extends Resource
 {
     protected static ?string $model = Instance::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-home';
 
     protected static ?string $navigationLabel = 'Home';
 
     protected static ?int $navigationSort = 0;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 // GENERAL INFORMATION
                 Grid::make()
                     ->columnSpan(1)
                     ->columns(1)
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label(__('Name'))
                             ->required(),
-                        Forms\Components\TextInput::make('short_name')
+                        TextInput::make('short_name')
                             ->label(__('Shortened form'))
                             ->live()
                             ->required(),
-                        Forms\Components\Select::make('cluster_id')
+                        Select::make('cluster_id')
                             ->label('Assign cluster')
                             ->options(Cluster::all()->pluck('name', 'id'))
                             ->searchable()
                             ->required(),
                     ]),
-                Forms\Components\FileUpload::make('img_path')
+                FileUpload::make('img_path')
                     ->label(__('Choose image'))
                     ->image()
                     ->imageEditor()
@@ -63,7 +80,7 @@ class InstanceResource extends Resource
                     ->rules(['nullable', 'mimes:jpg,jpeg,png', 'max:1024']),
 
                 // CONNECTION DETAILS!
-                Forms\Components\TextInput::make('url')
+                TextInput::make('url')
                     ->label(__('Base URL'))
                     ->required()
                     ->unique(ignoreRecord: true)
@@ -71,26 +88,26 @@ class InstanceResource extends Resource
                     ->suffix(ModuleApiService::PLUGIN_PATH)
                     ->columnSpan(2),
 
-                Forms\Components\Toggle::make('use_existing_api_key')
+                Toggle::make('use_existing_api_key')
                     ->label(__('Use existing API Key'))
                     ->columnSpanFull()
                     ->live(),
 
                 Grid::make()
                     ->live()
-                    ->disabled(fn (Forms\Get $get): bool => $get('use_existing_api_key') ?? true)
-                    ->hidden(fn (Forms\Get $get): bool => $get('use_existing_api_key') ?? true)
+                    ->disabled(fn (Get $get): bool => $get('use_existing_api_key') ?? true)
+                    ->hidden(fn (Get $get): bool => $get('use_existing_api_key') ?? true)
                     ->schema([
-                        Forms\Components\TextInput::make('api_key')
+                        TextInput::make('api_key')
                             ->label(__('API Key'))
                             ->password()
                             ->revealable()
                             ->hintAction(fn () => CopyFieldStateAction::make('copy_api_key', 'Copy API Key'))
                             ->prefixActions([
-                                Forms\Components\Actions\Action::make('generateApiKey')
+                                Action::make('generateApiKey')
                                     ->label(__('Generate key'))
                                     ->icon('heroicon-o-arrow-path')
-                                    ->action(function (Forms\Set $set) {
+                                    ->action(function (Set $set) {
                                         $set('api_key', Str::password(60));
                                     }),
                             ])
@@ -106,15 +123,15 @@ class InstanceResource extends Resource
                             ->minValue(40)
                             ->regex('/^(?=.{40,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).*$/')
                             ->live(),
-                        Forms\Components\DatePicker::make('key_expiration_date')
+                        DatePicker::make('key_expiration_date')
                             ->label(__('Expiration date'))
                             ->native(false)
                             ->displayFormat('d/m/Y')
                             ->suffixAction(
-                                Forms\Components\Actions\Action::make('clear_expiration_date')
+                                Action::make('clear_expiration_date')
                                     ->label(__('Clear expiration date'))
                                     ->icon('heroicon-o-x-mark')
-                                    ->action(function (Forms\Set $set) {
+                                    ->action(function (Set $set) {
                                         $set('key_expiration_date', null);
                                     }),
                             )
@@ -150,25 +167,25 @@ class InstanceResource extends Resource
                 ] : null
             )
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->label(__('Status'))
                     ->options(collect(Status::cases())->mapWithKeys(function ($case) {
                         return [$case->value => $case->toReadableString()];
                     })->toArray()),
-                Tables\Filters\SelectFilter::make('cluster')
+                SelectFilter::make('cluster')
                     ->relationship('cluster', 'name')
                     ->multiple(),
-                Custom\Admin\Filters\UniversityMembersFilter::make('university_member_id', 'universityMember'),
+                UniversityMembersFilter::make('university_member_id', 'universityMember'),
             ])
-            ->filtersFormWidth(MaxWidth::Large)
+            ->filtersFormWidth(Width::Large)
             ->recordUrl(fn (Instance $record) => route('filament.app.pages.app-dashboard', ['tenant' => $record]))
-            ->actions([
-                Custom\Admin\Actions\Table\EditInstanceAction::make(),
+            ->recordActions([
+                EditInstanceAction::make(),
             ])
             ->paginated([10, 25, 50])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -176,20 +193,20 @@ class InstanceResource extends Resource
     public static function getGridTableColumns(): array
     {
         return [
-            Tables\Columns\Layout\Stack::make([
-                Tables\Columns\ImageColumn::make('image')
+            Stack::make([
+                ImageColumn::make('image')
                     ->height('auto')
                     ->extraImgAttributes(['class' => 'rounded-md h-32 w-32'])
                     ->extraAttributes(['class' => 'mb-4']),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label(__('Name'))
                     ->weight(FontWeight::SemiBold)
-                    ->size(TextColumnSize::Large)
+                    ->size(TextSize::Large)
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('cluster.name')
+                TextColumn::make('cluster.name')
                     ->label(__('Cluster'))
-                    ->size(TextColumnSize::Medium)
+                    ->size(TextSize::Medium)
                     ->sortable()
                     ->extraAttributes(['class' => 'pt-1.5 mb-3 block w-full']),
             ]),
@@ -199,18 +216,18 @@ class InstanceResource extends Resource
     public static function getTableColumns(): array
     {
         return [
-            Tables\Columns\TextColumn::make('name')
+            TextColumn::make('name')
                 ->label(__('Name'))
                 ->sortable()
                 ->searchable(),
-            Tables\Columns\TextColumn::make('cluster.name')
+            TextColumn::make('cluster.name')
                 ->label(__('Cluster'))
                 ->sortable(),
-            Tables\Columns\TextColumn::make('plugins_count')
+            TextColumn::make('plugins_count')
                 ->label(__('Plugins'))
                 ->counts('plugins')
                 ->sortable(),
-            Tables\Columns\TextColumn::make('status')
+            TextColumn::make('status')
                 ->label(__('Status'))
                 ->badge()
                 ->formatStateUsing(fn (Status $state): string => $state->toReadableString())
@@ -228,7 +245,7 @@ class InstanceResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageInstances::route('/'),
+            'index' => ManageInstances::route('/'),
         ];
     }
 }

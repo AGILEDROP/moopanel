@@ -30,7 +30,7 @@ class AppPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->databaseNotifications()
             ->colors([
-                'primary' => Color::rgb('rgb(225, 42, 38)'),
+                'primary' => Color::generateV3Palette('rgb(225, 42, 38)'),
             ])
             ->maxContentWidth(true)
             ->navigationItems([

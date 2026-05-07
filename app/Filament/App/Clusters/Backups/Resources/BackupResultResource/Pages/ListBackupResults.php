@@ -2,10 +2,10 @@
 
 namespace App\Filament\App\Clusters\Backups\Resources\BackupResultResource\Pages;
 
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Pages\Enums\SubNavigationPosition;
 use App\Filament\App\Clusters\Backups\Resources\BackupResultResource;
 use Filament\Pages\Concerns\HasSubNavigation;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -26,7 +26,7 @@ class ListBackupResults extends ListRecords
         ];
     }
 
-    public function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }

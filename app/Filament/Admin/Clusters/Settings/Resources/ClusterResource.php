@@ -2,13 +2,24 @@
 
 namespace App\Filament\Admin\Clusters\Settings\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Admin\Clusters\Settings\Resources\ClusterResource\Pages\ManageClusters;
 use App\Enums\Role;
 use App\Filament\Admin\Clusters\Settings;
 use App\Filament\Admin\Clusters\Settings\Resources\ClusterResource\Pages;
 use App\Models\Cluster;
 use App\Models\Instance;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -18,7 +29,7 @@ class ClusterResource extends Resource
 {
     protected static ?string $model = Cluster::class;
 
-    protected static ?string $navigationIcon = 'fas-layer-group';
+    protected static string | \BackedEnum | null $navigationIcon = 'fas-layer-group';
 
     protected static ?int $navigationSort = 1;
 
@@ -29,17 +40,17 @@ class ClusterResource extends Resource
         return auth()->user()->role() === Role::MasterAdmin;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
+        return $schema
+            ->components([
+                TextInput::make('name')
                     ->required(),
-                Forms\Components\Select::make('master_id')
+                Select::make('master_id')
                     ->options(Instance::all()->pluck('name', 'id'))
                     ->searchable()
                     ->nullable(),
-                Forms\Components\FileUpload::make('img_path')
+                FileUpload::make('img_path')
                     ->image()
                     ->imageEditor()
                     ->imageCropAspectRatio('1:1')
@@ -53,44 +64,44 @@ class ClusterResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image')
+                ImageColumn::make('image')
                     ->square(),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('master.name')
+                TextColumn::make('master.name')
                     ->searchable()
                     ->sortable(),
                 // todo: find fix for this alpine error!
-                Tables\Columns\TextColumn::make('instances.name')
+                TextColumn::make('instances.name')
                     ->label(__('Instances'))
                     ->listWithLineBreaks()
                     ->limitList(3)
                     ->expandableLimitedList(fn () => true),
-                Tables\Columns\IconColumn::make('default')
+                IconColumn::make('default')
                     ->label(__('Is default'))
                     ->boolean()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label(__('Created at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label(__('Updated at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make()
                     ->hidden(fn ($record) => $record->default === true),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->paginated([10, 25, 50])
@@ -101,7 +112,7 @@ class ClusterResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageClusters::route('/'),
+            'index' => ManageClusters::route('/'),
         ];
     }
 }

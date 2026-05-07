@@ -2,13 +2,14 @@
 
 namespace App\Jobs\Update;
 
+use Exception;
+use Filament\Actions\Action;
 use App\Models\Instance;
 use App\Models\Update;
 use App\Models\UpdateRequest;
 use App\Models\UpdateRequestItem;
 use App\Models\User;
 use App\Services\ModuleApiService;
-use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -82,7 +83,7 @@ class CoreUpdateRequestJob implements ShouldQueue
 
                 Log::error('Core update for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
-                throw new \Exception('Core update failed with status code: '.$response->status().'.');
+                throw new Exception('Core update failed with status code: '.$response->status().'.');
             }
 
             $response = $response->json();
@@ -112,7 +113,7 @@ class CoreUpdateRequestJob implements ShouldQueue
             } else {
                 $this->handleFailedUpdate($response);
             }
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
 
             $errorMessage = sprintf(
                 'Exception in %s on line %s in method %s: %s',

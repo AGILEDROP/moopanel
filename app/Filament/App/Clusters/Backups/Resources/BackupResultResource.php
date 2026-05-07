@@ -2,6 +2,11 @@
 
 namespace App\Filament\App\Clusters\Backups\Resources;
 
+use Filament\Schemas\Schema;
+use Exception;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\Action;
+use App\Filament\App\Clusters\Backups\Resources\BackupResultResource\Pages\ListBackupResults;
 use App\Enums\BackupStorageType;
 use App\Filament\App\Clusters\Backups;
 use App\Filament\App\Clusters\Backups\Resources\BackupResultResource\Pages;
@@ -11,12 +16,9 @@ use App\Jobs\Backup\RestoreBackupJob;
 use App\Models\BackupResult;
 use Carbon\Carbon;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,14 +30,14 @@ class BackupResultResource extends Resource
 {
     protected static ?string $model = BackupResult::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-list-bullet';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-list-bullet';
 
     protected static ?string $cluster = Backups::class;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 //
             ]);
     }
@@ -147,7 +149,7 @@ class BackupResultResource extends Resource
                     ->copyableState(function (Model $record): string {
                         try {
                             $password = Crypt::decrypt($record->password);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             return 'invalid-password';
                         }
 
@@ -164,7 +166,7 @@ class BackupResultResource extends Resource
                 //
             ])
             ->paginated([10, 25, 50])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
                     Action::make('restore')
                         ->requiresConfirmation()
@@ -176,7 +178,7 @@ class BackupResultResource extends Resource
 
                             return false;
                         })
-                        ->form([
+                        ->schema([
                             TextInput::make('password')
                                 ->label('File password')
                                 ->required(),
@@ -216,7 +218,7 @@ class BackupResultResource extends Resource
 
                             try {
                                 $decryptedPassword = Crypt::decrypt($record->password);
-                            } catch (\Exception $e) {
+                            } catch (Exception $e) {
                                 Notification::make()
                                     ->title(__('Backup restore error'))
                                     ->body(__('Password is incorrect'))
@@ -380,7 +382,7 @@ class BackupResultResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBackupResults::route('/'),
+            'index' => ListBackupResults::route('/'),
         ];
     }
 }

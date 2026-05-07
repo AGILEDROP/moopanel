@@ -2,15 +2,20 @@
 
 namespace App\Filament\App\Clusters\Backups\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use App\Filament\App\Clusters\Backups\Resources\BackupStorageResource\Pages\ListBackupStorages;
+use App\Filament\App\Clusters\Backups\Resources\BackupStorageResource\Pages\CreateBackupStorage;
+use App\Filament\App\Clusters\Backups\Resources\BackupStorageResource\Pages\EditBackupStorage;
 use App\Enums\BackupStorageType;
 use App\Filament\App\Clusters\Backups;
 use App\Filament\App\Clusters\Backups\Resources\BackupStorageResource\Pages;
 use App\Models\BackupStorage;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -21,14 +26,14 @@ class BackupStorageResource extends Resource
 {
     protected static ?string $model = BackupStorage::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-square-3-stack-3d';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-square-3-stack-3d';
 
     protected static ?string $cluster = Backups::class;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Basic Information')
                     ->schema([
                         TextInput::make('instance_id')
@@ -150,9 +155,9 @@ class BackupStorageResource extends Resource
                 //
             ])
             ->paginated([10, 25, 50])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                ViewAction::make(),
             ]);
     }
 
@@ -166,9 +171,9 @@ class BackupStorageResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBackupStorages::route('/'),
-            'create' => Pages\CreateBackupStorage::route('/create'),
-            'edit' => Pages\EditBackupStorage::route('/{record}/edit'),
+            'index' => ListBackupStorages::route('/'),
+            'create' => CreateBackupStorage::route('/create'),
+            'edit' => EditBackupStorage::route('/{record}/edit'),
         ];
     }
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class UpdatesList extends Widget
 {
-    protected static string $view = 'filament.app.widgets.updates-list';
+    protected string $view = 'filament.app.widgets.updates-list';
 
     protected static ?int $sort = 3;
 

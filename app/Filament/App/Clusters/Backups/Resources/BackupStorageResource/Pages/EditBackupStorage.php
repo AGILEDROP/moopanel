@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Clusters\Backups\Resources\BackupStorageResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Enums\BackupStorageType;
 use App\Filament\App\Clusters\Backups\Resources\BackupStorageResource;
 use App\Models\BackupStorage;
@@ -18,7 +19,7 @@ class EditBackupStorage extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
+            DeleteAction::make()
                 // Disable deleting default local backup storage
                 ->hidden(fn () => $this->record->storage_key === BackupStorageType::Local->value)
                 ->before(function (Action $action) {

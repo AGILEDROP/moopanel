@@ -8,7 +8,7 @@ use Filament\Widgets\Widget;
 
 class DashboardActions extends Widget
 {
-    protected static string $view = 'filament.app.widgets.dashboard-actions';
+    protected string $view = 'filament.app.widgets.dashboard-actions';
 
     protected static ?int $sort = 2;
 

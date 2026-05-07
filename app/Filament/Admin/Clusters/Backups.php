@@ -7,7 +7,7 @@ use Filament\Clusters\Cluster;
 
 class Backups extends Cluster
 {
-    protected static ?string $navigationIcon = 'heroicon-o-circle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-circle-stack';
 
     protected static ?int $navigationSort = 3;
 

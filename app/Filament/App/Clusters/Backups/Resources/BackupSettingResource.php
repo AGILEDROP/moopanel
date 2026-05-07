@@ -2,16 +2,21 @@
 
 namespace App\Filament\App\Clusters\Backups\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\App\Clusters\Backups\Resources\BackupSettingResource\Pages\ListBackupSettings;
+use App\Filament\App\Clusters\Backups\Resources\BackupSettingResource\Pages\EditBackupSetting;
 use App\Filament\App\Clusters\Backups;
 use App\Filament\App\Clusters\Backups\Resources\BackupSettingResource\Pages;
 use App\Models\BackupSetting;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\CheckboxColumn;
@@ -23,16 +28,16 @@ class BackupSettingResource extends Resource
 {
     protected static ?string $model = BackupSetting::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
     protected static ?int $navigationSort = 2;
 
     protected static ?string $cluster = Backups::class;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Grid::make([
                     'default' => 1,
                     'sm' => 2,
@@ -118,13 +123,13 @@ class BackupSettingResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
             ->paginated([10, 25, 50])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -140,8 +145,8 @@ class BackupSettingResource extends Resource
     {
 
         return [
-            'index' => Pages\ListBackupSettings::route('/'),
-            'edit' => Pages\EditBackupSetting::route('/{record}/edit'),
+            'index' => ListBackupSettings::route('/'),
+            'edit' => EditBackupSetting::route('/{record}/edit'),
         ];
     }
 }

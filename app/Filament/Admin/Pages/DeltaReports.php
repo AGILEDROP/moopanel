@@ -2,6 +2,12 @@
 
 namespace App\Filament\Admin\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Filament\Admin\Resources\InstanceResource;
 use App\Models\Cluster;
 use App\Models\DeltaReport;
@@ -13,7 +19,6 @@ use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
@@ -29,9 +34,9 @@ class DeltaReports extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static string $view = 'filament.admin.pages.delta-reports';
+    protected string $view = 'filament.admin.pages.delta-reports';
 
     protected static ?int $navigationSort = 4;
 
@@ -66,42 +71,42 @@ class DeltaReports extends Page implements HasForms
         ];
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->statePath('data')
-            ->schema([
-                Forms\Components\Grid::make([
+            ->components([
+                Grid::make([
                     'default' => 1,
                     'sm' => 2,
                 ])->schema([
-                    Forms\Components\Section::make()
+                    Section::make()
                         ->schema([
-                            Forms\Components\Select::make('first_cluster_id')
+                            Select::make('first_cluster_id')
                                 ->label(__('Cluster'))
                                 ->live()
-                                ->afterStateUpdated(fn (Forms\Set $set) => $set('first_instance_id', null))
+                                ->afterStateUpdated(fn (Set $set) => $set('first_instance_id', null))
                                 ->options(fn () => Cluster::pluck('name', 'id'))
                                 ->rules(['required', 'integer', 'exists:clusters,id']),
-                            Forms\Components\Select::make('first_instance_id')
+                            Select::make('first_instance_id')
                                 ->label(__('Instance'))
-                                ->disabled(fn (Forms\Get $get) => $get('first_cluster_id') === null)
-                                ->options(fn (Forms\Get $get) => $this->getOptions($get('first_cluster_id')))
+                                ->disabled(fn (Get $get) => $get('first_cluster_id') === null)
+                                ->options(fn (Get $get) => $this->getOptions($get('first_cluster_id')))
                                 ->rules(['required', 'integer', 'exists:instances,id']),
                         ])->columnSpan(1),
-                    Forms\Components\Section::make()
+                    Section::make()
                         ->schema([
-                            Forms\Components\Select::make('second_cluster_id')
+                            Select::make('second_cluster_id')
                                 ->label(__('Cluster'))
                                 ->live()
-                                ->afterStateUpdated(fn (Forms\Set $set) => $set('second_instance_id', null))
+                                ->afterStateUpdated(fn (Set $set) => $set('second_instance_id', null))
                                 ->options(fn () => Cluster::pluck('name', 'id'))
                                 ->rules(['required', 'integer', 'exists:clusters,id']),
-                            Forms\Components\Select::make('second_instance_id')
+                            Select::make('second_instance_id')
                                 ->label(__('Instance'))
                                 ->live()
-                                ->disabled(fn (Forms\Get $get) => $get('second_cluster_id') === null)
-                                ->options(fn (Forms\Get $get) => $this->getOptions($get('second_cluster_id')))
+                                ->disabled(fn (Get $get) => $get('second_cluster_id') === null)
+                                ->options(fn (Get $get) => $this->getOptions($get('second_cluster_id')))
                                 ->rules(['required', 'integer', 'exists:instances,id', 'different:data.first_instance_id'])
                                 ->validationMessages([
                                     'different' => __('You can\'t compare same instance.'),

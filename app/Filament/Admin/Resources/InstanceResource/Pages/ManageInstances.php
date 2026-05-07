@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\InstanceResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Admin\Pages\AddInstance;
 use App\Filament\Admin\Resources\InstanceResource;
 use Filament\Actions;
@@ -29,7 +30,7 @@ class ManageInstances extends ManageRecords
             TableLayoutToggle::getToggleViewAction(compact: false)
                 ->hiddenLabel(false)
                 ->label(fn ($livewire): string => $livewire->isGridLayout() ? __('List view') : __('Grid view')),
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->icon('heroicon-o-plus-circle')
                 ->url(AddInstance::getUrl()),
         ];

@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use ValueError;
+
 enum BackupType: string
 {
     // case INSTANCE = 'instance';
@@ -38,6 +40,6 @@ enum BackupType: string
                 return $status->value;
             }
         }
-        throw new \ValueError("$name is not a valid backing value for enum ".self::class);
+        throw new ValueError("$name is not a valid backing value for enum ".self::class);
     }
 }

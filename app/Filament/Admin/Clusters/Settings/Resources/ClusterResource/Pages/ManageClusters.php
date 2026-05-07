@@ -2,11 +2,12 @@
 
 namespace App\Filament\Admin\Clusters\Settings\Resources\ClusterResource\Pages;
 
+use Filament\Actions\CreateAction;
+use Filament\Pages\Enums\SubNavigationPosition;
 use App\Filament\Admin\Clusters\Settings;
 use App\Filament\Admin\Clusters\Settings\Resources\ClusterResource;
 use App\Filament\Admin\Resources\InstanceResource;
 use Filament\Actions;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Pages\ManageRecords;
 use Illuminate\Support\HtmlString;
 
@@ -27,11 +28,11 @@ class ManageClusters extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 
-    public function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }
