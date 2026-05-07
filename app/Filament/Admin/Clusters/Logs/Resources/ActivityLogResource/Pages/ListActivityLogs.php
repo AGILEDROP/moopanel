@@ -5,16 +5,14 @@ namespace App\Filament\Admin\Clusters\Logs\Resources\ActivityLogResource\Pages;
 use App\Filament\Admin\Clusters\Logs;
 use App\Filament\Admin\Clusters\Logs\Resources\ActivityLogResource;
 use App\Filament\Admin\Resources\InstanceResource;
+use Filament\Actions;
 use Filament\Pages\SubNavigationPosition;
+use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\HtmlString;
-use Z3d0X\FilamentLogger\Resources\ActivityResource\Pages\ListActivities;
 
-class ListActivityLogs extends ListActivities
+class ListActivityLogs extends ListRecords
 {
-    public static function getResource(): string
-    {
-        return ActivityLogResource::class;
-    }
+    protected static string $resource = ActivityLogResource::class;
 
     public function getBreadcrumbs(): array
     {
@@ -29,5 +27,14 @@ class ListActivityLogs extends ListActivities
     public function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\Action::make('refresh')
+                ->icon('heroicon-o-arrow-path')
+                ->action(fn () => null),
+        ];
     }
 }

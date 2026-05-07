@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cf5153addab4e2b9d60fd77b0df2d82c",
+    "content-hash": "45b6258c6e509d74d8f52abf5b3d4d63",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -9334,81 +9334,6 @@
                 }
             ],
             "time": "2026-04-26T05:33:54+00:00"
-        },
-        {
-            "name": "z3d0x/filament-logger",
-            "version": "v0.7.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Z3d0X/filament-logger.git",
-                "reference": "78185b984920d04a06c730ade5c316411bd5c0f8"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Z3d0X/filament-logger/zipball/78185b984920d04a06c730ade5c316411bd5c0f8",
-                "reference": "78185b984920d04a06c730ade5c316411bd5c0f8",
-                "shasum": ""
-            },
-            "require": {
-                "filament/filament": "^3.0",
-                "illuminate/contracts": "^8.0 | ^9.0 | ^10.0 | ^11.0",
-                "php": "^8.0 | ^8.1",
-                "spatie/laravel-activitylog": "^4.5",
-                "spatie/laravel-package-tools": "^1.13.5"
-            },
-            "require-dev": {
-                "nunomaduro/collision": "^6.0 | ^8.0",
-                "nunomaduro/larastan": "^2.0.1",
-                "orchestra/testbench": "^7.0 | ^9.0",
-                "pestphp/pest": "^1.21 | ^2.34",
-                "pestphp/pest-plugin-laravel": "^1.1 | ^2.3",
-                "phpstan/extension-installer": "^1.1",
-                "phpstan/phpstan-deprecation-rules": "^1.0",
-                "phpstan/phpstan-phpunit": "^1.0",
-                "phpunit/phpunit": "^9.5 | ^10.5",
-                "spatie/laravel-ray": "^1.26"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "FilamentLogger": "Z3d0X\\FilamentLogger\\Facades\\FilamentLogger"
-                    },
-                    "providers": [
-                        "Z3d0X\\FilamentLogger\\FilamentLoggerServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Z3d0X\\FilamentLogger\\": "src",
-                    "Z3d0X\\FilamentLogger\\Database\\Factories\\": "database/factories"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Ziyaan Hassan",
-                    "email": "ziyaan2010@gmail.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Activity logger for filament",
-            "homepage": "https://github.com/z3d0x/filament-logger",
-            "keywords": [
-                "Z3d0X",
-                "filament-logger",
-                "laravel"
-            ],
-            "support": {
-                "issues": "https://github.com/Z3d0X/filament-logger/issues",
-                "source": "https://github.com/Z3d0X/filament-logger/tree/v0.7.3"
-            },
-            "abandoned": true,
-            "time": "2025-01-08T03:28:13+00:00"
         }
     ],
     "packages-dev": [
@@ -9474,6 +9399,53 @@
                 "source": "https://github.com/FakerPHP/Faker/tree/v1.24.1"
             },
             "time": "2024-11-21T13:46:39+00:00"
+        },
+        {
+            "name": "filament/upgrade",
+            "version": "v4.11.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/filamentphp/upgrade.git",
+                "reference": "bc3a18e869fe60c2f9ba62011331e4835e4d9ab2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/filamentphp/upgrade/zipball/bc3a18e869fe60c2f9ba62011331e4835e4d9ab2",
+                "reference": "bc3a18e869fe60c2f9ba62011331e4835e4d9ab2",
+                "shasum": ""
+            },
+            "require": {
+                "nunomaduro/termwind": "^2.0",
+                "php": "^8.2",
+                "rector/rector": "^2.0"
+            },
+            "bin": [
+                "bin/filament-v4"
+            ],
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filament\\Upgrade\\UpgradeServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filament\\Upgrade\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Upgrade Filament v3 code to Filament v4.",
+            "homepage": "https://github.com/filamentphp/filament",
+            "support": {
+                "issues": "https://github.com/filamentphp/filament/issues",
+                "source": "https://github.com/filamentphp/filament"
+            },
+            "time": "2026-02-20T12:25:06+00:00"
         },
         {
             "name": "hamcrest/hamcrest-php",
@@ -9917,6 +9889,59 @@
                 "source": "https://github.com/phar-io/version/tree/3.2.1"
             },
             "time": "2022-02-21T01:04:05+00:00"
+        },
+        {
+            "name": "phpstan/phpstan",
+            "version": "2.1.54",
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/8be50c3992107dc837b17da4d140fbbdf9a5c5bd",
+                "reference": "8be50c3992107dc837b17da4d140fbbdf9a5c5bd",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4|^8.0"
+            },
+            "conflict": {
+                "phpstan/phpstan-shim": "*"
+            },
+            "bin": [
+                "phpstan",
+                "phpstan.phar"
+            ],
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHPStan - PHP Static Analysis Tool",
+            "keywords": [
+                "dev",
+                "static analysis"
+            ],
+            "support": {
+                "docs": "https://phpstan.org/user-guide/getting-started",
+                "forum": "https://github.com/phpstan/phpstan/discussions",
+                "issues": "https://github.com/phpstan/phpstan/issues",
+                "security": "https://github.com/phpstan/phpstan/security/policy",
+                "source": "https://github.com/phpstan/phpstan-src"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/ondrejmirtes",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/phpstan",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-04-29T13:31:09+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -10374,6 +10399,66 @@
                 }
             ],
             "time": "2026-02-18T12:37:06+00:00"
+        },
+        {
+            "name": "rector/rector",
+            "version": "2.4.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/rectorphp/rector.git",
+                "reference": "e645b6463c6a88ea5b44b17d3387d35a912c7946"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/e645b6463c6a88ea5b44b17d3387d35a912c7946",
+                "reference": "e645b6463c6a88ea5b44b17d3387d35a912c7946",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4|^8.0",
+                "phpstan/phpstan": "^2.1.48"
+            },
+            "conflict": {
+                "rector/rector-doctrine": "*",
+                "rector/rector-downgrade-php": "*",
+                "rector/rector-phpunit": "*",
+                "rector/rector-symfony": "*"
+            },
+            "suggest": {
+                "ext-dom": "To manipulate phpunit.xml via the custom-rule command"
+            },
+            "bin": [
+                "bin/rector"
+            ],
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Instant Upgrade and Automated Refactoring of any PHP code",
+            "homepage": "https://getrector.com/",
+            "keywords": [
+                "automation",
+                "dev",
+                "migration",
+                "refactoring"
+            ],
+            "support": {
+                "issues": "https://github.com/rectorphp/rector/issues",
+                "source": "https://github.com/rectorphp/rector/tree/2.4.2"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/tomasvotruba",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-04-16T13:07:34+00:00"
         },
         {
             "name": "sebastian/cli-parser",
