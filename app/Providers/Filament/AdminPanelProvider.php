@@ -11,6 +11,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Hydrat\TableLayoutToggle\TableLayoutTogglePlugin;
+use Hydrat\TableLayoutToggle\Persisters\DisabledPersister;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -53,7 +54,7 @@ class AdminPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->plugins([
                 TableLayoutTogglePlugin::make()
-                    ->persistLayoutInLocalStorage(false) // allow user to keep his layout preference in his local storage
+                    ->persistLayoutUsing(DisabledPersister::class) // do not persist the selected layout
                     ->shareLayoutBetweenPages(false) // allow all tables to share the layout option (requires persistLayoutInLocalStorage to be true)
                     ->displayToggleAction(false), // used to display the toggle button automatically, on the desired filament hook (defaults to table bar),
                 FilamentLaravelLogPlugin::make()

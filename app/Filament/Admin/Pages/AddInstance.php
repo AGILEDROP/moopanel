@@ -178,7 +178,8 @@ class AddInstance extends Page implements HasForms
                                     ->label(__('Choose image'))
                                     ->image()
                                     ->imageEditor()
-                                    ->imageCropAspectRatio('1:1')
+                                    ->imageAspectRatio('1:1')
+                                    ->automaticallyCropImagesToAspectRatio()
                                     ->disk(config('file-uploads.disk'))
                                     ->directory(config('file-uploads.'.Instance::class))
                                     ->rules(['nullable', 'mimes:jpg,jpeg,png', 'max:1024']),

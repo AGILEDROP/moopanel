@@ -4,10 +4,10 @@ namespace App\Providers\Filament;
 
 use App\Filament\App\Pages\AppDashboard;
 use App\Models\Instance;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\MenuItem;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -42,7 +42,7 @@ class AppPanelProvider extends PanelProvider
             ])
             ->tenant(Instance::class)
             ->tenantMenuItems([
-                MenuItem::make()
+                Action::make('showAllInstances')
                     ->label('Show all instances')
                     ->url(fn () => route('filament.admin.resources.instances.index')),
             ])

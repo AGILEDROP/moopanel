@@ -74,7 +74,8 @@ class InstanceResource extends Resource
                     ->label(__('Choose image'))
                     ->image()
                     ->imageEditor()
-                    ->imageCropAspectRatio('1:1')
+                    ->imageAspectRatio('1:1')
+                    ->automaticallyCropImagesToAspectRatio()
                     ->disk(config('file-uploads.disk'))
                     ->directory(config('file-uploads.'.Instance::class))
                     ->rules(['nullable', 'mimes:jpg,jpeg,png', 'max:1024']),
@@ -195,7 +196,7 @@ class InstanceResource extends Resource
         return [
             Stack::make([
                 ImageColumn::make('image')
-                    ->height('auto')
+                    ->imageHeight('auto')
                     ->extraImgAttributes(['class' => 'rounded-md h-32 w-32'])
                     ->extraAttributes(['class' => 'mb-4']),
                 TextColumn::make('name')

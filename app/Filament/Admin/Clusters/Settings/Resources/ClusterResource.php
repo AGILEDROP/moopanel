@@ -53,7 +53,8 @@ class ClusterResource extends Resource
                 FileUpload::make('img_path')
                     ->image()
                     ->imageEditor()
-                    ->imageCropAspectRatio('1:1')
+                    ->imageAspectRatio('1:1')
+                    ->automaticallyCropImagesToAspectRatio()
                     ->disk(config('file-uploads.disk'))
                     ->directory(config('file-uploads.'.Cluster::class))
                     ->rules(['nullable', 'mimes:jpg,jpeg,png', 'max:1024']),
