@@ -11,7 +11,7 @@ use Filament\Schemas\Components\Form;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Utilities\Get;
-use App\Filament\Admin\Resources\InstanceResource;
+use App\Filament\Admin\Resources\Instances\InstanceResource;
 use App\Models\Cluster;
 use App\Models\DeltaReport;
 use App\Models\Instance;

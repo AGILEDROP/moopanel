@@ -2,7 +2,7 @@
 
 namespace App\Filament\App\Widgets;
 
-use App\Filament\App\Resources\PluginResource\Pages\ManagePlugins;
+use App\Filament\App\Resources\Plugins\Pages\ManagePlugins;
 use Filament\Widgets\Widget;
 
 class DashboardActions extends Widget

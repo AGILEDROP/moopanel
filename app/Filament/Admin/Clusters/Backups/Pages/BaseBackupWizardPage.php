@@ -3,14 +3,14 @@
 namespace App\Filament\Admin\Clusters\Backups\Pages;
 
 use App\Enums\BackupType;
-use App\Filament\Admin\Clusters\Backups;
-use App\Filament\Admin\Resources\InstanceResource;
+use App\Filament\Admin\Clusters\Backups\BackupsCluster;
+use App\Filament\Admin\Resources\Instances\InstanceResource;
 use Filament\Pages\Page;
 use Illuminate\Support\HtmlString;
 
 class BaseBackupWizardPage extends Page
 {
-    protected static ?string $cluster = Backups::class;
+    protected static ?string $cluster = BackupsCluster::class;
 
     protected static bool $shouldRegisterNavigation = false;
 

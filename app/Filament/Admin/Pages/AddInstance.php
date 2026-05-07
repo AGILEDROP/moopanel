@@ -17,7 +17,7 @@ use Filament\Forms\Components\FileUpload;
 use Exception;
 use App\Enums\Status;
 use App\Events\InstanceCreated;
-use App\Filament\Admin\Resources\InstanceResource;
+use App\Filament\Admin\Resources\Instances\InstanceResource;
 use App\Filament\Custom\Admin\Actions\Forms\CopyFieldStateAction;
 use App\Models\Cluster;
 use App\Models\Instance;

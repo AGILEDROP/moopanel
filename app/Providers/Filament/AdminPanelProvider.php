@@ -3,7 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Admin\Auth\Login;
-use App\Filament\Admin\Clusters\Logs\Resources\ActivityLogResource;
+use App\Filament\Admin\Clusters\Logs\Resources\ActivityLogs\ActivityLogResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;

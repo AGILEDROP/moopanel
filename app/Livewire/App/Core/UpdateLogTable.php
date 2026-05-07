@@ -4,7 +4,7 @@ namespace App\Livewire\App\Core;
 
 use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\Concerns\InteractsWithActions;
-use App\Filament\App\Resources\UpdateLogResource;
+use App\Filament\App\Resources\UpdateLogs\UpdateLogResource;
 use App\Models\Instance;
 use App\Models\UpdateLog;
 use App\UseCases\Syncs\SingleInstance\CoreSyncType;

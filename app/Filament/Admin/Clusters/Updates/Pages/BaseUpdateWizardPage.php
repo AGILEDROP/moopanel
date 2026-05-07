@@ -3,14 +3,14 @@
 namespace App\Filament\Admin\Clusters\Updates\Pages;
 
 use App\Enums\UpdateType;
-use App\Filament\Admin\Clusters\Updates;
-use App\Filament\Admin\Resources\InstanceResource;
+use App\Filament\Admin\Clusters\Updates\UpdatesCluster;
+use App\Filament\Admin\Resources\Instances\InstanceResource;
 use Filament\Pages\Page;
 use Illuminate\Support\HtmlString;
 
 class BaseUpdateWizardPage extends Page
 {
-    protected static ?string $cluster = Updates::class;
+    protected static ?string $cluster = UpdatesCluster::class;
 
     protected static bool $shouldRegisterNavigation = false;
 

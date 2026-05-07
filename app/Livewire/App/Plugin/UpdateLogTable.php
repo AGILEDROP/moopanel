@@ -4,7 +4,7 @@ namespace App\Livewire\App\Plugin;
 
 use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\Concerns\InteractsWithActions;
-use App\Filament\App\Resources\UpdateLogResource;
+use App\Filament\App\Resources\UpdateLogs\UpdateLogResource;
 use App\Models\Plugin;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
