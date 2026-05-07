@@ -10,10 +10,9 @@
     "require": {
         "php": "^8.2",
         "achyutn/filament-log-viewer": "^2.3",
-        "arsanchez/laravel-azure-provisioning": "^1.1.10",
         "codewithdennis/filament-select-tree": "^4.0",
         "filament/filament": "^5.0",
-        "flowframe/laravel-trend": "^0.2.0",
+        "flowframe/laravel-trend": "^v0.5.0",
         "guzzlehttp/guzzle": "^7.2",
         "hydrat/filament-table-layout-toggle": "^4.0",
         "jfcherng/php-diff": "^6.16",

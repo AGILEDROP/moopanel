@@ -4,8 +4,8 @@ namespace App\SCIM\src\SCIM;
 
 use App\SCIM\src\Resources\ResourceType;
 use App\SCIM\src\Utils\AzureHelper;
+use App\SCIM\src\Utils\SCIMConstantsV2;
 use Illuminate\Contracts\Support\Jsonable;
-use RobTrehy\LaravelAzureProvisioning\Utils\SCIMConstantsV2;
 
 class ListResponse implements Jsonable
 {

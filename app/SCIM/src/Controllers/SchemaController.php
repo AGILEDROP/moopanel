@@ -2,8 +2,8 @@
 
 namespace App\SCIM\src\Controllers;
 
+use App\SCIM\src\Utils\SCIMConstantsV2;
 use Illuminate\Routing\Controller;
-use RobTrehy\LaravelAzureProvisioning\Utils\SCIMConstantsV2;
 use Tmilos\ScimSchema\Builder\SchemaBuilderV2;
 
 class SchemaController extends Controller

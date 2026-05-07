@@ -2,7 +2,7 @@
 
 use App\Http\Middleware\SCIM\AccountsSecretTokenMiddleware;
 use App\Models\Account;
-use RobTrehy\LaravelAzureProvisioning\Utils\SCIMConstantsV2;
+use App\SCIM\src\Utils\SCIMConstantsV2;
 
 return [
 

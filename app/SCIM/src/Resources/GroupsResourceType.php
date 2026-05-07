@@ -2,9 +2,9 @@
 
 namespace App\SCIM\src\Resources;
 
+use App\SCIM\src\Exceptions\AzureProvisioningException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
-use RobTrehy\LaravelAzureProvisioning\Exceptions\AzureProvisioningException;
 
 class GroupsResourceType extends ResourceType
 {

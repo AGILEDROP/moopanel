@@ -2,11 +2,9 @@
 
 namespace App\SCIM\src;
 
-use App\SCIM\src\Utils\AzureHelper;
+use App\SCIM\src\Exceptions\AzureProvisioningException;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
-use RobTrehy\LaravelAzureProvisioning;
-use RobTrehy\LaravelAzureProvisioning\Exceptions\AzureProvisioningException;
 
 class AdminAzureProvisioningProvider extends ServiceProvider
 {
@@ -22,9 +20,6 @@ class AdminAzureProvisioningProvider extends ServiceProvider
             'azureprovisioning-admin'
         );
 
-        //  $this->app->singleton(LaravelAzureProvisioning\Utils\AzureHelper::class, AzureHelper::class);
-        //  $this->app->singleton(LaravelAzureProvisioning\Resources\ResourceType::class, \App\SCIM\src\Resources\ResourceType::class);
-        //  $this->app->singleton(LaravelAzureProvisioning\SCIM\ResourceType::class, \App\SCIM\src\SCIM\ResourceType::class);
     }
 
     /**
