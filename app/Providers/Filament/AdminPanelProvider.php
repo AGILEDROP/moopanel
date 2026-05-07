@@ -20,7 +20,6 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Saade\FilamentLaravelLog\FilamentLaravelLogPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -56,10 +55,7 @@ class AdminPanelProvider extends PanelProvider
                 TableLayoutTogglePlugin::make()
                     ->persistLayoutUsing(DisabledPersister::class) // do not persist the selected layout
                     ->shareLayoutBetweenPages(false) // allow all tables to share the layout option (requires persistLayoutInLocalStorage to be true)
-                    ->displayToggleAction(false), // used to display the toggle button automatically, on the desired filament hook (defaults to table bar),
-                FilamentLaravelLogPlugin::make()
-                    ->authorize(false)
-                    ->slug('system-logs'),
+                    ->displayToggleAction(false), // used to display the toggle button automatically, on the desired filament hook (defaults to table bar)
             ])
             ->middleware([
                 EncryptCookies::class,

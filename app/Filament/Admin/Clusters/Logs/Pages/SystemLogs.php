@@ -7,9 +7,8 @@ use App\Enums\Role;
 use App\Filament\Admin\Clusters\Logs\LogsCluster;
 use App\Filament\Admin\Resources\Instances\InstanceResource;
 use Illuminate\Support\HtmlString;
-use Saade\FilamentLaravelLog\Pages\ViewLog as BaseViewLog;
 
-class SystemLogs extends BaseViewLog
+class SystemLogs
 {
     protected static bool $shouldRegisterNavigation = true;
 
