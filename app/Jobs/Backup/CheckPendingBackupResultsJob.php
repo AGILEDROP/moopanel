@@ -45,7 +45,7 @@ class CheckPendingBackupResultsJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            $moduleApiService = new ModuleApiService();
+            $moduleApiService = new ModuleApiService;
             $moodleJobId = $this->backupResult->moodle_job_id;
 
             $this->payload = [
@@ -219,8 +219,6 @@ class CheckPendingBackupResultsJob implements ShouldQueue
 
     /**
      * Get notification body
-     *
-     * @param  ?bool  $status
      */
     private function getNotificationBody(?bool $status, string $error): string
     {

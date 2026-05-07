@@ -37,7 +37,7 @@ class RestoreBackupJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $moduleApiService = new ModuleApiService();
+        $moduleApiService = new ModuleApiService;
 
         $payload = [
             'storage' => $this->backupResult->backupStorage->storage_key,

@@ -62,7 +62,7 @@ class PluginZipUpdateJob implements ShouldQueue
             return;
         }
 
-        $moduleApi = new ModuleApiService();
+        $moduleApi = new ModuleApiService;
 
         try {
             $response = $moduleApi->triggerPluginZipFileUpdates($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);

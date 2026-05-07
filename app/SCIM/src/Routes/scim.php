@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\VerifyCsrfToken;
 use App\SCIM\src\Controllers\ResourceController;
 use App\SCIM\src\Controllers\ResourceTypeController;
 use App\SCIM\src\Controllers\SchemaController;
@@ -19,22 +20,22 @@ Route::group([
         ->name('AdminAzureProvisioning.Resources');
 
     Route::post('/{overwrittenResourceType}', [ResourceController::class, 'create'])
-        ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+        ->withoutMiddleware([VerifyCsrfToken::class]);
 
     Route::get('/{overwrittenResourceType}/{overwrittenResourceObject}', [ResourceController::class, 'show'])
         ->name('AdminAzureProvisioning.Resource');
 
     Route::patch('/{overwrittenResourceType}/{overwrittenResourceObject}', [ResourceController::class, 'update'])
         ->name('AdminAzureProvisioning.Resource.Update')
-        ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+        ->withoutMiddleware([VerifyCsrfToken::class]);
 
     Route::put('/{overwrittenResourceType}/{overwrittenResourceObject}', [ResourceController::class, 'replace'])
         ->name('AdminAzureProvisioning.Resource.Replace')
-        ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+        ->withoutMiddleware([VerifyCsrfToken::class]);
 
     Route::delete('/{overwrittenResourceType}/{overwrittenResourceObject}', [ResourceController::class, 'delete'])
         ->name('AdminAzureProvisioning.Resource.Delete')
-        ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+        ->withoutMiddleware([VerifyCsrfToken::class]);
 
     Route::get('/Schemas/{id}', function ($id) {
         return $id;

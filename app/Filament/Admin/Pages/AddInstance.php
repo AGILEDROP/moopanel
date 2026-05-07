@@ -156,7 +156,7 @@ class AddInstance extends Page implements HasForms
                                             ->searchable()
                                             ->required(fn () => $this->connected),
                                         Forms\Components\TextInput::make('azure_app_id')
-                                            ->rules([new AzureAppId(), 'unique:instances,azure_app_id'])
+                                            ->rules([new AzureAppId, 'unique:instances,azure_app_id'])
                                             ->label(__('Azure App ID')),
                                         Forms\Components\Select::make('university_member_id')
                                             ->label('Assign university')
@@ -200,7 +200,7 @@ class AddInstance extends Page implements HasForms
         $data = $this->form->getState();
         try {
             // Get data from moodle site.
-            $response = (new \App\Services\ModuleApiService)->getInstanceData($data['url'], $data['api_key']);
+            $response = (new ModuleApiService)->getInstanceData($data['url'], $data['api_key']);
             if (! $response->ok()) {
                 throw new \Exception('Connection to external moodle plugin failed! Status code: '.$response->status());
             }
@@ -232,7 +232,7 @@ class AddInstance extends Page implements HasForms
 
         DB::beginTransaction();
         try {
-            $response = (new \App\Services\ModuleApiService)->postApiKeyStatus($data['url'], $data['api_key'], dateToUnixOrNull($data['key_expiration_date']));
+            $response = (new ModuleApiService)->postApiKeyStatus($data['url'], $data['api_key'], dateToUnixOrNull($data['key_expiration_date']));
             if ($response->status() !== 201) {
                 throw new \Exception('Creation failed due to unsuccessful api key status operation! Status code: '.$response->status());
             }

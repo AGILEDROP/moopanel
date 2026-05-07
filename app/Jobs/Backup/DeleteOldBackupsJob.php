@@ -66,7 +66,7 @@ class DeleteOldBackupsJob implements ShouldQueue
                 return;
             }
 
-            $moduleApiService = new ModuleApiService();
+            $moduleApiService = new ModuleApiService;
 
             $response = $moduleApiService->triggerCourseBackupDeletion($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
@@ -85,7 +85,7 @@ class DeleteOldBackupsJob implements ShouldQueue
 
                 Log::error('Course backup deletion request for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
-                throw new \Exception('Course backup deletion request failed with status code: '.$response->status().'.');
+                throw new Exception('Course backup deletion request failed with status code: '.$response->status().'.');
             }
 
             $response = $response->json();

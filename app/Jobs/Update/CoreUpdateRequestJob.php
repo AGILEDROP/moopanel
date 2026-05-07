@@ -63,7 +63,7 @@ class CoreUpdateRequestJob implements ShouldQueue
         }
 
         try {
-            $moduleApiService = new ModuleApiService();
+            $moduleApiService = new ModuleApiService;
 
             $response = $moduleApiService->triggerCoreUpdate($this->instance, $this->payload);
 

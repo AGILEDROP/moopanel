@@ -34,7 +34,7 @@ class CourseBackupController extends Controller
             $moodle_course_id = intval($moodle_course_id);
 
             if ($moodle_course_id < 1) {
-                throw new Exception();
+                throw new Exception;
             }
         } catch (Exception $e) {
             return response()->json([

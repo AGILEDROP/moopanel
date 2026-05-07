@@ -76,7 +76,7 @@ class InstanceResource extends Resource
                     ->columnSpanFull()
                     ->live(),
 
-                Forms\Components\Grid::make()
+                Grid::make()
                     ->live()
                     ->disabled(fn (Forms\Get $get): bool => $get('use_existing_api_key') ?? true)
                     ->hidden(fn (Forms\Get $get): bool => $get('use_existing_api_key') ?? true)

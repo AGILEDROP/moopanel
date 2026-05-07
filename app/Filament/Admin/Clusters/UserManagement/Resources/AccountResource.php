@@ -33,7 +33,7 @@ class AccountResource extends Resource
                 Custom\Admin\Columns\UpnColumn::make('username', __('UPN')),
                 Custom\Admin\Columns\EmailColumn::make('email', __('Email')),
                 Custom\Admin\Columns\AzureIdColumn::make('azure_id', __('Azure ID')),
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->label(__('Type'))
                     ->formatStateUsing(fn (string $state): string => AccountTypes::tryFrom($state)->toReadableString())
                     ->sortable(),

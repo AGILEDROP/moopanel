@@ -2,12 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\UniversityMember;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UniversityMember>
+ * @extends Factory<UniversityMember>
  */
 class UniversityMemberFactory extends Factory
 {

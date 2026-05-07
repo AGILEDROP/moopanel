@@ -29,8 +29,8 @@ class BaseSyncType implements SyncType
     public function __construct(Instance $instance)
     {
         $this->instance = $instance;
-        $this->moduleApiService = new ModuleApiService();
-        $this->syncHelper = new SyncHelper();
+        $this->moduleApiService = new ModuleApiService;
+        $this->syncHelper = new SyncHelper;
     }
 
     /**

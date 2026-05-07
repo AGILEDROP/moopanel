@@ -25,7 +25,7 @@ class Sync implements ShouldQueue
 
     public function __construct(Instance $instance, string $syncType, string $failMsg = 'Updates sync failed.')
     {
-        $this->moduleApiService = new ModuleApiService();
+        $this->moduleApiService = new ModuleApiService;
         $this->instance = $instance;
         $this->syncType = $syncType;
         $this->failMsg = $failMsg;

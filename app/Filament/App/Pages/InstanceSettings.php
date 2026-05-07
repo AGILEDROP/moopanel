@@ -43,7 +43,7 @@ class InstanceSettings extends Page implements HasForms
                 TextInput::make('azure_app_id')
                     ->label(__('Azure App ID'))
                     ->rules([
-                        new AzureAppId(),
+                        new AzureAppId,
                         Rule::unique('instances', 'azure_app_id')->ignore(filament()->getTenant()->id),
                     ])
                     ->required(),

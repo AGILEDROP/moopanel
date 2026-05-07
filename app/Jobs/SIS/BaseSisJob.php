@@ -22,6 +22,6 @@ class BaseSisJob implements ShouldQueue
     public function __construct(UniversityMember $universityMember)
     {
         $this->universityMember = $universityMember;
-        $this->sisApiService = new SisApiService();
+        $this->sisApiService = new SisApiService;
     }
 }

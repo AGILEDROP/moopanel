@@ -61,7 +61,7 @@ class PluginUpdateJob implements ShouldQueue
         }
 
         try {
-            $moduleApiService = new ModuleApiService();
+            $moduleApiService = new ModuleApiService;
 
             $response = $moduleApiService->triggerPluginsUpdates($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 

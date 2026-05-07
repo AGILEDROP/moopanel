@@ -47,7 +47,7 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
     {
 
         try {
-            $moduleApiService = new ModuleApiService();
+            $moduleApiService = new ModuleApiService;
             $moodleJobId = $this->updateRequest->moodle_job_id;
 
             if (is_null($moodleJobId)) {
@@ -184,8 +184,6 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
 
     /**
      * Get notification body
-     *
-     * @param  ?bool  $status
      */
     private function getNotificationBody(?bool $status, string $error): string
     {

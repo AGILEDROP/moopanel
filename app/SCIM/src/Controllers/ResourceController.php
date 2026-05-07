@@ -157,7 +157,7 @@ class ResourceController
         return response(null, 204);
     }
 
-    public function createObject(Request $request, \App\SCIM\src\Resources\ResourceType $resourceType, $allowAlways = false)
+    public function createObject(Request $request, ResourceType $resourceType, $allowAlways = false)
     {
         $input = $request->input();
         if (! isset($input['schemas']) || ! is_array($input['schemas'])) {

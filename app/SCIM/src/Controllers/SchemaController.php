@@ -11,7 +11,7 @@ class SchemaController extends Controller
     public function index()
     {
         $schemas = [];
-        $schema = (new SchemaBuilderV2())->get(SCIMConstantsV2::SCHEMA_USER);
+        $schema = (new SchemaBuilderV2)->get(SCIMConstantsV2::SCHEMA_USER);
         if ($schema == null) {
             dd('Schema ['.SCIMConstantsV2::SCHEMA_USER.'] not found');
         }

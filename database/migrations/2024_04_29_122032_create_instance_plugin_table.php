@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('instance_id')->constrained()->cascadeOnDelete();
             $table->foreignId('plugin_id')->constrained()->cascadeOnDelete();
 
-            //Additional attributes.
+            // Additional attributes.
             $table->string('version');
             $table->boolean('enabled');
 

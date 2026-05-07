@@ -101,7 +101,7 @@ class AzureHelper
 
     public static function objectLocation(Model $object, ?ResourceType $resourceType = null)
     {
-        //dump('test');
+        // dump('test');
         return substr(config('app.url'), -1) != '/' ?
             config('app.url').'/'.config('azureprovisioning-admin.routePrefix').'/'.$resourceType->getName().'/'.$object->id :
             config('app.url').config('azureprovisioning-admin.routePrefix').'/'.$resourceType->getName().'/'.$object->id;

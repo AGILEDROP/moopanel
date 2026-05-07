@@ -49,7 +49,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         'password' => 'hashed',
     ];
 
-    //@todo: use spatie roles & permissions or custom roles table!
+    // @todo: use spatie roles & permissions or custom roles table!
     public function appRoleId(): Attribute
     {
         return Attribute::make(

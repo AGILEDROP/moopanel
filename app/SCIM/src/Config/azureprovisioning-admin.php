@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\SCIM\UsersSecretTokenMiddleware;
 use RobTrehy\LaravelAzureProvisioning\Utils\SCIMConstantsV2;
+use Spatie\Permission\Models\Role;
 
 return [
 
@@ -98,7 +99,7 @@ return [
          *
          * Default: Spatie\Permission\Models\Role::class
          */
-        'model' => Spatie\Permission\Models\Role::class,
+        'model' => Role::class,
 
         /**
          * Request validation rules.

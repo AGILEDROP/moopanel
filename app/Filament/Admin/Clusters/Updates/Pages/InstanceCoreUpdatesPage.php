@@ -80,7 +80,7 @@ class InstanceCoreUpdatesPage extends BaseUpdateWizardPage implements HasActions
             ->whereIn('instance_id', $this->instanceIds)
             ->whereNull('plugin_id')
             ->where('type', $this->type)
-            //->distinct('release')
+            // ->distinct('release')
             ->orderBy('release', 'desc')
             ->get();
 
