@@ -34,7 +34,7 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    public static function can(string $action, ?Model $record = null): bool
+    public static function can(string|\UnitEnum $action, ?Model $record = null): bool
     {
         return auth()->user()->role() === Role::MasterAdmin;
     }
