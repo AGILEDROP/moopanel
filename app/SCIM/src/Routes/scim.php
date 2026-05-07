@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Middleware\VerifyCsrfToken;
 use App\SCIM\src\Controllers\ResourceController;
 use App\SCIM\src\Controllers\ResourceTypeController;
 use App\SCIM\src\Controllers\SchemaController;
 use App\SCIM\src\Controllers\ServiceProviderController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 
