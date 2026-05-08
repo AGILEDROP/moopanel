@@ -80,4 +80,33 @@ class CourseBackupRestoreControllerTest extends TestCase
             ->assertStatus(422)
             ->assertJsonValidationErrors(['courseid']);
     }
+
+    public function test_failed_restore_emits_danger_notification_and_clears_flags(): void
+    {
+        $user = User::factory()->createQuietly();
+        $instance = Instance::factory()->withApiKey('secret-token')->create();
+        $course = Course::factory()->for($instance)->create(['moodle_course_id' => 810, 'name' => 'Chemistry']);
+        $backupResult = BackupResult::factory()->forCourse($course)->successful()->inRestoreProcess()->create([
+            'user_id' => $user->id,
+            'url' => 'https://files/restore-fail.mbz',
+        ]);
+
+        $this->withHeader('X-API-KEY', 'secret-token')
+            ->postJson("/api/backups/restore/instance/{$instance->id}", [
+                'courseid' => $course->moodle_course_id,
+                'status' => false,
+                'message' => 'restore failed',
+                'user_id' => $user->id,
+                'backup_result_id' => $backupResult->id,
+            ])
+            ->assertOk()
+            ->assertJson(['status' => true]);
+
+        $this->assertDatabaseHas('backup_results', [
+            'id' => $backupResult->id,
+            'in_restore_process' => 0,
+            'moodle_job_id' => null,
+        ]);
+        $this->assertDatabaseCount('notifications', 1);
+    }
 }

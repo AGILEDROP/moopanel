@@ -149,4 +149,46 @@ class PluginZipUpdateControllerTest extends TestCase
             ->assertStatus(422)
             ->assertJsonValidationErrors(['updates.0.link', 'updates.0.status', 'updates.0.component']);
     }
+
+    public function test_plugin_zip_update_marks_request_failed_when_all_items_fail(): void
+    {
+        Bus::fake();
+
+        $user = User::factory()->createQuietly();
+        $instance = Instance::factory()->withApiKey('secret-token')->create();
+        $updateRequest = UpdateRequest::factory()->pending()->create([
+            'instance_id' => $instance->id,
+            'user_id' => $user->id,
+            'type' => UpdateRequest::TYPE_PLUGIN_ZIP,
+        ]);
+
+        UpdateRequestItem::factory()->create([
+            'update_request_id' => $updateRequest->id,
+            'model_id' => null,
+            'zip_path' => '/tmp/x.zip',
+        ]);
+        UpdateRequestItem::factory()->create([
+            'update_request_id' => $updateRequest->id,
+            'model_id' => null,
+            'zip_path' => '/tmp/y.zip',
+        ]);
+
+        $this->withHeader('X-API-KEY', 'secret-token')
+            ->postJson("/api/updates/zip-plugins/instance/{$instance->id}", [
+                'user_id' => $user->id,
+                'moodle_job_id' => 99,
+                'updates' => [
+                    ['link' => '/tmp/x.zip', 'status' => false, 'component' => 'mod_forum', 'version' => '1.0.0', 'error' => 'broken'],
+                    ['link' => '/tmp/y.zip', 'status' => false, 'component' => 'mod_quiz', 'version' => '2.0.0', 'error' => 'broken'],
+                ],
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('update_requests', [
+            'id' => $updateRequest->id,
+            'status' => 0,
+        ]);
+
+        Bus::assertDispatched(Sync::class);
+    }
 }

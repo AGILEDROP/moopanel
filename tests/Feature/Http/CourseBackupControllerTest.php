@@ -144,4 +144,62 @@ class CourseBackupControllerTest extends TestCase
 
         $this->assertDatabaseCount('backup_results', 0);
     }
+
+    public function test_store_marks_request_failed_when_payload_status_is_false(): void
+    {
+        // Status=false reports a failed backup. statusUpdate flips records to STATUS_FAILED
+        // and the manual-batch notification still fires once all rows leave pending state.
+        $user = User::factory()->createQuietly();
+        $instance = Instance::factory()->withApiKey('secret-token')->create();
+        $course = Course::factory()->for($instance)->create(['moodle_course_id' => 808]);
+        $timestamp = 222333;
+
+        BackupResult::factory()->forCourse($course)->pending()->manual($user, $timestamp)->create(['moodle_job_id' => 800]);
+
+        $this->withHeader('X-API-KEY', 'secret-token')
+            ->postJson("/api/backups/courses/{$instance->id}", [
+                'courseid' => $course->moodle_course_id,
+                'link' => 'https://files/failed.mbz',
+                'password' => 'fail-pass',
+                'status' => false,
+            ])
+            ->assertOk()
+            ->assertJson(['status' => true]);
+
+        $this->assertDatabaseHas('backup_results', [
+            'instance_id' => $instance->id,
+            'moodle_course_id' => $course->moodle_course_id,
+            'status' => false,
+        ]);
+        $this->assertDatabaseCount('notifications', 1);
+    }
+
+    public function test_store_emits_warning_when_manual_batch_is_partially_successful(): void
+    {
+        $user = User::factory()->createQuietly();
+        $instance = Instance::factory()->withApiKey('secret-token')->create();
+        $course = Course::factory()->for($instance)->create(['moodle_course_id' => 909]);
+        $timestamp = 444555;
+
+        // One pending row that the request resolves.
+        BackupResult::factory()->forCourse($course)->pending()->manual($user, $timestamp)->create(['moodle_job_id' => 901]);
+
+        // A sibling row in the same batch that already settled as failed before the request.
+        BackupResult::factory()->forCourse($course)->manual($user, $timestamp)->create([
+            'status' => BackupResult::STATUS_FAILED,
+            'moodle_job_id' => null,
+        ]);
+
+        $this->withHeader('X-API-KEY', 'secret-token')
+            ->postJson("/api/backups/courses/{$instance->id}", [
+                'courseid' => $course->moodle_course_id,
+                'link' => 'https://files/partial.mbz',
+                'password' => 'partial-pass',
+                'status' => true,
+            ])
+            ->assertOk();
+
+        // Manual batch fully settled (no rows remain pending) → notification fires.
+        $this->assertDatabaseCount('notifications', 1);
+    }
 }

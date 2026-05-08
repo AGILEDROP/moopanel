@@ -151,4 +151,41 @@ class PluginUpdateControllerTest extends TestCase
             ->assertStatus(422)
             ->assertJsonValidationErrors(['updates.0.model_id', 'updates.0.status']);
     }
+
+    public function test_plugin_update_marks_request_failed_when_all_items_fail(): void
+    {
+        Bus::fake();
+
+        $user = User::factory()->createQuietly();
+        $instance = Instance::factory()->withApiKey('secret-token')->create();
+        $updateRequest = UpdateRequest::factory()->pending()->create([
+            'instance_id' => $instance->id,
+            'user_id' => $user->id,
+            'type' => UpdateRequest::TYPE_PLUGIN,
+        ]);
+
+        $first = Update::factory()->for($instance)->create();
+        $second = Update::factory()->for($instance)->create();
+        UpdateRequestItem::factory()->create(['update_request_id' => $updateRequest->id, 'model_id' => $first->id]);
+        UpdateRequestItem::factory()->create(['update_request_id' => $updateRequest->id, 'model_id' => $second->id]);
+
+        $this->withHeader('X-API-KEY', 'secret-token')
+            ->postJson("/api/updates/plugins/instance/{$instance->id}", [
+                'user_id' => $user->id,
+                'moodle_job_id' => 50,
+                'updates' => [
+                    ['model_id' => $first->id, 'status' => false, 'component' => 'mod_forum', 'error' => 'failed'],
+                    ['model_id' => $second->id, 'status' => false, 'component' => 'mod_quiz', 'error' => 'failed too'],
+                ],
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('update_requests', [
+            'id' => $updateRequest->id,
+            'status' => 0,
+        ]);
+
+        // All-fail branch exercises the 'danger' status/message helpers in notify().
+        Bus::assertDispatched(Sync::class);
+    }
 }
