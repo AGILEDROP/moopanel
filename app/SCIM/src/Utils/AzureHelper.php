@@ -2,13 +2,13 @@
 
 namespace App\SCIM\src\Utils;
 
-use App\SCIM\src\Exceptions\AzureProvisioningException;
 use App\SCIM\src\Resources\ResourceType;
 use App\SCIM\src\Resources\UsersResourceType;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use RobTrehy\LaravelAzureProvisioning\Exceptions\AzureProvisioningException;
 use Tmilos\ScimFilterParser\Ast\ComparisonExpression;
 use Tmilos\ScimFilterParser\Ast\Conjunction;
 use Tmilos\ScimFilterParser\Ast\Disjunction;

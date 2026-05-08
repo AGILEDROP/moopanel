@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Middleware\SCIM\UsersSecretTokenMiddleware;
-use App\SCIM\src\Utils\SCIMConstantsV2;
+use RobTrehy\LaravelAzureProvisioning\Utils\SCIMConstantsV2;
 use Spatie\Permission\Models\Role;
 
 return [

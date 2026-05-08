@@ -2,10 +2,10 @@
 
 namespace App\SCIM\src\Resources;
 
-use App\SCIM\src\Exceptions\AzureProvisioningException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
+use RobTrehy\LaravelAzureProvisioning\Exceptions\AzureProvisioningException;
 
 class UsersResourceType extends ResourceType
 {

@@ -5,12 +5,12 @@ namespace App\SCIM\src\Controllers;
 use App\SCIM\src\Resources\ResourceType;
 use App\SCIM\src\SCIM\ListResponse;
 use App\SCIM\src\Utils\AzureHelper;
-use App\SCIM\src\Utils\SCIMConstantsV2;
-use App\SCIM\src\Exceptions\AzureProvisioningException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use RobTrehy\LaravelAzureProvisioning\Exceptions\AzureProvisioningException;
+use RobTrehy\LaravelAzureProvisioning\Utils\SCIMConstantsV2;
 use Tmilos\ScimFilterParser\Error\FilterException;
 use Tmilos\ScimFilterParser\Mode;
 use Tmilos\ScimFilterParser\Parser;
@@ -126,7 +126,7 @@ class ResourceController
 
         // event(new Patch($resourceObject, $oldObject, $resourceType));
 
-        return AzureHelper::objectToSCIMResponse($resourceObject, $resourceType);
+        return \RobTrehy\LaravelAzureProvisioning\Utils\AzureHelper::objectToSCIMResponse($resourceObject, $resourceType);
     }
 
     public function replace(Request $request, ResourceType $resourceType, Model $resourceObject, $isMe = false)
