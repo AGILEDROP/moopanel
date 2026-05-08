@@ -19,7 +19,7 @@ class UniversityMemberFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => fake()->numberBetween(3000000, 3000999),
+            'code' => fake()->unique()->numberBetween(4000000, 4999999),
             'acronym' => toUpper(Str::random(rand(2, 5))),
             'name' => fake()->company(),
             'sis_base_url' => fake()->url(),

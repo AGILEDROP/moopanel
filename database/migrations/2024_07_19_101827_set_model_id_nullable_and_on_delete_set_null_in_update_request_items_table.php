@@ -11,6 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            Schema::table('update_request_items', function (Blueprint $table) {
+                $table->unsignedBigInteger('model_id')->nullable()->change();
+            });
+
+            return;
+        }
+
         Schema::table('update_request_items', function (Blueprint $table) {
             // First, drop the existing foreign key constraint
             $table->dropForeign(['model_id']);
@@ -31,6 +39,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            Schema::table('update_request_items', function (Blueprint $table) {
+                $table->unsignedBigInteger('model_id')->nullable(false)->change();
+            });
+
+            return;
+        }
+
         Schema::table('update_request_items', function (Blueprint $table) {
             // To reverse the migration, first drop the modified foreign key
             $table->dropForeign(['model_id']);

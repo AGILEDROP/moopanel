@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::table('syncs', function (Blueprint $table) {
             $table->renameColumn('syncable_type', 'type');
+        });
+
+        Schema::table('syncs', function (Blueprint $table) {
             $table->string('subtype')->nullable();
         });
     }
@@ -23,8 +26,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('syncs', function (Blueprint $table) {
-            $table->renameColumn('type', 'syncable_type');
             $table->dropColumn('subtype');
+        });
+
+        Schema::table('syncs', function (Blueprint $table) {
+            $table->renameColumn('type', 'syncable_type');
         });
     }
 };

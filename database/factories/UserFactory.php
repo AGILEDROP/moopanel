@@ -32,7 +32,7 @@ class UserFactory extends Factory
             'azure_id' => fake()->uuid(),
             'username' => fake()->userName(),
             'employee_id' => null,
-            'app_role_id' => null,
+            'app_role_id' => collect(),
         ];
     }
 

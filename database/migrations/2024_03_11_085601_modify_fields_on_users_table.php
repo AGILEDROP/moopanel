@@ -18,10 +18,11 @@ return new class extends Migration
 
             $table->string('email')->nullable()->change();
             $table->string('app_role_id')->nullable(false)->change();
-
-            $table->dropColumn('azure_token');
-            $table->dropColumn('azure_access_token');
-            $table->dropColumn('azure_refresh_token');
+            $table->dropColumn([
+                'azure_token',
+                'azure_access_token',
+                'azure_refresh_token',
+            ]);
         });
     }
 
