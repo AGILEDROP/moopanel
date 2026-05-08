@@ -51,6 +51,9 @@
         }
     },
     "scripts": {
+        "test:coverage": [
+            "XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",

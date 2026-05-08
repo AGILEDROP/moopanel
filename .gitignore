@@ -10,3 +10,4 @@ vendor
 docker-compose.adminer_norouter.yaml
 /node_modules
 /public/build
+.phpunit.result.cache
