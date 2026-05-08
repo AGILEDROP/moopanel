@@ -13,6 +13,8 @@ use Tests\TestCase;
 
 class ProvisionAzureJobTest extends TestCase
 {
+    private const PRINCIPAL_ID = '11111111-1111-4111-8111-111111111111';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -41,7 +43,7 @@ class ProvisionAzureJobTest extends TestCase
 
         $universityMember = UniversityMember::factory()->create();
         $instance = Instance::factory()->for($universityMember)->withAppInfo('service-principal-id', 'role-id')->create();
-        $account = Account::factory()->create(['azure_id' => 'principal-id']);
+        $account = Account::factory()->create(['azure_id' => self::PRINCIPAL_ID]);
         $universityMember->accounts()->attach($account->id, ['app_role_assignment_id' => null]);
 
         (new ProvisionAzureJob($universityMember, $account, 'student'))->handle();
@@ -61,7 +63,7 @@ class ProvisionAzureJobTest extends TestCase
 
         $universityMember = UniversityMember::factory()->create();
         Instance::factory()->for($universityMember)->withAppInfo('service-principal-id', 'role-id')->create();
-        $account = Account::factory()->create(['azure_id' => 'principal-id']);
+        $account = Account::factory()->create(['azure_id' => self::PRINCIPAL_ID]);
 
         (new ProvisionAzureJob($universityMember, $account, 'student'))->handle();
 

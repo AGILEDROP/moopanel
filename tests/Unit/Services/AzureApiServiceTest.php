@@ -15,6 +15,8 @@ use Tests\TestCase;
 
 class AzureApiServiceTest extends TestCase
 {
+    private const PRINCIPAL_ID = '11111111-1111-4111-8111-111111111111';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -75,7 +77,7 @@ class AzureApiServiceTest extends TestCase
         $instance = Instance::factory()->withAppInfo('service-principal-id', 'role-id')->create();
 
         $service = new AzureApiService($instance);
-        $result = $service->assignUserToUniversityMemberApp($instance, Account::factory()->create(['azure_id' => 'principal-id']));
+        $result = $service->assignUserToUniversityMemberApp($instance, Account::factory()->create(['azure_id' => self::PRINCIPAL_ID]));
 
         $this->assertSame('assignment-id', $result);
     }
@@ -93,7 +95,7 @@ class AzureApiServiceTest extends TestCase
 
         $result = (new AzureApiService($instance))->assignUserToUniversityMemberApp(
             $instance,
-            Account::factory()->create(['azure_id' => 'principal-id'])
+            Account::factory()->create(['azure_id' => self::PRINCIPAL_ID])
         );
 
         $this->assertTrue($result);
@@ -191,7 +193,7 @@ class AzureApiServiceTest extends TestCase
 
         $result = (new AzureApiService($instance))->assignUserToUniversityMemberApp(
             $instance,
-            Account::factory()->create(['azure_id' => 'principal-id'])
+            Account::factory()->create(['azure_id' => self::PRINCIPAL_ID])
         );
 
         $this->assertFalse($result);

@@ -25,7 +25,7 @@ Run `./vendor/bin/pint` before every commit to follow required code style.
 Run the regular test suite with:
 
 ```bash
-php artisan test
+ddev exec php artisan test
 ```
 
 ### Coverage in DDEV

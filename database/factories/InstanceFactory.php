@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\Status;
+use App\Models\Cluster;
 use App\Models\UniversityMember;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Crypt;
@@ -14,9 +15,13 @@ class InstanceFactory extends Factory
 {
     public function definition(): array
     {
+        $name = fake()->company().' Moodle';
+
         return [
+            'cluster_id' => Cluster::factory(),
             'university_member_id' => UniversityMember::factory(),
-            'name' => fake()->company().' Moodle',
+            'name' => $name,
+            'short_name' => fake()->unique()->bothify('inst-####'),
             'url' => fake()->unique()->url(),
             'img_path' => null,
             'theme' => 'boost',

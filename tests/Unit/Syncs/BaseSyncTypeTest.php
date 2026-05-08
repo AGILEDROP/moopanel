@@ -8,7 +8,6 @@ use App\Models\Sync;
 use App\UseCases\Syncs\SingleInstance\BaseSyncType;
 use Exception;
 use Filament\Actions\Action;
-use Filament\Tables\Actions\Action as TableAction;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
@@ -158,7 +157,7 @@ class BaseSyncTypeTest extends TestCase
 
         $action = $sync->getTableAction('sync-test', []);
 
-        $this->assertInstanceOf(TableAction::class, $action);
+        $this->assertInstanceOf(Action::class, $action);
         $this->assertSame('sync-test', $action->getName());
         $this->assertSame('Sync', $action->getLabel());
         $this->assertSame('heroicon-o-arrow-path', $action->getIcon());
