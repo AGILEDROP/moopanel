@@ -6,7 +6,6 @@ use App\Providers\EventServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\Filament\AppPanelProvider;
 use App\Providers\RouteServiceProvider;
-use App\SCIM\src\AdminAzureProvisioningProvider;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 
@@ -177,7 +176,6 @@ return [
         AdminPanelProvider::class,
         AppPanelProvider::class,
         RouteServiceProvider::class,
-        AdminAzureProvisioningProvider::class,
     ])->toArray(),
 
     /*
