@@ -22,10 +22,17 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            Schema::table('backup_results', function (Blueprint $table) {
+                $table->dropForeign(['backup_storage_id']);
+            });
+        }
+
         Schema::table('backup_results', function (Blueprint $table) {
-            $table->dropForeign(['backup_storage_id']);
-            $table->dropColumn('backup_storage_id');
-            $table->dropColumn('filesize');
+            $table->dropColumn([
+                'backup_storage_id',
+                'filesize',
+            ]);
         });
     }
 };

@@ -23,10 +23,20 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            Schema::table('instances', function (Blueprint $table) {
+                $table->dropForeign(['cluster_id']);
+            });
+        }
+
         Schema::table('instances', function (Blueprint $table) {
-            $table->dropForeign(['cluster_id']);
-            $table->dropColumn('cluster_id');
-            $table->dropColumn('short_name');
+            $table->dropColumn([
+                'cluster_id',
+                'short_name',
+            ]);
+        });
+
+        Schema::table('instances', function (Blueprint $table) {
             $table->renameColumn('img_path', 'logo');
         });
     }

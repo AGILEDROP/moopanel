@@ -19,3 +19,24 @@ It is built on Laravel 10 and Filament v3.
 ## Code Style
 
 Run `./vendor/bin/pint` before every commit to follow required code style.
+
+## Tests
+
+Run the regular test suite with:
+
+```bash
+php artisan test
+```
+
+### Coverage in DDEV
+
+Use DDEV's built-in Xdebug support for coverage runs:
+
+```bash
+ddev xdebug on
+ddev exec composer test:coverage
+ddev xdebug off
+```
+
+This keeps the normal test workflow fast while making coverage runs repeatable inside the containerized environment.
+The coverage command intentionally uses PHPUnit directly, because that is the verified CLI path that prints the text coverage summary inside DDEV.

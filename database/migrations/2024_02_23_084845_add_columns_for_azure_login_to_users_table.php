@@ -26,11 +26,13 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('azure_id');
-            $table->dropColumn('username');
-            $table->dropColumn('azure_token');
-            $table->dropColumn('azure_access_token');
-            $table->dropColumn('azure_refresh_token');
+            $table->dropColumn([
+                'azure_id',
+                'username',
+                'azure_token',
+                'azure_access_token',
+                'azure_refresh_token',
+            ]);
         });
     }
 };

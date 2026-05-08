@@ -17,8 +17,13 @@ return new class extends Migration
             DB::table('instances')->truncate();
         }
 
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            Schema::table('instances', function (Blueprint $table) {
+                $table->dropForeign(['university_member_id']);
+            });
+        }
+
         Schema::table('instances', function (Blueprint $table) {
-            $table->dropForeign(['university_member_id']);
             $table->dropColumn('university_member_id');
         });
 
@@ -28,14 +33,20 @@ return new class extends Migration
                 ->after('id')
                 ->constrained();
             $table->unique('url');
-            $table->renameColumn('name', 'site_name');
-            $table->renameColumn('img_path', 'logo');
 
             $table->text('api_key')->after('url');
             $table->date('key_expiration_date')->nullable()->after('api_key');
             $table->string('theme')->nullable()->after('logo');
             $table->string('version')->nullable()->after('theme');
             $table->string('status')->default(Status::Disconnected->value)->after('version');
+        });
+
+        Schema::table('instances', function (Blueprint $table) {
+            $table->renameColumn('name', 'site_name');
+        });
+
+        Schema::table('instances', function (Blueprint $table) {
+            $table->renameColumn('img_path', 'logo');
         });
     }
 
@@ -44,8 +55,13 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            Schema::table('instances', function (Blueprint $table) {
+                $table->dropForeign(['university_member_id']);
+            });
+        }
+
         Schema::table('instances', function (Blueprint $table) {
-            $table->dropForeign(['university_member_id']);
             $table->dropColumn('university_member_id');
         });
 
@@ -54,14 +70,24 @@ return new class extends Migration
                 ->after('id')
                 ->constrained();
             $table->dropUnique(['url']);
-            $table->renameColumn('site_name', 'name');
-            $table->renameColumn('logo', 'img_path');
+        });
 
-            $table->dropColumn('api_key');
-            $table->dropColumn('key_expiration_date');
-            $table->dropColumn('theme');
-            $table->dropColumn('version');
-            $table->dropColumn('status');
+        Schema::table('instances', function (Blueprint $table) {
+            $table->renameColumn('site_name', 'name');
+        });
+
+        Schema::table('instances', function (Blueprint $table) {
+            $table->renameColumn('logo', 'img_path');
+        });
+
+        Schema::table('instances', function (Blueprint $table) {
+            $table->dropColumn([
+                'api_key',
+                'key_expiration_date',
+                'theme',
+                'version',
+                'status',
+            ]);
         });
     }
 };

@@ -11,12 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            Schema::table('plugins', function (Blueprint $table) {
+                $table->dropForeign(['instance_id']);
+            });
+        }
+
         Schema::table('plugins', function (Blueprint $table) {
-            $table->dropForeign(['instance_id']);
-            $table->dropColumn('instance_id');
-            $table->dropColumn('version');
-            $table->dropColumn('enabled');
-            $table->dropColumn('update_available');
+            $table->dropColumn([
+                'instance_id',
+                'version',
+                'enabled',
+                'update_available',
+            ]);
 
             $table->unique('name');
         });
