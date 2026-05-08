@@ -124,4 +124,92 @@ class SisApiServiceTest extends TestCase
         Bus::assertDispatched(DeprovisionAzureJob::class, 1);
         Log::shouldHaveReceived('info')->atLeast()->once();
     }
+
+    public function test_constructor_fetches_access_token_when_only_jwt_is_cached(): void
+    {
+        Cache::forget('access_token');
+        Http::fake([
+            'https://login.microsoftonline.com/*' => Http::response([
+                'access_token' => 'fresh-access-token',
+                'expires_in' => 3600,
+            ], 200),
+        ]);
+
+        new SisApiService();
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), 'https://login.microsoftonline.com/tenant-id/oauth2/v2.0/token')
+            && $request['grant_type'] === 'client_credentials'
+            && $request['tenant'] === 'tenant-id'
+            && $request['client_id'] === 'client-id'
+            && $request['client_assertion'] === 'jwt-token');
+
+        $this->assertSame('fresh-access-token', Cache::get('access_token'));
+    }
+
+    public function test_constructor_throws_exception_when_token_endpoint_fails(): void
+    {
+        Cache::forget('access_token');
+        Log::spy();
+        Http::fake([
+            'https://login.microsoftonline.com/*' => Http::response('not found', 404),
+        ]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Error getting access token from Azure');
+
+        new SisApiService();
+    }
+
+    public function test_get_all_students_stops_after_first_failed_year(): void
+    {
+        Http::fake([
+            'https://sis.example.test/student/2024-2025/*' => Http::response([
+                ['asUporabnik' => 'one@example.test'],
+            ], 200),
+            'https://sis.example.test/student/2023-2024/*' => Http::response([], 500),
+        ]);
+
+        $universityMember = UniversityMember::factory()->create([
+            'sis_base_url' => 'https://sis.example.test',
+            'sis_current_year' => '2024-2025',
+            'sis_student_years' => 2,
+        ]);
+
+        $students = (new SisApiService())->getAllStudents($universityMember);
+
+        $this->assertSame(['one@example.test'], $students->pluck('asUporabnik')->all());
+    }
+
+    public function test_update_account_membership_logs_warning_for_empty_collection(): void
+    {
+        Log::spy();
+
+        $universityMember = UniversityMember::factory()->create();
+
+        (new SisApiService())->updateAccountMembershipAndType(
+            collect(),
+            $universityMember,
+            AccountTypes::Student->value
+        );
+
+        Log::shouldHaveReceived('warning')->atLeast()->once();
+    }
+
+    public function test_update_account_membership_skips_provisioning_when_university_member_has_no_instance(): void
+    {
+        Bus::fake();
+        Log::spy();
+
+        $universityMember = UniversityMember::factory()->create();
+        $account = Account::factory()->create(['username' => 'lonely@example.test']);
+
+        (new SisApiService())->updateAccountMembershipAndType(
+            collect([['asUporabnik' => 'lonely@example.test']]),
+            $universityMember,
+            AccountTypes::Student->value
+        );
+
+        Bus::assertNotDispatched(ProvisionAzureJob::class);
+        $this->assertDatabaseHas('accounts', ['id' => $account->id, 'type' => AccountTypes::Student->value]);
+    }
 }
