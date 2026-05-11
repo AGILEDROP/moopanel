@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Update;
 
+use Exception;
 use App\Models\Instance;
 use App\Models\UpdateRequest;
 use App\Models\UpdateRequestItem;
@@ -62,7 +63,7 @@ class PluginZipUpdateJob implements ShouldQueue
             return;
         }
 
-        $moduleApi = new ModuleApiService();
+        $moduleApi = new ModuleApiService;
 
         try {
             $response = $moduleApi->triggerPluginZipFileUpdates($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
@@ -82,13 +83,13 @@ class PluginZipUpdateJob implements ShouldQueue
 
                 Log::error('Plugin ZIP updates for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
-                throw new \Exception('Plugin update failed with status code: '.$response->status().'.');
+                throw new Exception('Plugin update failed with status code: '.$response->status().'.');
             }
 
             $pluginUpdatesCount = isset($this->payload['updates']) ? count($this->payload['updates']) : null;
 
             if ($pluginUpdatesCount === null) {
-                throw new \Exception('No ZIP plugin updates found in payload for instance: '.$this->instance->name);
+                throw new Exception('No ZIP plugin updates found in payload for instance: '.$this->instance->name);
             }
 
             if ($response->json() && array_key_exists('moodle_job_id', $response->json())) {
@@ -105,7 +106,7 @@ class PluginZipUpdateJob implements ShouldQueue
                 ->icon('heroicon-o-arrow-up-circle')
                 ->iconColor('success')
                 ->sendToDatabase($this->userToNotify);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $errorMessage = sprintf(
                 'Failed to request for ZIP plugin update on instance %s . Exception in %s on line %s in method %s: %s',
                 $this->instance->name,

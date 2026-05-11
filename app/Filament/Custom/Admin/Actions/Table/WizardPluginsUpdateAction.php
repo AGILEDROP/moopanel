@@ -2,13 +2,13 @@
 
 namespace App\Filament\Custom\Admin\Actions\Table;
 
+use Filament\Actions\Action;
 use App\Jobs\Update\PluginUpdateJob;
 use App\Models\Instance;
 use App\Models\Plugin;
 use App\Models\Update;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 
 class WizardPluginsUpdateAction
@@ -20,7 +20,7 @@ class WizardPluginsUpdateAction
             ->iconButton()
             ->icon('heroicon-o-arrow-up-circle')
             ->modalHeading(__('Choose update'))
-            ->form([
+            ->schema([
                 Select::make('update_release')
                     ->label(__('Release'))
                     ->options(

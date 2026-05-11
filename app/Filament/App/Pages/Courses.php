@@ -2,6 +2,10 @@
 
 namespace App\Filament\App\Pages;
 
+use Filament\Actions\Action;
+use Exception;
+use Filament\Actions\BulkAction;
+use Filament\Support\Enums\Width;
 use App\Enums\BackupStorageType;
 use App\Filament\Concerns\InteractsWithCoursesTable;
 use App\Jobs\Backup\BackupRequestJob;
@@ -14,9 +18,6 @@ use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Enums\FontWeight;
-use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
@@ -29,16 +30,16 @@ class Courses extends Page implements HasTable
 {
     use InteractsWithCoursesTable;
 
-    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-academic-cap';
 
-    protected static string $view = 'filament.app.pages.courses';
+    protected string $view = 'filament.app.pages.courses';
 
     public function getTitle(): string|Htmlable
     {
         return __('Courses');
     }
 
-    protected function getTableHeaderActions(): array
+    protected function getCoursesTableHeaderActions(): array
     {
         return [
             Action::make('sync')
@@ -53,7 +54,7 @@ class Courses extends Page implements HasTable
     /**
      * Get the polling interval for the table to refresh synced courses and categories
      */
-    protected function getTablePollingInterval(): string
+    protected function getCoursesTablePollingInterval(): string
     {
         return '7s';
     }
@@ -153,7 +154,7 @@ class Courses extends Page implements HasTable
     /**
      * Query the table records.
      */
-    protected function getTableQuery(): Builder
+    protected function getCoursesTableQuery(): Builder
     {
         return Course::where('instance_id', filament()->getTenant()->id);
     }
@@ -163,7 +164,7 @@ class Courses extends Page implements HasTable
      */
     public function getTableQueryForExport(): Builder
     {
-        throw new \Exception('Not implemented');
+        throw new Exception('Not implemented');
 
         return Course::query();
     }
@@ -171,7 +172,7 @@ class Courses extends Page implements HasTable
     /**
      * Set table columns.
      */
-    protected function getTableColumns(): array
+    protected function getCoursesTableColumns(): array
     {
         return [
             TextColumn::make('name')
@@ -225,11 +226,11 @@ class Courses extends Page implements HasTable
     /**
      * Set table filters.
      */
-    protected function getTableFilters(): array
+    protected function getCoursesTableFilters(): array
     {
         return [
             Filter::make('category')
-                ->form([
+                ->schema([
                     SelectTree::make('categories')
                         ->relationship(
                             relationship: 'category',
@@ -297,7 +298,7 @@ class Courses extends Page implements HasTable
         return $descendantIds;
     }
 
-    protected function getTableActions(): array
+    protected function getCoursesTableRecordActions(): array
     {
         return [
             Action::make('backup')
@@ -310,7 +311,7 @@ class Courses extends Page implements HasTable
         ];
     }
 
-    protected function getTableBulkActions(): array
+    protected function getCoursesTableBulkActions(): array
     {
         return [
             BulkAction::make('bulk_backup')
@@ -364,15 +365,15 @@ class Courses extends Page implements HasTable
     /**
      * Set table filters form width.
      */
-    protected function getTableFiltersFormWidth(): MaxWidth
+    protected function getCoursesTableFiltersFormWidth(): string
     {
-        return MaxWidth::Small;
+        return Width::Small->value;
     }
 
     /**
      * Set table filters columns.
      */
-    protected function getTableFilterColumns(): int
+    protected function getCoursesTableFilterColumns(): int
     {
         return 1;
     }
@@ -382,7 +383,7 @@ class Courses extends Page implements HasTable
      *
      * @return int
      */
-    protected function getTableRecordsPerPageSelectOptions(): array
+    protected function getCoursesTablePaginationPageOptions(): array
     {
         return [10, 25, 50];
     }

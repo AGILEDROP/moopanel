@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use DOMDocument;
 use App\Traits\ValidatesInstanceId;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
 use SimpleXMLElement;
@@ -20,7 +22,7 @@ class AdminPresetCreate extends FormRequest
         }
 
         if ($this->header('Content-Type') == 'application/xml') {
-            $dom = new \DOMDocument;
+            $dom = new DOMDocument;
             libxml_use_internal_errors(true);
             $dom->loadXML($this->getContent());
             $errors = libxml_get_errors();
@@ -54,7 +56,7 @@ class AdminPresetCreate extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {

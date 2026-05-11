@@ -23,7 +23,7 @@ class GetActiveMoodleUsersInLastHour implements ShouldQueue
 
     public function __construct(Instance $instance)
     {
-        $this->moduleApiService = new ModuleApiService();
+        $this->moduleApiService = new ModuleApiService;
         $this->instance = $instance;
     }
 

@@ -2,11 +2,11 @@
 
 namespace App\Filament\Custom\Admin\Actions\Table;
 
+use Filament\Actions\EditAction;
 use App\Enums\Status;
 use App\Services\ModuleApiService;
 use Exception;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\EditAction;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;

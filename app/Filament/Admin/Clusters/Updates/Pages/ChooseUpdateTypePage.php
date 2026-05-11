@@ -14,7 +14,7 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage implements HasActions
 {
     use InteractsWithActions;
 
-    protected static string $view = 'filament.admin.pages.choose-type-page';
+    protected string $view = 'filament.admin.pages.choose-type-page';
 
     protected static ?string $title = 'Choose update type';
 

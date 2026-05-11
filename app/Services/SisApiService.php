@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use App\Enums\AccountTypes;
 use App\Jobs\AzureApi\DeprovisionAzureJob;
 use App\Jobs\AzureApi\ProvisionAzureJob;
@@ -104,8 +105,8 @@ class SisApiService
             if ($sisUsersWithoutAccount->count() > 0) {
                 Log::info("{$universityMember->name} endpoint returned ".$sisUsersWithoutAccount->count()." {$typeName} data that don't have a defined Account model.");
 
-                //Log::warning('Not all ' . $typeName . ' data returned from the SIS endpoint have a defined Account model!');
-                //Log::debug('Missing ' . $typeName . ' data: ' . print_r($sisUsersWithoutAccount, true));
+                // Log::warning('Not all ' . $typeName . ' data returned from the SIS endpoint have a defined Account model!');
+                // Log::debug('Missing ' . $typeName . ' data: ' . print_r($sisUsersWithoutAccount, true));
             }
 
             // Assign university member to existing account & update type value!
@@ -230,7 +231,7 @@ class SisApiService
                 Log::error('Extra info for 404 code: '.'https://login.microsoftonline.com/'.config('custom.azure_tenant_id').'/oauth2/v2.0/token');
             }
 
-            throw new \Exception('Error getting access token from Azure');
+            throw new Exception('Error getting access token from Azure');
         }
 
         return $accessToken;

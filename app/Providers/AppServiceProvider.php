@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\SCIM\AzureAdminSCIMConfig;
+use ArieTimmerman\Laravel\SCIMServer\SCIMConfig;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -12,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(SCIMConfig::class, AzureAdminSCIMConfig::class);
     }
 
     /**

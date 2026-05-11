@@ -2,6 +2,8 @@
 
 namespace App\Jobs\Backup;
 
+use Exception;
+use Filament\Actions\Action;
 use App\Jobs\ModuleApi\Sync;
 use App\Models\BackupResult;
 use App\Models\Instance;
@@ -9,7 +11,6 @@ use App\Models\Scopes\InstanceScope;
 use App\Models\User;
 use App\Services\ModuleApiService;
 use App\UseCases\Syncs\SingleInstance\CourseSyncType;
-use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -55,7 +56,7 @@ class BackupRequestJob implements ShouldQueue
         }
 
         try {
-            $moduleApiService = new ModuleApiService();
+            $moduleApiService = new ModuleApiService;
 
             $response = $moduleApiService->triggerCourseBackup($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
@@ -74,7 +75,7 @@ class BackupRequestJob implements ShouldQueue
 
                 Log::error('Course backup request for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
-                throw new \Exception('Course backup request failed with status code: '.$response->status().'.');
+                throw new Exception('Course backup request failed with status code: '.$response->status().'.');
             }
 
             $response = $response->json();
@@ -132,7 +133,7 @@ class BackupRequestJob implements ShouldQueue
             } else {
                 Log::info('Course backups(:count) for instance :instance are in progress.', ['count' => count($this->payload['courses']), 'instance' => $this->instance->name]);
             }
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $errorMessage = sprintf(
                 'Exception in %s on line %s in method %s: %s',
                 $exception->getFile(),

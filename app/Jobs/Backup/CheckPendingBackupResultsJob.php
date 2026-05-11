@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Backup;
 
+use Exception;
 use App\Models\BackupResult;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
@@ -45,7 +46,7 @@ class CheckPendingBackupResultsJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            $moduleApiService = new ModuleApiService();
+            $moduleApiService = new ModuleApiService;
             $moodleJobId = $this->backupResult->moodle_job_id;
 
             $this->payload = [
@@ -65,7 +66,7 @@ class CheckPendingBackupResultsJob implements ShouldQueue
                     ]
                 ));
 
-                throw new \Exception("Backup check of type {$this->type} failed with status code: ".$response->status());
+                throw new Exception("Backup check of type {$this->type} failed with status code: ".$response->status());
             }
 
             $body = $response->json();
@@ -80,7 +81,7 @@ class CheckPendingBackupResultsJob implements ShouldQueue
                     ]
                 ));
 
-                throw new \Exception("Invalid response body for backup check of type {$this->type} and instance {$this->instance->name}.");
+                throw new Exception("Invalid response body for backup check of type {$this->type} and instance {$this->instance->name}.");
             }
 
             // Abort updating backup_result status if task/check returns success for backup creation
@@ -98,7 +99,7 @@ class CheckPendingBackupResultsJob implements ShouldQueue
             }
 
             $this->logStatus($body);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             Log::error(__METHOD__.' line: '.__LINE__.' - '."Failed to request for backup status check for instance: {$this->instance->name} and backup_result_id {$this->backupResult->id}".' Error message: '.$exception->getMessage());
 
             throw $exception;
@@ -219,8 +220,6 @@ class CheckPendingBackupResultsJob implements ShouldQueue
 
     /**
      * Get notification body
-     *
-     * @param  ?bool  $status
      */
     private function getNotificationBody(?bool $status, string $error): string
     {

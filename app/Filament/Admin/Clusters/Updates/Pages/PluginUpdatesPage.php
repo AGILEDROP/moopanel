@@ -2,10 +2,17 @@
 
 namespace App\Filament\Admin\Clusters\Updates\Pages;
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use App\Filament\Custom\Admin\Actions\Table\WizardPluginsUpdateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use App\Filament\Custom\Admin\Actions\Table\WizardPluginsUpdateBulkAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Support\Enums\Width;
 use App\Filament\Custom;
 use App\Models\Plugin;
 use Filament\Support\Enums\FontWeight;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -16,7 +23,7 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
 {
     use InteractsWithTable;
 
-    protected static string $view = 'filament.admin.pages.plugin-updates-page';
+    protected string $view = 'filament.admin.pages.plugin-updates-page';
 
     protected static ?string $title = 'Update plugins';
 
@@ -39,37 +46,37 @@ class PluginUpdatesPage extends BaseUpdateWizardPage implements HasTable
         return $table
             ->query(fn () => $this->getTableQuery())
             ->columns([
-                Tables\Columns\TextColumn::make('display_name')
+                TextColumn::make('display_name')
                     ->label(__('Plugin name'))
                     ->weight(FontWeight::SemiBold)
                     ->description(fn (Model $record) => $record->type)
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('component')
+                TextColumn::make('component')
                     ->label(__('Component'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('updates_exists')
+                IconColumn::make('updates_exists')
                     ->icon('fas-plug')
                     ->color(fn ($state) => $state === true ? 'danger' : 'gray')
                     ->label(__('Available updates'))
                     ->boolean(),
-                Tables\Columns\TextColumn::make('newestAvailableUpdateVersion')
+                TextColumn::make('newestAvailableUpdateVersion')
                     ->label(__('Newest version')),
-                Tables\Columns\TextColumn::make('newestAvailableUpdateRelease')
+                TextColumn::make('newestAvailableUpdateRelease')
                     ->label(__('Newest release')),
             ])
             ->defaultSort('display_name', 'desc')
-            ->actions([
-                Custom\Admin\Actions\Table\WizardPluginsUpdateAction::make('update_plugins', $this->instanceIds, ['pluginUpdatesPage']),
-                Tables\Actions\DeleteAction::make()
+            ->recordActions([
+                WizardPluginsUpdateAction::make('update_plugins', $this->instanceIds, ['pluginUpdatesPage']),
+                DeleteAction::make()
                     ->iconButton(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Custom\Admin\Actions\Table\WizardPluginsUpdateBulkAction::make('bulk_plugins_update', $this->instanceIds, ['pluginUpdatesPage']),
-                    Tables\Actions\DeleteBulkAction::make(),
-                ])->dropdownWidth(MaxWidth::Medium),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    WizardPluginsUpdateBulkAction::make('bulk_plugins_update', $this->instanceIds, ['pluginUpdatesPage']),
+                    DeleteBulkAction::make(),
+                ])->dropdownWidth(Width::Medium),
             ]);
     }
 

@@ -2,12 +2,13 @@
 
 namespace App\Filament\Admin\Clusters\Updates\Pages;
 
+use Filament\Schemas\Schema;
+use Exception;
 use App\Jobs\Update\PluginZipUpdateJob;
 use App\Models\Instance;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -16,7 +17,7 @@ class ZipUpdatesPage extends BaseUpdateWizardPage implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'filament.admin.pages.zip-updates-page';
+    protected string $view = 'filament.admin.pages.zip-updates-page';
 
     protected static ?string $title = 'Zip Updates';
 
@@ -36,11 +37,11 @@ class ZipUpdatesPage extends BaseUpdateWizardPage implements HasForms
         $this->form->fill($this->data);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->statePath('data')
-            ->schema([
+            ->components([
                 FileUpload::make('files')
                     ->label(__('Zip files'))
                     ->uploadingMessage(__('Uploading files...'))
@@ -84,7 +85,7 @@ class ZipUpdatesPage extends BaseUpdateWizardPage implements HasForms
                     'zip_name' => $data['original_filenames'][$zipFile],
                     'zip_path' => $fullFilePath,
                 ];
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error('Failed to get original filename for zip file: '.$zipFile.' Error message: '.$e->getMessage());
 
                 $updatesAdittionalInfo[] = [

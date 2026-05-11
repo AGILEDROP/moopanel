@@ -3,7 +3,6 @@
 namespace App\UseCases\Syncs;
 
 use Filament\Actions\Action;
-use Filament\Tables\Actions\Action as TableAction;
 use Illuminate\Database\Eloquent\Model;
 
 interface SyncType
@@ -14,7 +13,7 @@ interface SyncType
 
     public function getLatestTimeText(): string;
 
-    public function getTableAction(string $name, array $refreshComponents): TableAction;
+    public function getTableAction(string $name, array $refreshComponents): Action;
 
     public function getHeaderAction(string $name, array $refreshComponents): Action;
 }
