@@ -27,11 +27,14 @@ class Update extends Model
         'downloadmd5',
     ];
 
-    protected $casts = [
-        'instance_id' => 'int',
-        'maturity' => UpdateMaturity::class,
-        'type' => UpdateType::class,
-    ];
+    protected function casts(): array
+    {
+        return [
+            'instance_id' => 'int',
+            'maturity' => UpdateMaturity::class,
+            'type' => UpdateType::class,
+        ];
+    }
 
     public function instance(): BelongsTo
     {

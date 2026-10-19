@@ -19,13 +19,16 @@ class BackupSetting extends Model
         'deletion_last_run',
     ];
 
-    protected $casts = [
-        'auto_backups_enabled' => 'boolean',
-        'backup_interval' => 'integer',
-        'backup_deletion_interval' => 'integer',
-        'backup_last_run' => 'datetime',
-        'deletion_last_run' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'auto_backups_enabled' => 'boolean',
+            'backup_interval' => 'integer',
+            'backup_deletion_interval' => 'integer',
+            'backup_last_run' => 'datetime',
+            'deletion_last_run' => 'datetime',
+        ];
+    }
 
     public function instance()
     {

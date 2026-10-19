@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Enums\Status;
 use App\Models\Concerns\HasImage;
 use App\Models\Scopes\InstanceScope;
+use App\Observers\InstanceObserver;
 use Filament\Models\Contracts\HasAvatar;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+#[ObservedBy([InstanceObserver::class])]
 #[ScopedBy([InstanceScope::class])]
 class Instance extends Model implements HasAvatar
 {
@@ -40,10 +43,13 @@ class Instance extends Model implements HasAvatar
         'api_key',
     ];
 
-    protected $casts = [
-        'status' => Status::class,
-        'app_info' => 'json',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'status' => Status::class,
+            'app_info' => 'json',
+        ];
+    }
 
     public function universityMember(): BelongsTo
     {

@@ -20,9 +20,12 @@ class Sync extends Model
         'synced_at',
     ];
 
-    protected $casts = [
-        'synced_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'synced_at' => 'datetime',
+        ];
+    }
 
     public static function boot()
     {
