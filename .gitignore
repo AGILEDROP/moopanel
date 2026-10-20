@@ -8,3 +8,4 @@ vendor
 /.ddev/addon-metadata/adminer
 /.ddev/docker-compose.adminer.yaml
 docker-compose.adminer_norouter.yaml
+/public/build
