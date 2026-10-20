@@ -26,12 +26,15 @@ class UpdateLog extends Model
         'timemodified',
     ];
 
-    protected $casts = [
-        'operation_id' => 'int',
-        'instance_id' => 'int',
-        'type' => UpdateLogType::class,
-        'timemodified' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'operation_id' => 'int',
+            'instance_id' => 'int',
+            'type' => UpdateLogType::class,
+            'timemodified' => 'datetime',
+        ];
+    }
 
     public function instance(): BelongsTo
     {

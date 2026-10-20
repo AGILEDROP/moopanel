@@ -15,7 +15,7 @@ class CheckRefererToken
     /**
      * Validates Request URL and checks if there exists instance with that URL - than checks if API key is correct
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -33,7 +33,7 @@ class CheckRefererToken
             ]);
         }
 
-        $instance = Instance::withoutGlobalScope(InstanceScope::class)->where('url', $refererUrl)->first();
+        $instance = Instance::query()->withoutGlobalScope(InstanceScope::class)->where('url', $refererUrl)->first();
 
         if (! $instance) {
             throw ValidationException::withMessages([
@@ -44,14 +44,7 @@ class CheckRefererToken
         $apiKey = Crypt::decrypt($instance->api_key);
 
         if ($request->header('X-API-KEY') !== $apiKey) {
-            return response()->json(
-                [
-                    'message' => 'You are not authorized',
-                ],
-                403
-            );
-
-            abort(403, __('You are not authorized'));
+            abort(Response::HTTP_FORBIDDEN, __('You are not authorized'));
         }
 
         return $next($request);

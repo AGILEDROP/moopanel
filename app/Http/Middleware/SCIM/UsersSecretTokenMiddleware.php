@@ -11,12 +11,12 @@ class UsersSecretTokenMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->bearerToken() !== config('custom.scim_secret_token_users')) {
-            abort(403, __('You are not authorized'));
+            abort(Response::HTTP_FORBIDDEN, __('You are not authorized'));
         }
 
         return $next($request);

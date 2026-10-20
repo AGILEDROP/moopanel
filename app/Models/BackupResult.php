@@ -36,12 +36,15 @@ class BackupResult extends Model
         'deleted_at',
     ];
 
-    protected $casts = [
-        'status' => 'boolean',
-        'in_deletion_process' => 'boolean',
-        'in_restore_process' => 'boolean',
-        'filesize' => 'integer',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'status' => 'boolean',
+            'in_deletion_process' => 'boolean',
+            'in_restore_process' => 'boolean',
+            'filesize' => 'integer',
+        ];
+    }
 
     protected $appends = ['updated_at_timestamp'];
 

@@ -6,18 +6,9 @@ use App\Events\InstanceCreated;
 use App\Listeners\CreateInstanceBackupSetting;
 use App\Listeners\CreateInstanceBackupStorage;
 use App\Listeners\SyncNewInstanceData;
-use App\Models\Account;
-use App\Models\Instance;
-use App\Models\UniversityMember;
-use App\Models\User;
-use App\Observers\AccountObserver;
-use App\Observers\InstanceObserver;
-use App\Observers\UniversityMemberObserver;
-use App\Observers\UserObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 use SocialiteProviders\Azure\AzureExtendSocialite;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
@@ -47,10 +38,7 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        User::observe(UserObserver::class);
-        Account::observe(AccountObserver::class);
-        Instance::observe(InstanceObserver::class);
-        UniversityMember::observe(UniversityMemberObserver::class);
+        //
     }
 
     /**

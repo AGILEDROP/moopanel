@@ -21,7 +21,7 @@ class AzureAppDataSyncCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Syncy instances app data with appropriate Azure app';
+    protected $description = 'Sync instances app data with appropriate Azure app';
 
     /**
      * Execute the console command.
