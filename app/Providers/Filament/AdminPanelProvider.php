@@ -52,7 +52,7 @@ class AdminPanelProvider extends PanelProvider
             ->viteTheme('resources/css/app.css')
             ->plugins([
                 TableLayoutTogglePlugin::make()
-                    ->persistLayoutInLocalStorage(false) // allow user to keep his layout preference in his local storage
+                    ->persistLayoutUsing() // allow user to keep his layout preference in his local storage
                     ->shareLayoutBetweenPages(false) // allow all tables to share the layout option (requires persistLayoutInLocalStorage to be true)
                     ->displayToggleAction(false), // used to display the toggle button automatically, on the desired filament hook (defaults to table bar),
                 FilamentLaravelLogPlugin::make()

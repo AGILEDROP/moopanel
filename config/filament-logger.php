@@ -7,15 +7,20 @@ return [
     'date_format' => 'd/m/Y',
 
     'activity_resource' => ActivityLogResource::class,
+    'scoped_to_tenant' => true,
+    'navigation_sort' => 998,
 
     'resources' => [
         'enabled' => true,
         'log_name' => 'Resource',
         'logger' => \Z3d0X\FilamentLogger\Loggers\ResourceLogger::class,
         'color' => 'success',
+
         'exclude' => [
             //App\Filament\Resources\UserResource::class,
         ],
+        'cluster' => null,
+        'navigation_group' => 'Settings',
     ],
 
     'access' => [

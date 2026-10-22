@@ -12,27 +12,27 @@
         "arietimmerman/laravel-scim-server": "^v1.5.3",
         "codewithdennis/filament-select-tree": "^3.1",
         "filament/filament": "^3.0-stable",
-        "flowframe/laravel-trend": "^0.2.0",
+        "flowframe/laravel-trend": "v0.5.0",
         "guzzlehttp/guzzle": "^7.2",
-        "hydrat/filament-table-layout-toggle": "^1.2",
+        "hydrat/filament-table-layout-toggle": "v2.1.0",
+        "jacobtims/filament-logger": "^0.8.0",
         "jfcherng/php-diff": "^6.16",
-        "laravel/framework": "^11.31",
+        "laravel/framework": "^v12.70.0",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.31",
-        "laravel/tinker": "^2.9",
+        "laravel/tinker": "^v2.11.1",
         "owenvoke/blade-fontawesome": "^2.5",
         "saade/filament-laravel-log": "^3.0",
         "socialiteproviders/microsoft-azure": "^5.2.1",
-        "symfony/filesystem": "^7.0",
-        "z3d0x/filament-logger": "^0.7.1"
+        "symfony/filesystem": "^7.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
-        "laravel/pint": "^1.13",
-        "laravel/sail": "^1.26",
+        "laravel/pint": "^v1.24.0",
+        "laravel/sail": "^v1.41.1",
         "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.1",
-        "phpunit/phpunit": "^11.0.1",
+        "nunomaduro/collision": "^8.6",
+        "phpunit/phpunit": "^11.5.57",
         "spatie/laravel-ignition": "^2.8"
     },
     "autoload": {
@@ -51,6 +51,22 @@
         }
     },
     "scripts": {
+        "setup": [
+            "composer install",
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan key:generate",
+            "@php artisan migrate --force",
+            "npm install",
+            "npm run build"
+        ],
+        "dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
+        ],
+        "test": [
+            "@php artisan config:clear --ansi",
+            "@php artisan test"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",
@@ -67,9 +83,8 @@
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi"
         ],
-        "dev": [
-            "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+        "pre-package-uninstall": [
+            "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ]
     },
     "extra": {
@@ -84,19 +99,6 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        },
-        "policy": {
-            "advisories": {
-                "block": false,
-                "ignore-id": {
-                    "PKSA-d5tc-s1qs-h781": "Laravel: XSS in Debug Page Information",
-                    "PKSA-m5cs-t1y6-qpcs": "Laravel Framework: Temporary Signed URL Path Confusion",
-                    "PKSA-3r5d-mb8f-1qw9": "Laravel Framework: CRLF injection in default email rule",
-                    "PKSA-mdq4-51ck-6kdq": "Laravel CRLF injection in default email rule",
-                    "PKSA-8qx3-n5y5-vvnd": "Laravel has a File Validation Bypass",
-                    "PKSA-w7xr-vk7n-rstm": "Laravel environment manipulation via query string"
-                }
-            }
         }
     },
     "minimum-stability": "stable",
