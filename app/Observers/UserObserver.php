@@ -12,15 +12,24 @@ class UserObserver
     public function created(User $user): void
     {
         // Assign user all university members on creation.
-        $universityMembers = (UniversityMember::count() > 0) ? UniversityMember::pluck('id')->toArray() : [];
+        $universityMembers = UniversityMember::query()
+            ->pluck('id')
+            ->toArray();
+
         $user->universityMembers()->sync($universityMembers);
+
         // In first phase all users should have access to all instances (later we will add instances based on user role)!
-        $user->instances()->attach(Instance::withoutGlobalScope(InstanceScope::class)->pluck('id')->toArray());
+        $instances = Instance::query()
+            ->withoutGlobalScope(InstanceScope::class)
+            ->pluck('id')
+            ->toArray();
+
+        $user->instances()->attach($instances);
     }
 
     public function deleted(User $user): void
     {
-        $user->universityMembers()->sync([]);
-        $user->instances()->sync([]);
+        $user->universityMembers()->detach();
+        $user->instances()->detach();
     }
 }
