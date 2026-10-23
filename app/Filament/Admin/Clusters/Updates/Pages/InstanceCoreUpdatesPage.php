@@ -19,7 +19,7 @@ class InstanceCoreUpdatesPage extends BaseUpdateWizardPage implements HasActions
     use InteractsWithActions;
     use InteractsWithForms;
 
-    protected static string $view = 'filament.admin.pages.instance-core-updates-page';
+    protected string $view = 'filament.admin.pages.instance-core-updates-page';
 
     protected static ?string $title = 'Core update';
 

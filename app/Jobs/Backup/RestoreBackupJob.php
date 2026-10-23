@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Backup;
 
+use Exception;
 use App\Models\BackupResult;
 use App\Models\Instance;
 use App\Models\User;
@@ -70,7 +71,7 @@ class RestoreBackupJob implements ShouldQueue
 
             Log::error('Course backup restore request for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
-            throw new \Exception('Course backup request failed with status code: '.$response->status().'.');
+            throw new Exception('Course backup request failed with status code: '.$response->status().'.');
         }
 
         $response = $response->json();

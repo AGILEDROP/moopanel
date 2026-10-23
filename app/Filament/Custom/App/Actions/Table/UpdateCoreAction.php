@@ -2,7 +2,7 @@
 
 namespace App\Filament\Custom\App\Actions\Table;
 
-use Filament\Tables\Actions\Action;
+use Filament\Actions\Action;
 
 class UpdateCoreAction
 {

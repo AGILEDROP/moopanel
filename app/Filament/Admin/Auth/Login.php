@@ -2,18 +2,17 @@
 
 namespace App\Filament\Admin\Auth;
 
-use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Pages\Auth\Login as BaseAuth;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
 use Illuminate\Validation\ValidationException;
 
-class Login extends BaseAuth
+class Login extends \Filament\Auth\Pages\Login
 {
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 $this->getUsernameFormComponent(),
                 $this->getPasswordFormComponent(),
                 $this->getRememberFormComponent(),
@@ -42,7 +41,7 @@ class Login extends BaseAuth
     protected function throwFailureValidationException(): never
     {
         throw ValidationException::withMessages([
-            'data.username' => __('filament-panels::pages/auth/login.messages.failed'),
+            'data.username' => __('filament-panels::auth/pages/login.messages.failed'),
         ]);
     }
 }

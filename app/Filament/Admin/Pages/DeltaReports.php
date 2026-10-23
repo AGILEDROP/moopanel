@@ -2,7 +2,7 @@
 
 namespace App\Filament\Admin\Pages;
 
-use App\Filament\Admin\Resources\InstanceResource;
+use App\Filament\Admin\Resources\Instances\InstanceResource;
 use App\Models\Cluster;
 use App\Models\DeltaReport;
 use App\Models\Instance;
@@ -10,18 +10,25 @@ use App\Models\Scopes\InstanceScope;
 use App\Services\ModuleApiService;
 use Exception;
 use Filament\Actions\Action;
-use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Icon;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\HtmlString;
 use JetBrains\PhpStorm\NoReturn;
 use Jfcherng\Diff\DiffHelper;
 
@@ -29,9 +36,9 @@ class DeltaReports extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static string $view = 'filament.admin.pages.delta-reports';
+    protected string $view = 'filament.admin.pages.delta-reports';
 
     protected static ?int $navigationSort = 4;
 
@@ -59,55 +66,70 @@ class DeltaReports extends Page implements HasForms
     public function getBreadcrumbs(): array
     {
         return [
-            InstanceResource::getUrl() => new HtmlString('<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-            </svg>'),
+            InstanceResource::getUrl() => new Icon('heroicon-o-home'),
             '' => self::getTitle(),
         ];
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->statePath('data')
-            ->schema([
-                Forms\Components\Grid::make([
+            ->components([
+                Grid::make([
                     'default' => 1,
                     'sm' => 2,
                 ])->schema([
-                    Forms\Components\Section::make()
+                    Section::make()
                         ->schema([
-                            Forms\Components\Select::make('first_cluster_id')
+                            Select::make('first_cluster_id')
                                 ->label(__('Cluster'))
                                 ->live()
-                                ->afterStateUpdated(fn (Forms\Set $set) => $set('first_instance_id', null))
+                                ->afterStateUpdated(fn (Set $set) => $set('first_instance_id', null))
                                 ->options(fn () => Cluster::pluck('name', 'id'))
                                 ->rules(['required', 'integer', 'exists:clusters,id']),
-                            Forms\Components\Select::make('first_instance_id')
+                            Select::make('first_instance_id')
                                 ->label(__('Instance'))
-                                ->disabled(fn (Forms\Get $get) => $get('first_cluster_id') === null)
-                                ->options(fn (Forms\Get $get) => $this->getOptions($get('first_cluster_id')))
+                                ->disabled(fn (Get $get) => $get('first_cluster_id') === null)
+                                ->options(fn (Get $get) => $this->getOptions($get('first_cluster_id')))
                                 ->rules(['required', 'integer', 'exists:instances,id']),
                         ])->columnSpan(1),
-                    Forms\Components\Section::make()
+                    Section::make()
                         ->schema([
-                            Forms\Components\Select::make('second_cluster_id')
+                            Select::make('second_cluster_id')
                                 ->label(__('Cluster'))
                                 ->live()
-                                ->afterStateUpdated(fn (Forms\Set $set) => $set('second_instance_id', null))
+                                ->afterStateUpdated(fn (Set $set) => $set('second_instance_id', null))
                                 ->options(fn () => Cluster::pluck('name', 'id'))
                                 ->rules(['required', 'integer', 'exists:clusters,id']),
-                            Forms\Components\Select::make('second_instance_id')
+                            Select::make('second_instance_id')
                                 ->label(__('Instance'))
                                 ->live()
-                                ->disabled(fn (Forms\Get $get) => $get('second_cluster_id') === null)
-                                ->options(fn (Forms\Get $get) => $this->getOptions($get('second_cluster_id')))
+                                ->disabled(fn (Get $get) => $get('second_cluster_id') === null)
+                                ->options(fn (Get $get) => $this->getOptions($get('second_cluster_id')))
                                 ->rules(['required', 'integer', 'exists:instances,id', 'different:data.first_instance_id'])
                                 ->validationMessages([
                                     'different' => __('You can\'t compare same instance.'),
                                 ]),
                         ])->columnSpan(1),
                 ]),
+            ]);
+    }
+
+    public function content(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Form::make([EmbeddedSchema::make('form')])
+                    ->id('form')
+                    ->livewireSubmitHandler('create')
+                    ->footer([
+                        Actions::make($this->getFormActions())
+                            ->alignment($this->getFormActionsAlignment())
+                            ->fullWidth($this->hasFullWidthFormActions())
+                            ->sticky($this->areFormActionsSticky())
+                            ->key('form-actions'),
+                    ]),
             ]);
     }
 
@@ -140,6 +162,11 @@ class DeltaReports extends Page implements HasForms
                 ->extraAttributes(['class' => 'ms-auto'])
                 ->action('compare'),
         ];
+    }
+
+    protected function hasFullWidthFormActions(): bool
+    {
+        return false;
     }
 
     #[NoReturn]

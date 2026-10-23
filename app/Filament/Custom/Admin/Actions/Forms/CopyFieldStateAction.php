@@ -2,7 +2,7 @@
 
 namespace App\Filament\Custom\Admin\Actions\Forms;
 
-use Filament\Forms\Components\Actions\Action;
+use Filament\Actions\Action;
 
 class CopyFieldStateAction
 {

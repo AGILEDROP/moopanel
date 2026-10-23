@@ -55,7 +55,7 @@ class UpdateRequests extends BaseWidget
                 fn (Model $record): string => PagesUpdateRequests::getUrl().'?id='.((string) $record->id),
                 true
             )
-            ->actions([])
+            ->recordActions([])
             ->columns([
                 Split::make([
                     Grid::make([

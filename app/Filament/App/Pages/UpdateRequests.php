@@ -18,9 +18,9 @@ class UpdateRequests extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.app.pages.update-requests';
+    protected string $view = 'filament.app.pages.update-requests';
 
     public ?int $updateRequestId = null;
 
@@ -47,7 +47,7 @@ class UpdateRequests extends Page implements HasTable
             $this->updateRequest = UpdateRequest::find($updateRequestId);
 
             // Check if the user is the owner of the update request
-            if (Auth::user()->id === $this->updateRequest->user_id) {
+            if ($this->updateRequest && Auth::user()?->id === $this->updateRequest->user_id) {
                 $this->updateRequestId = $updateRequestId;
 
                 return;

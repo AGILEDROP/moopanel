@@ -3,14 +3,14 @@
 namespace App\Filament\Admin\Clusters\Backups\Pages;
 
 use App\Enums\BackupType;
-use App\Filament\Admin\Clusters\Backups;
-use App\Filament\Admin\Resources\InstanceResource;
+use App\Filament\Admin\Clusters\Backups\BackupsCluster;
+use App\Filament\Admin\Resources\Instances\InstanceResource;
 use Filament\Pages\Page;
-use Illuminate\Support\HtmlString;
+use Filament\Schemas\Components\Icon;
 
 class BaseBackupWizardPage extends Page
 {
-    protected static ?string $cluster = Backups::class;
+    protected static ?string $cluster = BackupsCluster::class;
 
     protected static bool $shouldRegisterNavigation = false;
 
@@ -27,9 +27,7 @@ class BaseBackupWizardPage extends Page
     public function getBreadcrumbs(): array
     {
         return [
-            InstanceResource::getUrl() => new HtmlString('<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-            </svg>'),
+            InstanceResource::getUrl() => new Icon('heroicon-o-home'),
             ChooseClusterPage::getUrl() => __('Backups'),
         ];
     }
@@ -135,7 +133,7 @@ class BaseBackupWizardPage extends Page
             if (request()->has('instanceIds')) {
                 $this->records = unserialize(urldecode(request('instanceIds')));
             }
-        } elseif ($this->currentStep > 2) {
+        } else if ($this->currentStep > 2) {
             $this->instanceIds = unserialize(urldecode(request('instanceIds')));
             if (! is_array($this->instanceIds) || empty($this->instanceIds)) {
                 $this->redirect(ChooseInstancePage::getUrl([
@@ -151,7 +149,7 @@ class BaseBackupWizardPage extends Page
             if (request('type') != null && BackupType::tryFrom(request('type')) != null) {
                 $this->type = request('type');
             }
-        } elseif ($this->currentStep > 3) {
+        } else if ($this->currentStep > 3) {
             $this->type = request('type');
             if ($this->type === null || BackupType::tryFrom($this->type) === null) {
                 $this->redirect(ChooseBackupTypePage::getUrl([
