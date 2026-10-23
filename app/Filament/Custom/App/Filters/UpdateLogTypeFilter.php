@@ -4,8 +4,8 @@ namespace App\Filament\Custom\App\Filters;
 
 use App\Models\Plugin;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +15,7 @@ class UpdateLogTypeFilter
     public static function make(string $name): Filter
     {
         return Filter::make($name)
-            ->form([
+            ->schema([
                 Select::make('type')
                     ->options([
                         'plugin' => __('Plugin'),
@@ -41,7 +41,7 @@ class UpdateLogTypeFilter
                         function (Builder $query, string $type) {
                             if ($type === 'plugin') {
                                 $query->whereHas('plugin');
-                            } elseif ($type === 'core') {
+                            } else if ($type === 'core') {
                                 $query->whereDoesntHave('plugin');
                             }
 

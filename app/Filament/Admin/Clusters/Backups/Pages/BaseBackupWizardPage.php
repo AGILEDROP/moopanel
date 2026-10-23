@@ -3,14 +3,14 @@
 namespace App\Filament\Admin\Clusters\Backups\Pages;
 
 use App\Enums\BackupType;
-use App\Filament\Admin\Clusters\Backups;
-use App\Filament\Admin\Resources\InstanceResource;
+use App\Filament\Admin\Clusters\Backups\BackupsCluster;
+use App\Filament\Admin\Resources\Instances\InstanceResource;
 use Filament\Pages\Page;
 use Illuminate\Support\HtmlString;
 
 class BaseBackupWizardPage extends Page
 {
-    protected static ?string $cluster = Backups::class;
+    protected static ?string $cluster = BackupsCluster::class;
 
     protected static bool $shouldRegisterNavigation = false;
 
@@ -135,7 +135,7 @@ class BaseBackupWizardPage extends Page
             if (request()->has('instanceIds')) {
                 $this->records = unserialize(urldecode(request('instanceIds')));
             }
-        } elseif ($this->currentStep > 2) {
+        } else if ($this->currentStep > 2) {
             $this->instanceIds = unserialize(urldecode(request('instanceIds')));
             if (! is_array($this->instanceIds) || empty($this->instanceIds)) {
                 $this->redirect(ChooseInstancePage::getUrl([
@@ -151,7 +151,7 @@ class BaseBackupWizardPage extends Page
             if (request('type') != null && BackupType::tryFrom(request('type')) != null) {
                 $this->type = request('type');
             }
-        } elseif ($this->currentStep > 3) {
+        } else if ($this->currentStep > 3) {
             $this->type = request('type');
             if ($this->type === null || BackupType::tryFrom($this->type) === null) {
                 $this->redirect(ChooseBackupTypePage::getUrl([

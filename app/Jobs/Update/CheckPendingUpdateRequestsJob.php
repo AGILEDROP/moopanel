@@ -2,12 +2,13 @@
 
 namespace App\Jobs\Update;
 
+use Exception;
+use Filament\Actions\Action;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use App\Models\UpdateRequest;
 use App\Models\User;
 use App\Services\ModuleApiService;
-use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -53,7 +54,7 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
             if (is_null($moodleJobId)) {
                 Log::error('Moodle job id is null for update request with id: :id.', ['id' => $this->updateRequest->id]);
 
-                throw new \Exception('Moodle job id is null for update request with id: '.$this->updateRequest->id.'.');
+                throw new Exception('Moodle job id is null for update request with id: '.$this->updateRequest->id.'.');
             }
 
             $this->payload = [
@@ -66,7 +67,7 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
             if (! $response->ok()) {
                 Log::error(__('Update request check of type :type and instance :instance failed with status code: :status.', ['type' => $this->updateRequest->type, 'instance' => $this->instance->name, 'status' => $response->status()]));
 
-                throw new \Exception('Update request check failed with status code: '.$response->status().'.');
+                throw new Exception('Update request check failed with status code: '.$response->status().'.');
             }
 
             $body = $response->json();
@@ -74,7 +75,7 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
             if (! array_key_exists('status', $body)) {
                 Log::error(__('Invalid response body for update request check of type :type and instance :instance. Missing status', ['type' => $this->updateRequest->type, 'instance' => $this->instance->name]));
 
-                throw new \Exception('Invalid response body for update request check of type: '.$this->updateRequest->type.' and instance: '.$this->instance->name.'. Received body: '.json_encode($body));
+                throw new Exception('Invalid response body for update request check of type: '.$this->updateRequest->type.' and instance: '.$this->instance->name.'. Received body: '.json_encode($body));
             }
 
             $this->updateRequestStatusUpdate($body['status'], $body['error'] ?? '');
@@ -84,7 +85,7 @@ class CheckPendingUpdateRequestsJob implements ShouldQueue
             }
 
             $this->logStatus($body);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             Log::error(__METHOD__.' line: '.__LINE__.' - '.'Failed to request for pending update-request status check for instance: '.$this->instance->name.' Error message: '.$exception->getMessage());
 
             throw $exception;

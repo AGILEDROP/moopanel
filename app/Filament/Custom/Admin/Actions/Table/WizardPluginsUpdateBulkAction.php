@@ -5,8 +5,8 @@ namespace App\Filament\Custom\Admin\Actions\Table;
 use App\Enums\UpdateMaturity;
 use App\Jobs\Update\PluginUpdateJob;
 use App\Models\Instance;
+use Filament\Actions\BulkAction;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,7 +23,6 @@ class WizardPluginsUpdateBulkAction
                 $user = Auth::user();
 
                 foreach ($instances as $instance) {
-
                     $payload = [
                         'user_id' => $user->id,
                         'username' => $user->email ?? $user->username,

@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Filament\App\Clusters\Backups\Resources\BackupSettings\Pages;
+
+use App\Filament\App\Clusters\Backups\Resources\BackupSettings\BackupSettingResource;
+use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
+use Filament\Pages\Concerns\HasSubNavigation;
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Resources\Concerns\HasTabs;
+use Filament\Resources\Pages\EditRecord;
+use Illuminate\Contracts\Support\Htmlable;
+
+class EditBackupSetting extends EditRecord
+{
+    use HasSubNavigation;
+    use HasTabs;
+
+    protected static string $resource = BackupSettingResource::class;
+
+    /**
+     * @return array<NavigationItem | NavigationGroup>
+     */
+    public function getSubNavigation(): array
+    {
+        if (filled($cluster = static::getCluster())) {
+            return $this->generateNavigationItems($cluster::getClusteredComponents());
+        }
+
+        return [];
+    }
+
+    public static function getSubNavigationPosition(): SubNavigationPosition
+    {
+        return SubNavigationPosition::Top;
+    }
+
+    public function getTitle(): string|Htmlable
+    {
+        return __('Backup settings');
+    }
+}

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use App\Enums\AccountTypes;
 use App\Jobs\AzureApi\DeprovisionAzureJob;
 use App\Jobs\AzureApi\ProvisionAzureJob;
@@ -230,7 +231,7 @@ class SisApiService
                 Log::error('Extra info for 404 code: '.'https://login.microsoftonline.com/'.config('custom.azure_tenant_id').'/oauth2/v2.0/token');
             }
 
-            throw new \Exception('Error getting access token from Azure');
+            throw new Exception('Error getting access token from Azure');
         }
 
         return $accessToken;

@@ -12,11 +12,12 @@ use App\Models\Course;
 use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
+use Exception;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
-use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
@@ -28,7 +29,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
 {
     use InteractsWithCoursesTable;
 
-    protected static string $view = 'filament.admin.pages.choose-course-page';
+    protected string $view = 'filament.admin.pages.choose-course-page';
 
     protected static ?string $title = 'Create backups';
 
@@ -91,7 +92,6 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
 
         $instanceBackupCount = 0;
         foreach ($instanceIds as $instanceId) {
-
             $additionalTempCourseData = [];
             foreach ($courses->where('instance_id', $instanceId) as $course) {
                 $additionalTempCourseData[] = [
@@ -183,7 +183,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
      */
     public function getTableQueryForExport(): Builder
     {
-        throw new \Exception('Not implemented');
+        throw new Exception('Not implemented');
 
         return Course::query();
     }
@@ -221,7 +221,7 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
     {
         return [
             Filter::make('category')
-                ->form([
+                ->schema([
                     SelectTree::make('categories')
                         ->relationship(
                             relationship: 'category',
@@ -239,7 +239,6 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
                     $query = $query->whereIn('instance_id', $this->instanceIds)
                         ->with('category')
                         ->when($data['categories'], function ($query, $categories) {
-
                             if (is_int($categories)) {
                                 $categories = [$categories];
                             }
@@ -318,9 +317,9 @@ class ChooseCourseBackupPage extends BaseBackupWizardPage implements HasTable
     /**
      * Set table filters form width.
      */
-    protected function getTableFiltersFormWidth(): MaxWidth
+    protected function getTableFiltersFormWidth(): Width
     {
-        return MaxWidth::FourExtraLarge;
+        return Width::FourExtraLarge;
     }
 
     /**

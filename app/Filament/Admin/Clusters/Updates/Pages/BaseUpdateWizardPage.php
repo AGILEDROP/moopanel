@@ -3,14 +3,14 @@
 namespace App\Filament\Admin\Clusters\Updates\Pages;
 
 use App\Enums\UpdateType;
-use App\Filament\Admin\Clusters\Updates;
-use App\Filament\Admin\Resources\InstanceResource;
+use App\Filament\Admin\Clusters\Updates\UpdatesCluster;
+use App\Filament\Admin\Resources\Instances\InstanceResource;
 use Filament\Pages\Page;
 use Illuminate\Support\HtmlString;
 
 class BaseUpdateWizardPage extends Page
 {
-    protected static ?string $cluster = Updates::class;
+    protected static ?string $cluster = UpdatesCluster::class;
 
     protected static bool $shouldRegisterNavigation = false;
 
@@ -132,7 +132,7 @@ class BaseUpdateWizardPage extends Page
             if (request()->has('instanceIds')) {
                 $this->records = unserialize(urldecode(request('instanceIds')));
             }
-        } elseif ($this->currentStep > 2) {
+        } else if ($this->currentStep > 2) {
             $this->instanceIds = unserialize(urldecode(request('instanceIds')));
             if (! is_array($this->instanceIds) || empty($this->instanceIds)) {
                 $this->redirect(ChooseInstancePage::getUrl([
@@ -148,7 +148,7 @@ class BaseUpdateWizardPage extends Page
             if (request('type') != null && (UpdateType::tryFrom(request('type')) != null || request('type') != 'zip')) {
                 $this->type = request('type');
             }
-        } elseif ($this->currentStep > 3) {
+        } else if ($this->currentStep > 3) {
             $this->type = request('type');
             if ($this->type === null || (UpdateType::tryFrom($this->type) === null && $this->type != 'zip')) {
                 $this->redirect(ChooseUpdateTypePage::getUrl([

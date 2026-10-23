@@ -7,7 +7,7 @@ use Illuminate\Support\HtmlString;
 
 class AppDashboard extends Dashboard
 {
-    public function getColumns(): int|string|array
+    public function getColumns(): int|array
     {
         return 8;
     }
