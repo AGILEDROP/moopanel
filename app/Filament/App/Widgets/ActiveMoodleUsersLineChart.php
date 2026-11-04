@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 class ActiveMoodleUsersLineChart extends ChartWidget
 {
-    protected static ?string $heading = 'Number of active users';
+    protected ?string $heading = 'Number of active users';
 
     protected int|string|array $columnSpan = [
         'sm' => 'full',
@@ -18,7 +18,7 @@ class ActiveMoodleUsersLineChart extends ChartWidget
         'lg' => 6,
     ];
 
-    protected static ?string $maxHeight = '350px';
+    protected ?string $maxHeight = '350px';
 
     public ?string $filter = 'week';
 

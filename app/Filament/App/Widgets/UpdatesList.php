@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class UpdatesList extends Widget
 {
-    protected static string $view = 'filament.app.widgets.updates-list';
+    protected string $view = 'filament.app.widgets.updates-list';
 
     protected static ?int $sort = 3;
 
@@ -88,7 +88,7 @@ class UpdatesList extends Widget
                     'Core upgraded',
                 ])
                 ->latest('timemodified')
-                ->take($itemsCount - $this->maxItems)
+                ->take($this->maxItems - $itemsCount)
                 ->get(),
             'plugins' => $instance->pluginUpdateLog()
                 ->whereIn('info', [
@@ -96,7 +96,7 @@ class UpdatesList extends Widget
                     'Plugin upgraded',
                 ])
                 ->latest('timemodified')
-                ->take($itemsCount - $this->maxItems)
+                ->take($this->maxItems - $itemsCount)
                 ->get(),
         };
     }

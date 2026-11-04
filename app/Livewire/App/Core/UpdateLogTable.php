@@ -2,7 +2,8 @@
 
 namespace App\Livewire\App\Core;
 
-use App\Filament\App\Resources\UpdateLogResource;
+use Filament\Actions\Concerns\InteractsWithActions;
+use App\Filament\App\Resources\UpdateLogs\UpdateLogResource;
 use App\Models\Instance;
 use App\Models\UpdateLog;
 use App\UseCases\Syncs\SingleInstance\CoreSyncType;
@@ -17,6 +18,7 @@ use Livewire\Component;
 
 class UpdateLogTable extends Component implements HasForms, HasTable
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 

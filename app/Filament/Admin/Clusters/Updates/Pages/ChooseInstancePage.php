@@ -12,7 +12,7 @@ class ChooseInstancePage extends BaseUpdateWizardPage
 {
     use SearchableSelectCardsGridRecords;
 
-    protected static string $view = 'filament.admin.pages.choose-instance-page';
+    protected string $view = 'filament.admin.pages.choose-instance-page';
 
     protected static ?string $title = 'Choose instances';
 

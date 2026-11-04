@@ -14,7 +14,7 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage implements HasActions
 {
     use InteractsWithActions;
 
-    protected static string $view = 'filament.admin.pages.choose-type-page';
+    protected string $view = 'filament.admin.pages.choose-type-page';
 
     protected static ?string $title = 'Choose update type';
 
@@ -117,14 +117,14 @@ class ChooseUpdateTypePage extends BaseUpdateWizardPage implements HasActions
                 ->send();
 
             return false;
-        } elseif (UpdateType::tryFrom($this->type) === null) {
+        } else if (UpdateType::tryFrom($this->type) === null) {
             Notification::make()
                 ->danger()
                 ->title(__('Selected update type is not allowed!'))
                 ->send();
 
             return false;
-        } elseif ($this->getTypeCount(UpdateType::tryFrom($this->type)) === 0) {
+        } else if ($this->getTypeCount(UpdateType::tryFrom($this->type)) === 0) {
             Notification::make()
                 ->info()
                 ->title(__('There are no new updates for selected update type.'))

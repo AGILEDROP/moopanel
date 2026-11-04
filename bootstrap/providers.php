@@ -1,5 +1,6 @@
 <?php
 
+use App\FilamentLogger\FilamentLoggerServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\EventServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
@@ -10,4 +11,5 @@ return [
     EventServiceProvider::class,
     AdminPanelProvider::class,
     AppPanelProvider::class,
+    FilamentLoggerServiceProvider::class,
 ];

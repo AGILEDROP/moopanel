@@ -13,7 +13,7 @@ class InstancePluginTypeFilter
     {
         return Filter::make($name)
             ->label(__('Type'))
-            ->form([
+            ->schema([
                 Select::make('type')
                     ->options(fn () => Plugin::distinct('type')->pluck('type', 'type'))
                     ->searchable(),

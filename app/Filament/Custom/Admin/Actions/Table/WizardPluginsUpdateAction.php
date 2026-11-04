@@ -6,9 +6,9 @@ use App\Jobs\Update\PluginUpdateJob;
 use App\Models\Instance;
 use App\Models\Plugin;
 use App\Models\Update;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 
 class WizardPluginsUpdateAction
@@ -20,7 +20,7 @@ class WizardPluginsUpdateAction
             ->iconButton()
             ->icon('heroicon-o-arrow-up-circle')
             ->modalHeading(__('Choose update'))
-            ->form([
+            ->schema([
                 Select::make('update_release')
                     ->label(__('Release'))
                     ->options(
@@ -81,7 +81,6 @@ class WizardPluginsUpdateAction
                     ->body(__('Plugin updates have been started. It might take a while. Check notifications for progress.'))
                     ->seconds(7)
                     ->send();
-
             })->after(function ($livewire) use ($refreshComponents) {
                 if (! empty($refreshComponents)) {
                     foreach ($refreshComponents as $refreshComponent) {

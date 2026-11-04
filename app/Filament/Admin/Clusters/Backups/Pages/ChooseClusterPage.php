@@ -12,7 +12,7 @@ class ChooseClusterPage extends BaseBackupWizardPage
 {
     use SearchableSelectCardsGridRecords;
 
-    protected static string $view = 'filament.admin.pages.choose-cluster-page';
+    protected string $view = 'filament.admin.pages.choose-cluster-page';
 
     protected static ?string $title = 'Choose clusters';
 

@@ -8,16 +8,16 @@ use App\Livewire\App\Core\UpdateLogTable;
 use App\Models\Instance;
 use App\UseCases\Syncs\SingleInstance\CoreSyncType;
 use App\UseCases\Syncs\SyncTypeFactory;
-use Filament\Infolists\Components\Grid;
-use Filament\Infolists\Components\Livewire;
-use Filament\Infolists\Infolist;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Livewire;
+use Filament\Schemas\Schema;
 
 class Core extends Page
 {
-    protected static ?string $navigationIcon = 'fas-cube';
+    protected static string|\BackedEnum|null $navigationIcon = 'fas-cube';
 
-    protected static string $view = 'filament.app.pages.core';
+    protected string $view = 'filament.app.pages.core';
 
     public function getBreadcrumbs(): array
     {
@@ -40,10 +40,10 @@ class Core extends Page
         ];
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist
-            ->schema([
+        return $schema
+            ->components([
                 Grid::make([
                     'default' => 1,
                     'lg' => 3,

@@ -2,6 +2,8 @@
 
 namespace App\Livewire\App\Core;
 
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Tables\Columns\TextColumn;
 use App\Enums\UpdateMaturity;
 use App\Enums\UpdateType;
 use App\Jobs\Update\CoreUpdateRequestJob;
@@ -22,6 +24,7 @@ use Livewire\Component;
 
 class AvailableUpdatesTable extends Component implements HasForms, HasTable
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -36,23 +39,23 @@ class AvailableUpdatesTable extends Component implements HasForms, HasTable
             ->description($syncType->getLatestTimeText())
             ->query(Update::query()->whereNull('plugin_id'))
             ->columns([
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->badge()
                     ->formatStateUsing(fn (UpdateType $state): string => $state->toReadableString())
                     ->icon(fn (UpdateType $state): string => $state->getIcon())
                     ->sortable(),
-                Tables\Columns\TextColumn::make('release')
+                TextColumn::make('release')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('version')
+                TextColumn::make('version')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('maturity')
+                TextColumn::make('maturity')
                     ->badge()
                     ->formatStateUsing(fn (UpdateMaturity $state): string => $state->toReadableString())
                     ->color(fn (UpdateMaturity $state): string => $state->getDisplayColor())
                     ->sortable(),
             ])
             ->defaultSort('release', 'desc')
-            ->actions([
+            ->recordActions([
                 /* Action::make('update')
                     ->label(__('Update'))
                     ->requiresConfirmation()

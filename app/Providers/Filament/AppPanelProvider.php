@@ -4,10 +4,10 @@ namespace App\Providers\Filament;
 
 use App\Filament\App\Pages\AppDashboard;
 use App\Models\Instance;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\MenuItem;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -30,7 +30,7 @@ class AppPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->databaseNotifications()
             ->colors([
-                'primary' => Color::rgb('rgb(225, 42, 38)'),
+                'primary' => Color::generateV3Palette('rgb(225, 42, 38)'),
             ])
             ->maxContentWidth(true)
             ->navigationItems([
@@ -42,7 +42,7 @@ class AppPanelProvider extends PanelProvider
             ])
             ->tenant(Instance::class)
             ->tenantMenuItems([
-                MenuItem::make()
+                Action::make('showAllInstances')
                     ->label('Show all instances')
                     ->url(fn () => route('filament.admin.resources.instances.index')),
             ])
@@ -56,6 +56,7 @@ class AppPanelProvider extends PanelProvider
             ->widgets([
                 //
             ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

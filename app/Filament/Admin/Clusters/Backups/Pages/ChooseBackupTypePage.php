@@ -7,7 +7,7 @@ use Filament\Notifications\Notification;
 
 class ChooseBackupTypePage extends BaseBackupWizardPage
 {
-    protected static string $view = 'filament.admin.pages.choose-type-page';
+    protected string $view = 'filament.admin.pages.choose-type-page';
 
     protected static ?string $title = 'Choose backup type';
 
@@ -69,8 +69,8 @@ class ChooseBackupTypePage extends BaseBackupWizardPage
                     'type' => urlencode($this->type),
                 ]));
                 break;
-                /* case BackupType::fromName('CORE')
-                break; */
+            /* case BackupType::fromName('CORE')
+            break; */
             default:
                 Notification::make()
                     ->danger()
@@ -88,7 +88,7 @@ class ChooseBackupTypePage extends BaseBackupWizardPage
                 ->send();
 
             return false;
-        } elseif (BackupType::tryFrom($this->type) === null) {
+        } else if (BackupType::tryFrom($this->type) === null) {
             Notification::make()
                 ->danger()
                 ->title(__('Selected backup type is not allowed!'))

@@ -4,8 +4,8 @@ namespace App\Filament\Custom\App\Actions\Table;
 
 use App\Enums\UpdateMaturity;
 use App\Jobs\Update\PluginUpdateJob;
+use Filament\Actions\BulkAction;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 

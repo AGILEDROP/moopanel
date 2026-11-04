@@ -5,9 +5,9 @@ namespace App\Filament\Custom\App\Actions\Table;
 use App\Jobs\Update\PluginUpdateJob;
 use App\Models\InstancePlugin;
 use App\Models\Update;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,7 +21,7 @@ class UpdatePluginAction
             ->iconButton()
             ->icon('heroicon-o-arrow-up-circle')
             ->modalHeading(__('Choose update'))
-            ->form([
+            ->schema([
                 Select::make('update_id')
                     ->label(__('Release'))
                     ->options(

@@ -11,9 +11,12 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form;
+use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Validation\Rule;
 
@@ -23,9 +26,9 @@ class InstanceSettings extends Page implements HasForms
 
     public ?array $data = [];
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static string $view = 'filament.app.pages.instance-settings';
+    protected string $view = 'filament.app.pages.instance-settings';
 
     protected static ?string $navigationLabel = 'Settings';
 
@@ -36,14 +39,14 @@ class InstanceSettings extends Page implements HasForms
         $this->form->fill(filament()->getTenant()->attributesToArray());
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('azure_app_id')
                     ->label(__('Azure App ID'))
                     ->rules([
-                        new AzureAppId(),
+                        new AzureAppId,
                         Rule::unique('instances', 'azure_app_id')->ignore(filament()->getTenant()->id),
                     ])
                     ->required(),
@@ -66,6 +69,23 @@ class InstanceSettings extends Page implements HasForms
             ->statePath('data');
     }
 
+    public function content(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Form::make([EmbeddedSchema::make('form')])
+                    ->id('form')
+                    ->livewireSubmitHandler('save')
+                    ->footer([
+                        Actions::make($this->getFormActions())
+                            ->alignment($this->getFormActionsAlignment())
+                            ->fullWidth($this->hasFullWidthFormActions())
+                            ->sticky($this->areFormActionsSticky())
+                            ->key('form-actions'),
+                    ]),
+            ]);
+    }
+
     protected function getFormActions(): array
     {
         return [
@@ -73,6 +93,11 @@ class InstanceSettings extends Page implements HasForms
                 ->label(__('filament-panels::resources/pages/edit-record.form.actions.save.label'))
                 ->submit('save'),
         ];
+    }
+
+    protected function hasFullWidthFormActions(): bool
+    {
+        return false;
     }
 
     public function save(): void

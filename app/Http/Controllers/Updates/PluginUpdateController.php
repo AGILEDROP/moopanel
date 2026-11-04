@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Updates;
 
+use Filament\Actions\Action;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Update\PluginUpdateCreate;
 use App\Jobs\ModuleApi\Sync;
@@ -11,7 +12,6 @@ use App\Models\UpdateRequest;
 use App\Models\User;
 use App\UseCases\Syncs\SingleInstance\PluginsSyncType;
 use Exception;
-use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

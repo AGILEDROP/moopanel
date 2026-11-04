@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Update;
 
+use Exception;
 use App\Models\Instance;
 use App\Models\UpdateRequest;
 use App\Models\UpdateRequestItem;
@@ -80,13 +81,13 @@ class PluginUpdateJob implements ShouldQueue
 
                 Log::error('Plugin update for instance failed with status code and body: '.$response->status().' - '.$response->body());
 
-                throw new \Exception('Plugin update failed with status code: '.$response->status().'.');
+                throw new Exception('Plugin update failed with status code: '.$response->status().'.');
             }
 
             $pluginUpdatesCount = isset($this->payload['updates']) ? count($this->payload['updates']) : null;
 
             if ($pluginUpdatesCount === null) {
-                throw new \Exception('No plugin updates found in payload for instance: '.$this->instance->name);
+                throw new Exception('No plugin updates found in payload for instance: '.$this->instance->name);
             }
 
             if ($response->json() && array_key_exists('moodle_job_id', $response->json())) {
@@ -103,7 +104,7 @@ class PluginUpdateJob implements ShouldQueue
                 ->icon('heroicon-o-arrow-up-circle')
                 ->iconColor('success')
                 ->sendToDatabase($this->userToNotify);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
 
             $errorMessage = sprintf(
                 'Exception in %s on line %s in method %s: %s',

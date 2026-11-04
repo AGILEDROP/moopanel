@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Updates;
 
+use Filament\Actions\Action;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Update\CoreUpdateCreate;
 use App\Jobs\ModuleApi\Sync;
@@ -13,7 +14,6 @@ use App\Models\UpdateRequestItem;
 use App\Models\User;
 use App\UseCases\Syncs\SingleInstance\CoreSyncType;
 use Exception;
-use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

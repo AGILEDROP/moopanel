@@ -2,7 +2,8 @@
 
 namespace App\Livewire\App\Plugin;
 
-use App\Filament\App\Resources\UpdateLogResource;
+use Filament\Actions\Concerns\InteractsWithActions;
+use App\Filament\App\Resources\UpdateLogs\UpdateLogResource;
 use App\Models\Plugin;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -14,6 +15,7 @@ use Livewire\Component;
 
 class UpdateLogTable extends Component implements HasForms, HasTable
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -22,9 +24,6 @@ class UpdateLogTable extends Component implements HasForms, HasTable
     public function mount(Plugin $plugin): void
     {
         $this->plugin = $plugin;
-
-        // Small hack responsible for refreshing the table when the modal opens (listener var don't work here)!
-        $this->setPage(1, 'page');
     }
 
     public function table(Table $table): Table

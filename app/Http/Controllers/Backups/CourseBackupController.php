@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Backups;
 
+use Filament\Actions\Action;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Backup\CourseBackupCreate;
 use App\Models\BackupResult;
@@ -10,7 +11,6 @@ use App\Models\Instance;
 use App\Models\Scopes\InstanceScope;
 use App\Models\User;
 use Exception;
-use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,7 +34,7 @@ class CourseBackupController extends Controller
             $moodle_course_id = intval($moodle_course_id);
 
             if ($moodle_course_id < 1) {
-                throw new Exception();
+                throw new Exception;
             }
         } catch (Exception $e) {
             return response()->json([

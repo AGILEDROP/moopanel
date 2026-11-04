@@ -17,13 +17,6 @@
                         type="search"
                         wire:model.live="search"
                         :placeholder="__('Start typing to search...')"
-                        :attributes="
-                            \Filament\Support\prepare_inherited_attributes(
-                                new \Illuminate\View\ComponentAttributeBag([
-                                    'x-model.debounce.' . 1000 => 'search',
-                                ])
-                            )
-                        "
                     />
                 </x-filament::input.wrapper>
             </div>
