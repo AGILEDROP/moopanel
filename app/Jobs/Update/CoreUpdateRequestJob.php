@@ -14,18 +14,17 @@ use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
+#[Tries(4)]
 class CoreUpdateRequestJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     private bool $canSubmitRequest;
-
-    // Has to be max_tries(from config) + 1
-    public $tries = 4;
 
     private UpdateRequest $updateRequest;
 

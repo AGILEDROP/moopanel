@@ -2,61 +2,45 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[Fillable([
+    'name',
+    'type',
+    'instance_id',
+    'user_id',
+    'status',
+    'payload',
+    'moodle_job_id',
+])]
 class UpdateRequest extends Model
 {
-    use HasFactory;
-
     public const STATUS_PENDING = null;
-
     public const STATUS_SUCCESS = true;
-
     public const STATUS_FAIL = false;
-
     public const TYPE_CORE = 'core';
-
     public const TYPE_PLUGIN = 'plugin';
-
     public const TYPE_PLUGIN_ZIP = 'plugin_zip';
-
     public const CHECK_STATUS_SUCCESS = 1;
-
     public const CHECK_STATUS_PENDING = 2;
-
     public const CHECK_STATUS_FAIL = 3;
-
     public const CHECK_STATUS_NOT_FOUND = 4;
-
-    protected $fillable = [
-        'name',
-        'type',
-        'instance_id',
-        'user_id',
-        'status',
-        'payload',
-        'moodle_job_id',
-    ];
 
     /**
      * Parse status from int to bool
      */
     public function parseStatus(int $status): ?bool
     {
-        switch ($status) {
-            case self::CHECK_STATUS_SUCCESS:
-                return true;
-            case self::CHECK_STATUS_PENDING:
-                return null;
-            case self::CHECK_STATUS_FAIL:
-                return false;
-            case self::CHECK_STATUS_NOT_FOUND:
-                return false;
-            default:
-                return null;
-        }
+        return match ($status) {
+            self::CHECK_STATUS_SUCCESS => true,
+            self::CHECK_STATUS_FAIL,
+            self::CHECK_STATUS_NOT_FOUND => false,
+            default => null,
+        };
     }
 
     protected function statusName(): Attribute
@@ -81,17 +65,17 @@ class UpdateRequest extends Model
         return $instanceName.'-'.$requestType.'-'.'update'.'-'.now()->format('d-m-y_H-i');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function instance()
+    public function instance(): BelongsTo
     {
         return $this->belongsTo(Instance::class);
     }
 
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(UpdateRequestItem::class);
     }

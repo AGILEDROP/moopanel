@@ -2,27 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[Fillable([
+    'moodle_course_id',
+    'instance_id',
+    'category_id',
+    'name',
+    'is_scheduled',
+])]
 class Course extends Model
 {
-    use HasFactory;
-
-    protected $fillable = [
-        'moodle_course_id',
-        'instance_id',
-        'category_id',
-        'name',
-        'is_scheduled',
-    ];
-
-    public function instance()
+    public function instance(): BelongsTo
     {
         return $this->belongsTo(Instance::class);
     }
 
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }

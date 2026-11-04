@@ -3,41 +3,30 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasInstance;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Observers\SyncObserver;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[Table(timestamps: false)]
+#[Fillable([
+    'instance_id',
+    'type',
+    'subtype',
+    'synced_at',
+])]
+#[ObservedBy([SyncObserver::class])]
 class Sync extends Model
 {
-    use HasFactory, HasInstance;
-
-    public $timestamps = false;
-
-    protected $fillable = [
-        'instance_id',
-        'type',
-        'subtype',
-        'synced_at',
-    ];
+    use HasInstance;
 
     protected function casts(): array
     {
         return [
             'synced_at' => 'datetime',
         ];
-    }
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            $model->synced_at = $model->freshTimestamp();
-        });
-
-        static::updating(function ($model) {
-            $model->synced_at = $model->freshTimestamp();
-        });
     }
 
     public function instance(): BelongsTo

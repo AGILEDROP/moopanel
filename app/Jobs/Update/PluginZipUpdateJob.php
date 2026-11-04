@@ -2,27 +2,26 @@
 
 namespace App\Jobs\Update;
 
-use Exception;
 use App\Models\Instance;
 use App\Models\UpdateRequest;
 use App\Models\UpdateRequestItem;
 use App\Models\User;
 use App\Services\ModuleApiService;
+use Exception;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
+#[Tries(4)]
 class PluginZipUpdateJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    // Has to be max_tries(from config) + 1
-    public $tries = 4;
 
     private bool $canSubmitRequest;
 
@@ -69,7 +68,6 @@ class PluginZipUpdateJob implements ShouldQueue
             $response = $moduleApi->triggerPluginZipFileUpdates($this->instance->url, Crypt::decrypt($this->instance->api_key), $this->payload);
 
             if (! $response->ok()) {
-
                 // Retry job if service is temporarily unavailable
                 $maxRetries = config('queue.jobs.plugin-zip-update.max_tries') ?? 3;
                 if ($response->status() == 503 && $this->attempts() <= $maxRetries) {
@@ -93,7 +91,6 @@ class PluginZipUpdateJob implements ShouldQueue
             }
 
             if ($response->json() && array_key_exists('moodle_job_id', $response->json())) {
-
                 $this->updateRequest->update([
                     'moodle_job_id' => $response->json('moodle_job_id'),
                 ]);

@@ -8,6 +8,8 @@ use App\Observers\UserObserver;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,28 +21,26 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 
+#[Fillable([
+    'name',
+    'email',
+    'password',
+    'username',
+    'azure_id',
+    'app_role_id',
+    'employee_id',
+])]
+#[Hidden([
+    'password',
+    'remember_token',
+    'azure_id',
+    'app_role_id',
+    'employee_id',
+])]
 #[ObservedBy([UserObserver::class])]
 class User extends Authenticatable implements FilamentUser, HasTenants
 {
     use HasApiTokens, HasFactory, Notifiable;
-
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'username',
-        'azure_id',
-        'app_role_id',
-        'employee_id',
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-        'azure_id',
-        'app_role_id',
-        'employee_id',
-    ];
 
     protected function casts(): array
     {

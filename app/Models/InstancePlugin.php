@@ -3,21 +3,20 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasInstance;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
+#[Table(name: 'instance_plugin')]
+#[Appends([
+    'lastUpdateTime',
+])]
 class InstancePlugin extends Model
 {
-    use HasFactory, HasInstance;
-
-    protected $table = 'instance_plugin';
-
-    protected $appends = [
-        'lastUpdateTime',
-    ];
+    use HasInstance;
 
     public function instance(): BelongsTo
     {

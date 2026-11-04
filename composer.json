@@ -9,19 +9,19 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
-        "achyutn/filament-log-viewer": "^2.0",
+        "achyutn/filament-log-viewer": "^2.5",
         "arietimmerman/laravel-scim-server": "^v1.5.3",
-        "codewithdennis/filament-select-tree": "^4.0",
+        "codewithdennis/filament-select-tree": "^4.2",
         "filament/filament": "^5.0",
         "flowframe/laravel-trend": "v0.5.0",
-        "guzzlehttp/guzzle": "^7.2",
+        "guzzlehttp/guzzle": "^7.16",
         "hydrat/filament-table-layout-toggle": "^4.0",
-        "jfcherng/php-diff": "^6.16",
-        "laravel/framework": "^v12.70.0",
-        "laravel/sanctum": "^4.0",
+        "jfcherng/php-diff": "^7.0",
+        "laravel/framework": "^13.17",
+        "laravel/sanctum": "^4.3",
         "laravel/socialite": "^5.31",
-        "laravel/tinker": "^v2.11.1",
-        "owenvoke/blade-fontawesome": "^2.5",
+        "laravel/tinker": "^3.0",
+        "owenvoke/blade-fontawesome": "^v3.3.1",
         "saade/filament-laravel-log": "^4.0",
         "socialiteproviders/microsoft-azure": "^5.2.1",
         "spatie/laravel-activitylog": "^4.12",
@@ -29,13 +29,13 @@
         "symfony/filesystem": "^7.0"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.23",
-        "laravel/pint": "^v1.24.0",
-        "laravel/sail": "^v1.41.1",
+        "fakerphp/faker": "^1.24",
+        "laravel/pint": "^v1.32.1",
+        "laravel/sail": "v1.69.0",
         "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^11.5.57",
-        "spatie/laravel-ignition": "^2.8"
+        "nunomaduro/collision": "^8.9",
+        "phpunit/phpunit": "^13.4.3",
+        "spatie/laravel-ignition": "^2.12"
     },
     "autoload": {
         "files": [
@@ -58,15 +58,15 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
             "@php artisan migrate --force",
-            "npm install",
+            "npm install --ignore-scripts",
             "npm run build"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
+            "@php artisan dev"
         ],
         "test": [
-            "@php artisan config:clear --ansi",
+            "@php artisan config:clear --ansi @no_additional_args",
             "@php artisan test"
         ],
         "post-autoload-dump": [
