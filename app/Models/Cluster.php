@@ -3,20 +3,19 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasImage;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+#[Fillable([
+    'name',
+    'img_path',
+    'master_id',
+])]
 class Cluster extends Model
 {
-    use HasFactory, HasImage;
-
-    protected $fillable = [
-        'name',
-        'img_path',
-        'master_id',
-    ];
+    use HasImage;
 
     public function instances(): HasMany
     {

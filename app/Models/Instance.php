@@ -7,41 +7,40 @@ use App\Models\Concerns\HasImage;
 use App\Models\Scopes\InstanceScope;
 use App\Observers\InstanceObserver;
 use Filament\Models\Contracts\HasAvatar;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+#[Fillable([
+    'university_member_id',
+    'cluster_id',
+    'name',
+    'short_name',
+    'url',
+    'img_path',
+    'theme',
+    'version',
+    'api_key',
+    'key_expiration_date',
+    'status',
+    'configuration_path',
+    'azure_app_id',
+    'app_info',
+])]
+#[Hidden([
+    'api_key',
+])]
 #[ObservedBy([InstanceObserver::class])]
 #[ScopedBy([InstanceScope::class])]
 class Instance extends Model implements HasAvatar
 {
-    use HasFactory, HasImage;
-
-    protected $fillable = [
-        'university_member_id',
-        'cluster_id',
-        'name',
-        'short_name',
-        'url',
-        'img_path',
-        'theme',
-        'version',
-        'api_key',
-        'key_expiration_date',
-        'status',
-        'configuration_path',
-        'azure_app_id',
-        'app_info',
-    ];
-
-    protected $hidden = [
-        'api_key',
-    ];
+    use HasImage;
 
     protected function casts(): array
     {

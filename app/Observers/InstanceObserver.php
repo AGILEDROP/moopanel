@@ -10,11 +10,15 @@ class InstanceObserver
     public function created(Instance $instance): void
     {
         // In first phase all users should have access to all instances (later we will add instances based on user role)!
-        $instance->users()->attach(User::pluck('id')->toArray());
+        $users = User::query()
+            ->pluck('id')
+            ->toArray();
+
+        $instance->users()->attach($users);
     }
 
     public function deleted(Instance $instance): void
     {
-        $instance->users()->sync([]);
+        $instance->users()->detach();
     }
 }

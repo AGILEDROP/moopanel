@@ -4,29 +4,25 @@ namespace App\Models;
 
 use App\Models\Scopes\InstanceScope;
 use App\Observers\UniversityMemberObserver;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
+#[Fillable([
+    'code',
+    'acronym',
+    'name',
+    'sis_base_url',
+    'sis_current_year',
+    'sis_student_years',
+])]
 #[ObservedBy([UniversityMemberObserver::class])]
 class UniversityMember extends Model
 {
     use HasFactory;
-
-    protected $fillable = [
-        'code',
-        'acronym',
-        'name',
-        'sis_base_url',
-        'sis_current_year',
-        'sis_student_years',
-    ];
-
-    protected $hidden = [
-        //
-    ];
 
     public function accounts(): MorphToMany
     {
@@ -47,8 +43,6 @@ class UniversityMember extends Model
 
     public function hasAnyInstance(): bool
     {
-        $instance = $this->instances()->withoutGlobalScope(InstanceScope::class)->get()->first();
-
-        return $instance ? true : false;
+        return $this->instances()->withoutGlobalScope(InstanceScope::class)->exists();
     }
 }

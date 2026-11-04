@@ -3,29 +3,28 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasInstancesRelationship;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+#[Fillable([
+    'name',
+    'type',
+    'display_name',
+    'component',
+    'is_standard',
+    'settings_section',
+    'directory',
+])]
+#[Appends([
+    'lastUpdateTime',
+])]
 class Plugin extends Model
 {
-    use HasFactory, HasInstancesRelationship;
-
-    protected $fillable = [
-        'name',
-        'type',
-        'display_name',
-        'component',
-        'is_standard',
-        'settings_section',
-        'directory',
-    ];
-
-    protected $appends = [
-        'lastUpdateTime',
-    ];
+    use HasInstancesRelationship;
 
     public function instances(): BelongsToMany
     {

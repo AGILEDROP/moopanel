@@ -8,6 +8,6 @@ class AccountObserver
 {
     public function deleted(Account $account): void
     {
-        $account->universityMembers()->sync([]);
+        $account->universityMembers()->detach();
     }
 }

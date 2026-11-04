@@ -2,32 +2,28 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[Fillable([
+    'update_request_id',
+    'status',
+    'model_id',
+    'component',
+    'version',
+    'release',
+    'download',
+    'zip_path',
+    'zip_name',
+    'error',
+])]
 class UpdateRequestItem extends Model
 {
-    use HasFactory;
-
     public const STATUS_PENDING = null;
-
     public const STATUS_SUCCESS = true;
-
     public const STATUS_FAIL = false;
-
-    protected $fillable = [
-        'update_request_id',
-        'status',
-        'model_id',
-        'component',
-        'version',
-        'release',
-        'download',
-        'zip_path',
-        'zip_name',
-        'error',
-    ];
 
     protected function statusName(): Attribute
     {
@@ -43,7 +39,7 @@ class UpdateRequestItem extends Model
         );
     }
 
-    public function update_request()
+    public function update_request(): BelongsTo
     {
         return $this->belongsTo(UpdateRequest::class);
     }

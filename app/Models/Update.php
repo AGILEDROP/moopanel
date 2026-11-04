@@ -5,27 +5,26 @@ namespace App\Models;
 use App\Enums\UpdateMaturity;
 use App\Enums\UpdateType;
 use App\Models\Concerns\HasInstance;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
+#[Fillable([
+    'instance_id',
+    'plugin_id',
+    'version',
+    'release',
+    'maturity',
+    'url',
+    'type',
+    'download',
+    'downloadmd5',
+])]
 class Update extends Model
 {
-    use HasFactory, HasInstance;
-
-    protected $fillable = [
-        'instance_id',
-        'plugin_id',
-        'version',
-        'release',
-        'maturity',
-        'url',
-        'type',
-        'download',
-        'downloadmd5',
-    ];
+    use HasInstance;
 
     protected function casts(): array
     {
