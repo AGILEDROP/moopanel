@@ -31,11 +31,11 @@ class ChooseInstancePage extends BaseBackupWizardPage
 
     public function getRecords(): Collection|array
     {
-        return Instance::whereIn('cluster_id', $this->clusterIds)
+        return Instance::query()
+            ->whereIn('cluster_id', $this->clusterIds)
             ->when($this->search !== '', fn (Builder $query) => $query
-                ->where('name', 'ilike', '%'.toLower($this->search).'%')
-            )
-            ->get();
+                ->whereLike('name', '%'.$this->search.'%')
+            )->get();
     }
 
     public function goToNextStep(): void

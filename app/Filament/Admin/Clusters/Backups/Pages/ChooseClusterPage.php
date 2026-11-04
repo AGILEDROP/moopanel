@@ -31,10 +31,14 @@ class ChooseClusterPage extends BaseBackupWizardPage
 
     public function getRecords(): Collection|array
     {
-        return Cluster::with('instances')
+        return Cluster::query()
+            ->with([
+                'instances',
+            ])
             ->whereHas('instances')
-            ->when($this->search !== '', fn (Builder $query) => $query->where('name', 'ilike', '%'.toLower($this->search).'%'))
-            ->get();
+            ->when($this->search !== '', fn (Builder $query) => $query
+                ->whereLike('name', '%'.$this->search.'%')
+            )->get();
     }
 
     public function goToNextStep(): void

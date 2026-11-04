@@ -7,6 +7,10 @@ Route::get('/', function () {
     return redirect('admin');
 });
 
+Route::get('/login', function () {
+    return redirect(route('filament.admin.auth.login'));
+})->name('login');
+
 Route::prefix('auth')->name('socialite.')->middleware(['guest'])->group(function () {
     Route::get('/redirect', [AzureController::class, 'redirect'])->name('redirect');
     Route::get('/callback', [AzureController::class, 'callback'])->name('callback');
